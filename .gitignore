@@ -1,0 +1,23 @@
+# macOS
+.DS_Store
+
+# .NET
+api/bin/
+api/obj/
+api/*.user
+
+# Node / frontend
+web/node_modules/
+web/dist/
+
+# Environment / secrets
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+
+# Misc
+*.log
+.superpowers/
