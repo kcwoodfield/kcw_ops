@@ -1,4 +1,7 @@
+using KcwOps.Api.Features.Stories.CreateStory;
 using KcwOps.Api.Features.Stories.GetStories;
+using KcwOps.Api.Features.Stories.GetStory;
+using KcwOps.Api.Features.Stories.UpdateStory;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,4 +18,59 @@ public class StoriesController(IMediator mediator) : ControllerBase
         [FromQuery] bool backlogOnly,
         CancellationToken ct) =>
         Ok(await mediator.Send(new GetStoriesQuery(projectId, sprintId, backlogOnly), ct));
+
+    [HttpGet("{id:guid}")]
+    public async Task<IActionResult> GetById(Guid id, CancellationToken ct)
+    {
+        var story = await mediator.Send(new GetStoryQuery(id), ct);
+        return story is null ? NotFound() : Ok(story);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Create([FromBody] CreateStoryRequest body, CancellationToken ct)
+    {
+        try
+        {
+            var story = await mediator.Send(new CreateStoryCommand(
+                body.ProjectId,
+                body.EpicId,
+                body.Title,
+                body.SprintId,
+                body.Status,
+                body.Priority,
+                body.Points
+            ), ct);
+            return CreatedAtAction(nameof(GetById), new { id = story.Id }, story);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
+    [HttpPatch("{id:guid}")]
+    public async Task<IActionResult> Patch(Guid id, [FromBody] UpdateStoryRequest body, CancellationToken ct)
+    {
+        try
+        {
+            var story = await mediator.Send(new UpdateStoryCommand(
+                id,
+                body.Title,
+                body.Description,
+                body.Status,
+                body.Priority,
+                body.Points,
+                body.Blocked,
+                body.EpicId,
+                body.SprintId,
+                body.ClearSprint ?? false,
+                body.DueDate
+            ), ct);
+            return story is null ? NotFound() : Ok(story);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
 }

@@ -1,6 +1,7 @@
 import { Search, Filter, Bell, Plus, LayoutDashboard, List, CalendarDays } from 'lucide-react'
+import { useEpics } from '../../api/epics'
+import { useCreateStory, useSprints } from '../../api/stories'
 import { useUiStore } from '../../store/ui'
-import { useSprints } from '../../api/stories'
 import type { View } from '../../types'
 
 interface TopBarProps {
@@ -8,9 +9,22 @@ interface TopBarProps {
 }
 
 export function TopBar({ breadcrumb }: TopBarProps) {
-  const { view, setView, activeProjectId, activeSprintId, setActiveSprint } = useUiStore()
+  const { view, setView, activeProjectId, activeSprintId, setActiveSprint, openStoryDrawer } = useUiStore()
   const { data: sprints = [] } = useSprints(activeProjectId ?? '')
+  const { data: epics = [] } = useEpics(activeProjectId ?? '')
+  const createStory = useCreateStory()
   const activeSprint = sprints.find(s => s.id === activeSprintId) ?? sprints.find(s => s.state === 'active')
+
+  const handleNewIssue = async () => {
+    if (!activeProjectId || epics.length === 0) return
+    const story = await createStory.mutateAsync({
+      projectId: activeProjectId,
+      epicId: epics[0].id,
+      title: 'New issue',
+      sprintId: activeSprintId ?? undefined,
+    })
+    openStoryDrawer(story.id)
+  }
 
   return (
     <header style={{
@@ -40,22 +54,34 @@ export function TopBar({ breadcrumb }: TopBarProps) {
         ))}
       </div>
 
-      {/* Sprint chip */}
+      {/* Sprint selector */}
+      {sprints.length > 0 && (
+        <select
+          value={activeSprintId ?? ''}
+          onChange={e => setActiveSprint(e.target.value)}
+          className="mono"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+            padding: '3px 8px 3px 6px',
+            background: 'var(--accent-bg)',
+            border: '1px solid var(--accent-line)',
+            borderRadius: 4,
+            fontSize: 11.5,
+            fontWeight: 500,
+            color: 'var(--accent-fg)',
+            flexShrink: 0,
+            maxWidth: 200,
+          }}
+        >
+          {sprints.map(s => (
+            <option key={s.id} value={s.id}>{s.name}</option>
+          ))}
+        </select>
+      )}
       {activeSprint && (
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: 6,
-          padding: '3px 8px 3px 6px',
-          background: 'var(--accent-bg)',
-          border: '1px solid var(--accent-line)',
-          borderRadius: 4,
-          fontSize: 11.5, fontWeight: 500,
-          color: 'var(--accent-fg)',
-          flexShrink: 0,
-        }}>
-          <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--accent)', flexShrink: 0 }} />
-          <span className="mono">{activeSprint.name}</span>
-          <SprintDaysLeft endDate={activeSprint.endDate} />
-        </div>
+        <SprintDaysLeft endDate={activeSprint.endDate} />
       )}
 
       {/* View switcher */}
@@ -80,13 +106,18 @@ export function TopBar({ breadcrumb }: TopBarProps) {
       <IconBtn icon={<Filter size={14} />} />
       <IconBtn icon={<Bell size={14} />} />
 
-      <button style={{
+      <button
+        type="button"
+        disabled={!activeProjectId || epics.length === 0 || createStory.isPending}
+        onClick={() => void handleNewIssue()}
+        style={{
         display: 'inline-flex', alignItems: 'center', gap: 6,
         height: 26, padding: '0 10px',
         background: 'var(--accent)', color: 'var(--accent-ink)',
         borderRadius: 'var(--r-sm)',
         fontSize: 12, fontWeight: 600,
         flexShrink: 0,
+        opacity: !activeProjectId || epics.length === 0 ? 0.5 : 1,
       }}>
         <Plus size={12} />
         New issue

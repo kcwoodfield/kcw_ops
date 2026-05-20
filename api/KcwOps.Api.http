@@ -6,6 +6,29 @@ GET {{host}}/api/programs
 ### Sprints (replace projectId)
 GET {{host}}/api/sprints?projectId=
 
+### Story by id
+GET {{host}}/api/stories/{{storyId}}
+
+### Create story
+POST {{host}}/api/stories
+Content-Type: application/json
+
+{
+  "projectId": "",
+  "epicId": "",
+  "title": "New issue",
+  "sprintId": null
+}
+
+### Update story
+PATCH {{host}}/api/stories/{{storyId}}
+Content-Type: application/json
+
+{
+  "status": "progress",
+  "points": 5
+}
+
 ### Stories for sprint (replace ids)
 GET {{host}}/api/stories?projectId=&sprintId=
 

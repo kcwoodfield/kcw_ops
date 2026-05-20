@@ -23,7 +23,7 @@ const COLUMNS: {
 ]
 
 export function Kanban() {
-  const { activeProjectId, activeSprintId } = useUiStore()
+  const { activeProjectId, activeSprintId, openStoryDrawer } = useUiStore()
   const { data: stories = [], isLoading, isError } = useStories(
     activeProjectId ?? '',
     activeSprintId ?? undefined,
@@ -222,7 +222,7 @@ function Column({
         }}
       >
         {stories.map(s => (
-          <KanbanCard key={s.id} story={s} />
+          <KanbanCard key={s.id} story={s} onOpen={() => openStoryDrawer(s.id)} />
         ))}
         <button
           type="button"
@@ -251,16 +251,20 @@ function Column({
   )
 }
 
-function KanbanCard({ story }: { story: StoryDto }) {
+function KanbanCard({ story, onOpen }: { story: StoryDto; onOpen: () => void }) {
   return (
     <article
+      role="button"
+      tabIndex={0}
+      onClick={onOpen}
+      onKeyDown={e => e.key === 'Enter' && onOpen()}
       style={{
         background: 'var(--bg-1)',
         border: '1px solid var(--border)',
         borderRadius: 5,
         padding: '8px 10px 8px 11px',
         position: 'relative',
-        cursor: 'grab',
+        cursor: 'pointer',
         transition: 'border-color .12s, background .12s',
       }}
       onMouseOver={e => {

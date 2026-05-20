@@ -11,6 +11,7 @@ public class GetStoriesHandler(AppDbContext db) : IRequestHandler<GetStoriesQuer
         var query = db.Stories
             .Include(s => s.Epic)
             .Include(s => s.Sprint)
+            .Include(s => s.Project)
             .Where(s => s.ProjectId == q.ProjectId);
 
         if (q.BacklogOnly)
@@ -18,25 +19,7 @@ public class GetStoriesHandler(AppDbContext db) : IRequestHandler<GetStoriesQuer
         else if (q.SprintId.HasValue)
             query = query.Where(s => s.SprintId == q.SprintId);
 
-        return await query
-            .OrderBy(s => s.Number)
-            .Select(s => new StoryDto(
-                s.Id,
-                $"{s.Project.Key}-{s.Number}",
-                s.Title,
-                s.Status.ToString().ToLower(),
-                s.Priority.ToString().ToLower(),
-                s.Points,
-                s.Blocked,
-                s.EpicId,
-                s.Epic.Title,
-                s.Epic.Color,
-                s.SprintId,
-                s.Sprint != null ? s.Sprint.Name : null,
-                s.Labels,
-                s.DueDate.HasValue ? s.DueDate.Value.ToString("MMM d") : null,
-                s.AssigneeId
-            ))
-            .ToListAsync(ct);
+        var stories = await query.OrderBy(s => s.Number).ToListAsync(ct);
+        return stories.Select(StoryMapper.ToDto).ToList();
     }
 }

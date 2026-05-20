@@ -1,5 +1,6 @@
 import { AppShell } from './components/layout/AppShell'
 import { Kanban } from './components/kanban/Kanban'
+import { StoryDrawer } from './components/story/StoryDrawer'
 import { useUiStore } from './store/ui'
 
 function ViewPlaceholder({ name }: { name: string }) {
@@ -34,8 +35,11 @@ function MainView() {
 
 export default function App() {
   return (
-    <AppShell>
-      <MainView />
-    </AppShell>
+    <>
+      <AppShell>
+        <MainView />
+      </AppShell>
+      <StoryDrawer />
+    </>
   )
 }

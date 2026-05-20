@@ -1,7 +1,4 @@
-import type { StoryDto } from '../../types'
-
-export type StoryStatus = StoryDto['status']
-export type StoryPriority = StoryDto['priority']
+import type { StoryPriority, StoryStatus } from '../../types'
 
 const PRIORITY_LEVEL: Record<StoryPriority, number> = {
   urgent: 0,

@@ -13,8 +13,8 @@ Living roadmap from prototype → production app. Design reference: [`docs/desig
 | Postgres (Docker `:5435`) | Done — `docker compose up -d` |
 | .NET API (`:5050`) | Done — dev migrate + seed on startup |
 | Read API | Done — programs, sprints, epics, stories (incl. backlog filter) |
-| Write API | Not started — no Commands yet |
-| React app (`:5175`) | Partial — shell + read-only Kanban |
+| Write API | Partial — CreateStory, UpdateStory |
+| React app (`:5175`) | Partial — shell + Kanban + story drawer |
 | Design prototype | Done — 8 surfaces in `docs/design/` |
 | Auth | Not started |
 
@@ -22,12 +22,12 @@ Living roadmap from prototype → production app. Design reference: [`docs/desig
 
 | # | Surface | Design | Frontend | API |
 |---|---------|--------|----------|-----|
-| 01 | App shell + Kanban | ✅ | 🟡 Kanban read-only; shell wired | 🟡 GET stories |
+| 01 | App shell + Kanban | ✅ | 🟡 Kanban + drawer; no DnD yet | 🟡 GET/PATCH stories |
 | 02 | Sprint planning | ✅ | ⬜ placeholder nav | 🟡 GET sprints |
 | 03 | Backlog table | ✅ | ⬜ | 🟡 GET stories `backlogOnly` |
 | 04 | List (by Epic) | ✅ | ⬜ placeholder view | 🟡 GET epics + stories |
 | 05 | Calendar / Gantt | ✅ | ⬜ placeholder view | ⬜ needs date-range query |
-| 06 | Story detail drawer | ✅ | ⬜ | ⬜ GET story by id |
+| 06 | Story detail drawer | ✅ | 🟡 Sheet + inline edits | 🟡 GET/PATCH story |
 | 07 | Activity log | ✅ | ⬜ | ⬜ needs Activity entity + feed |
 | 08 | Sign in | ✅ | ⬜ | ⬜ needs auth |
 
@@ -50,14 +50,13 @@ Legend: ✅ done · 🟡 partial · ⬜ not started
 
 Goal: click a card → edit story → drag across columns. This is the minimum usable board.
 
-### 1.1 API — story commands
+### 1.1 API — story commands ✅ (shipped 2026-05-20)
 
-| Slice | Endpoint | Notes |
-|-------|----------|-------|
-| `GetStory` | `GET /api/stories/{id}` | Full detail for drawer (description, labels, blocked, etc.) |
-| `CreateStory` | `POST /api/stories` | Allocate `{ProjectKey}-{n}` via max(Number)+1 per project |
-| `UpdateStory` | `PATCH /api/stories/{id}` | Title, status, priority, points, epic, sprint, assignee, blocked, due, labels |
-| `MoveStory` | optional thin wrapper or part of UpdateStory | Status change + optional sprint assignment |
+| Slice | Endpoint | Status |
+|-------|----------|--------|
+| `GetStory` | `GET /api/stories/{id}` | ✅ |
+| `CreateStory` | `POST /api/stories` | ✅ |
+| `UpdateStory` | `PATCH /api/stories/{id}` | ✅ |
 
 Validators: Fibonacci points, enum status/priority, epic/sprint belong to same project.
 
@@ -68,13 +67,13 @@ Validators: Fibonacci points, enum status/priority, epic/sprint belong to same p
 | `GetProject` | `GET /api/projects/{id}` | Optional; may fold into programs payload |
 | Users / assignees | `GET /api/users` or embed in story DTO | Design uses avatars; seed a `User` table or static map until auth |
 
-### 1.3 Frontend — story drawer (surface 06)
+### 1.3 Frontend — story drawer (surface 06) ✅ (shipped 2026-05-20)
 
-- [ ] `StoryDetail` Sheet component from design
-- [ ] `useStory(id)` query + `useUpdateStory` mutation
-- [ ] Open drawer from Kanban card click; Zustand: `storyDrawerId`
-- [ ] Inline edits: status, priority, points, title, blocked toggle
-- [ ] Optimistic updates + query invalidation (`stories`, `sprints`)
+- [x] `StoryDrawer` — Radix Dialog, ~860px
+- [x] `useStory(id)` + `useUpdateStory` + `useCreateStory`
+- [x] Open from Kanban card; Zustand `storyDrawerId`
+- [x] Inline edits: title, description, status, priority, points, blocked
+- [x] Query invalidation on save; New issue button in TopBar
 
 ### 1.4 Frontend — Kanban interactions (surface 01)
 
