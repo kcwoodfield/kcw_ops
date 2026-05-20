@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>kcw / ops — project mgmt</title>
+
+<link rel="stylesheet" href="tokens.css"/>
+
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f0eee9; }
+  body { font-family: 'Geist', -apple-system, system-ui, sans-serif; }
+</style>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="data.jsx"></script>
+<script type="text/babel" src="components/AppShell.jsx"></script>
+<script type="text/babel" src="components/Kanban.jsx"></script>
+<script type="text/babel" src="components/SprintPlanning.jsx"></script>
+<script type="text/babel" src="components/Backlog.jsx"></script>
+<script type="text/babel" src="components/ListView.jsx"></script>
+<script type="text/babel" src="components/Calendar.jsx"></script>
+<script type="text/babel" src="components/StoryDetail.jsx"></script>
+<script type="text/babel" src="components/ActivityLog.jsx"></script>
+<script type="text/babel" src="components/LoginPage.jsx"></script>
+
+<script type="text/babel" data-presets="react">
+/* ── Theme (accent color & dark/light mode) ──────────────────────── */
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "accent": "#c4704e",
+  "mode": "dark"
+}/*EDITMODE-END*/;
+
+// Each accent declares its hue family. Surfaces are picked from a matrix of
+// (mode × hue) so dark/light toggle composes with the accent picker.
+// Accent lightness is tuned so white text reads on primary buttons in both modes.
+const ACCENTS = {
+  '#7c5cff': { dark:'oklch(0.62 0.20 296)', light:'oklch(0.55 0.20 296)', hue:'cool' },
+  '#4cc9e7': { dark:'oklch(0.60 0.13 220)', light:'oklch(0.55 0.13 220)', hue:'cool' },
+  '#f0b34a': { dark:'oklch(0.62 0.14 75)',  light:'oklch(0.60 0.14 75)',  hue:'warm' },
+  '#4ade80': { dark:'oklch(0.60 0.16 145)', light:'oklch(0.55 0.15 145)', hue:'cool' },
+  '#c4704e': { dark:'oklch(0.60 0.14 40)',  light:'oklch(0.55 0.14 40)',  hue:'warm' },
+};
+
+const SURFACES = {
+  'dark-cool': {
+    '--bg':'#0a0a0d','--bg-1':'#101015','--bg-2':'#15151c','--bg-3':'#1c1c25',
+    '--panel':'#0e0e13','--raised':'#181820',
+    '--border':'rgba(255,255,255,0.07)','--border-1':'rgba(255,255,255,0.10)','--border-2':'rgba(255,255,255,0.16)',
+    '--fg':'#e7e7eb','--fg-1':'#b8b8c2','--fg-2':'#8a8a96','--fg-3':'#5a5a66','--fg-4':'#3a3a44',
+    '--hover':'rgba(255,255,255,0.04)','--active':'rgba(255,255,255,0.07)',
+    '--pts-bg':'rgba(255,255,255,0.05)','--pts-fg':'#c8c8d0',
+  },
+  'dark-warm': {
+    '--bg':'#12120f','--bg-1':'#181712','--bg-2':'#1d1c16','--bg-3':'#262319',
+    '--panel':'#15140f','--raised':'#1f1d17',
+    '--border':'rgba(255,240,220,0.07)','--border-1':'rgba(255,240,220,0.11)','--border-2':'rgba(255,240,220,0.17)',
+    '--fg':'#ece6d8','--fg-1':'#bdb5a4','--fg-2':'#8c8576','--fg-3':'#5c5648','--fg-4':'#3a3528',
+    '--hover':'rgba(255,240,220,0.04)','--active':'rgba(255,240,220,0.07)',
+    '--pts-bg':'rgba(255,240,220,0.06)','--pts-fg':'#cdc4b1',
+  },
+  'light-cool': {
+    '--bg':'#fafafa','--bg-1':'#f3f3f5','--bg-2':'#ebebef','--bg-3':'#dededf',
+    '--panel':'#ffffff','--raised':'#ffffff',
+    '--border':'rgba(15,15,25,0.07)','--border-1':'rgba(15,15,25,0.11)','--border-2':'rgba(15,15,25,0.18)',
+    '--fg':'#18181b','--fg-1':'#3f3f46','--fg-2':'#71717a','--fg-3':'#a1a1aa','--fg-4':'#d4d4d8',
+    '--hover':'rgba(15,15,25,0.035)','--active':'rgba(15,15,25,0.06)',
+    '--pts-bg':'rgba(15,15,25,0.045)','--pts-fg':'#3f3f46',
+  },
+  'light-warm': {
+    '--bg':'#fbf9f4','--bg-1':'#f4f1e9','--bg-2':'#ece8dd','--bg-3':'#e0dccf',
+    '--panel':'#ffffff','--raised':'#ffffff',
+    '--border':'rgba(60,40,15,0.08)','--border-1':'rgba(60,40,15,0.13)','--border-2':'rgba(60,40,15,0.20)',
+    '--fg':'#1f1a13','--fg-1':'#46402f','--fg-2':'#796f57','--fg-3':'#a89e84','--fg-4':'#d3cab2',
+    '--hover':'rgba(60,40,15,0.04)','--active':'rgba(60,40,15,0.07)',
+    '--pts-bg':'rgba(60,40,15,0.06)','--pts-fg':'#46402f',
+  },
+};
+
+// Status & priority colors per mode (light needs deeper hues for contrast).
+const STATUS = {
+  dark:  { progress:'#4cc9e7', review:'#f0b34a', done:'#4ade80', blocked:'#f87171', todo:'#6b6b78',
+           p0:'#f87171', p1:'#f0b34a', p2:'#b8b8c2', p3:'#5a5a66' },
+  light: { progress:'#0891b2', review:'#b45309', done:'#15803d', blocked:'#dc2626', todo:'#71717a',
+           p0:'#dc2626', p1:'#b45309', p2:'#52525b', p3:'#a1a1aa' },
+};
+
+function applyTheme(hex, mode) {
+  const a = ACCENTS[hex] || ACCENTS['#7c5cff'];
+  const surf = SURFACES[`${mode}-${a.hue}`] || SURFACES['dark-cool'];
+  const r = document.documentElement.style;
+  Object.entries(surf).forEach(([k,v]) => r.setProperty(k, v));
+  // Accent — color & derived
+  const accent = mode === 'dark' ? a.dark : a.light;
+  r.setProperty('--accent', accent);
+  r.setProperty('--accent-2', accent);
+  // bg = translucent accent; fg = readable accent text on chip bg
+  const hueMatch = accent.match(/oklch\(([\d.]+) ([\d.]+) (\d+)/);
+  if (hueMatch) {
+    const [, L, C, H] = hueMatch;
+    r.setProperty('--accent-bg', `oklch(${L} ${C} ${H} / ${mode==='dark'?0.14:0.13})`);
+    r.setProperty('--accent-line', `oklch(${L} ${C} ${H} / ${mode==='dark'?0.30:0.35})`);
+    r.setProperty('--accent-tint', `oklch(${L} ${C} ${H} / ${mode==='dark'?0.05:0.07})`);
+    r.setProperty('--accent-fg', mode==='dark' ? `oklch(0.94 0.05 ${H})` : `oklch(0.30 ${Math.min(parseFloat(C),0.15)} ${H})`);
+  }
+  // Status
+  const s = STATUS[mode];
+  Object.entries(s).forEach(([k,v]) => r.setProperty(`--${k}`, v));
+  // Primary-button ink: white in both modes (accents are tuned dark enough for legibility)
+  r.setProperty('--accent-ink', '#ffffff');
+}
+
+function App() {
+  const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+
+  React.useEffect(() => { applyTheme(t.accent, t.mode); }, [t.accent, t.mode]);
+
+  return (
+    <>
+      <DesignCanvas>
+
+        <DCSection id="primary" title="Primary surface" subtitle="App shell + Kanban board (Sprint 32 · active)">
+          <DCArtboard id="kanban" label="01 · App shell + Kanban" width={1440} height={900}>
+            <AppShell view="kanban" breadcrumb={['Platform','Auth & Identity']} sprintBadge="Sprint 32">
+              <Kanban/>
+            </AppShell>
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection id="planning" title="Planning & backlog" subtitle="Forward-looking surfaces for the next sprint">
+          <DCArtboard id="sprint-planning" label="02 · Sprint planning" width={1440} height={900}>
+            <AppShell view="kanban" breadcrumb={['Platform','Auth & Identity','Sprint planning']} sprintBadge={null}>
+              <SprintPlanning/>
+            </AppShell>
+          </DCArtboard>
+          <DCArtboard id="backlog" label="03 · Backlog" width={1440} height={900}>
+            <AppShell view="list" breadcrumb={['Platform','Auth & Identity','Backlog']} sprintBadge={null}>
+              <Backlog/>
+            </AppShell>
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection id="alt-views" title="Alternate views" subtitle="Same sprint, different lens">
+          <DCArtboard id="list" label="04 · List · grouped by Epic" width={1440} height={900}>
+            <AppShell view="list" breadcrumb={['Platform','Auth & Identity']} sprintBadge="Sprint 32">
+              <ListView/>
+            </AppShell>
+          </DCArtboard>
+          <DCArtboard id="calendar" label="05 · Calendar · Gantt" width={1440} height={900}>
+            <AppShell view="cal" breadcrumb={['Platform','Auth & Identity']} sprintBadge="Sprint 32">
+              <CalendarView/>
+            </AppShell>
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection id="detail" title="Story detail" subtitle="Right-rail drawer · full fields, AC, Fibonacci point picker">
+          <DCArtboard id="drawer" label="06 · Story drawer" width={920} height={900}>
+            <StoryDetail/>
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection id="activity" title="Audit & activity" subtitle="Workspace-wide event feed · grouped by day">
+          <DCArtboard id="activity-log" label="07 · Activity log" width={1440} height={900}>
+            <AppShell view="list" breadcrumb={['Platform','Auth & Identity','Activity']} sprintBadge={null}>
+              <ActivityLog/>
+            </AppShell>
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection id="auth" title="Entry points" subtitle="Pre-app surfaces">
+          <DCArtboard id="login" label="08 · Sign in" width={1440} height={900}>
+            <LoginPage/>
+          </DCArtboard>
+        </DCSection>
+
+      </DesignCanvas>
+
+      <TweaksPanel title="Tweaks">
+        <TweakSection label="Theme">
+          <TweakRadio
+            label="Mode"
+            value={t.mode}
+            options={['dark','light']}
+            onChange={v => setTweak('mode', v)}
+          />
+          <TweakColor
+            label="Accent"
+            value={t.accent}
+            options={['#7c5cff','#4cc9e7','#f0b34a','#4ade80','#c4704e']}
+            onChange={v => setTweak('accent', v)}
+          />
+        </TweakSection>
+        <TweakSection label="About">
+          <div style={{ fontSize:11.5, color:'#6b6357', lineHeight:1.5, padding:'4px 12px 8px' }}>
+            kcw / ops · dark-first PM tool exploring Program → Project → Epic → Sprint → Story.
+            Eight surfaces side-by-side. Drag any card grip to reorder, double-click a title to rename,
+            or hit ⤢ to focus a single artboard fullscreen.
+          </div>
+        </TweakSection>
+      </TweaksPanel>
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
