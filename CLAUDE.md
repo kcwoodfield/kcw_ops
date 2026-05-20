@@ -20,7 +20,7 @@ Personal project-management tool. Think Linear × Jira, built for a PM/engineer 
 ### Frontend — React / TypeScript
 - **Shadcn UI** (Radix primitives + Tailwind) — use Shadcn components first, don't reinvent
 - Replace design prototype's inline SVG icons with **lucide-react**
-- State: **TanStack Query** for server data; **Zustand** or **Jotai** for UI state
+- State: **TanStack Query** for server data; **react-router-dom** for URLs (project, view, story drawer); **Zustand** for ephemeral UI (cmd palette, drag state)
 - Story drawer is a Shadcn `Sheet` (`side="right"`, 720–920px wide)
 
 ---
@@ -61,7 +61,7 @@ kcw_operations/
 
 ## Build plan
 
-See [`docs/BUILD_PLAN.md`](docs/BUILD_PLAN.md) for phased delivery: current surface checklist, API slices to add, and suggested build order. Update it when a phase ships.
+See [`docs/BUILD_PLAN.md`](docs/BUILD_PLAN.md) for phased delivery: surface checklist, **client routing** (`/p/:projectKey/board?story=`), API slices, and build order. Update it when a phase ships.
 
 ## Ports
 

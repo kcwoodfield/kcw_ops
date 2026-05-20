@@ -51,6 +51,7 @@ public class Story
     public Guid EpicId { get; set; }
     public Guid? SprintId { get; set; }       // null = backlog
     public int Number { get; set; }           // monotonic per project → AUTH-247
+    public int SortOrder { get; set; }        // rank within status column on board
     public string Title { get; set; } = "";
     public string? Description { get; set; }
     public StoryStatus Status { get; set; } = StoryStatus.Todo;

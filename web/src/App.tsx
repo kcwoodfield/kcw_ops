@@ -1,44 +1,31 @@
+import { Navigate, Route, Routes } from 'react-router-dom'
 import { AppShell } from './components/layout/AppShell'
 import { Kanban } from './components/kanban/Kanban'
 import { StoryDrawer } from './components/story/StoryDrawer'
-import { useUiStore } from './store/ui'
+import { ViewPlaceholder } from './components/shared/ViewPlaceholder'
+import { LAST_PROJECT_KEY } from './lib/routes'
 
-function ViewPlaceholder({ name }: { name: string }) {
-  return (
-    <div
-      style={{
-        height: '100%',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        color: 'var(--fg-2)',
-        fontSize: 13,
-      }}
-    >
-      {name} — coming soon
-    </div>
-  )
-}
-
-function MainView() {
-  const view = useUiStore(s => s.view)
-
-  switch (view) {
-    case 'kanban':
-      return <Kanban />
-    case 'list':
-      return <ViewPlaceholder name="List view" />
-    case 'calendar':
-      return <ViewPlaceholder name="Calendar" />
-  }
+function RootRedirect() {
+  const last = localStorage.getItem(LAST_PROJECT_KEY) ?? 'AUTH'
+  return <Navigate to={`/p/${last}/board`} replace />
 }
 
 export default function App() {
   return (
     <>
-      <AppShell>
-        <MainView />
-      </AppShell>
+      <Routes>
+        <Route path="/" element={<RootRedirect />} />
+        <Route path="/p/:projectKey" element={<AppShell />}>
+          <Route index element={<Navigate to="board" replace />} />
+          <Route path="board" element={<Kanban />} />
+          <Route path="backlog" element={<ViewPlaceholder name="Backlog" />} />
+          <Route path="planning" element={<ViewPlaceholder name="Sprint planning" />} />
+          <Route path="list" element={<ViewPlaceholder name="List view" />} />
+          <Route path="calendar" element={<ViewPlaceholder name="Calendar" />} />
+          <Route path="activity" element={<ViewPlaceholder name="Activity log" />} />
+        </Route>
+        <Route path="*" element={<RootRedirect />} />
+      </Routes>
       <StoryDrawer />
     </>
   )

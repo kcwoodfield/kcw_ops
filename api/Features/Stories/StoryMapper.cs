@@ -19,7 +19,8 @@ public static class StoryMapper
         s.Sprint?.Name,
         s.Labels,
         s.DueDate.HasValue ? s.DueDate.Value.ToString("MMM d") : null,
-        s.AssigneeId
+        s.AssigneeId,
+        s.SortOrder
     );
 
     public static StoryDetailDto ToDetailDto(Story s) => new(
@@ -41,6 +42,7 @@ public static class StoryMapper
         s.Sprint?.State.ToString().ToLower(),
         s.Labels,
         s.DueDate.HasValue ? s.DueDate.Value.ToString("yyyy-MM-dd") : null,
-        s.AssigneeId
+        s.AssigneeId,
+        s.SortOrder
     );
 }

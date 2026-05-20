@@ -6,15 +6,33 @@ Living roadmap from prototype → production app. Design reference: [`docs/desig
 
 ---
 
+## Progress at a glance
+
+| Milestone | Status |
+|-----------|--------|
+| Infra + seed data | ✅ |
+| Read API (programs → stories) | ✅ |
+| Story CRUD API (GET/PATCH/POST) | ✅ |
+| App shell + live Kanban | ✅ |
+| Story drawer + inline edits | ✅ |
+| **URL routing (`react-router-dom`)** | ✅ |
+| Kanban drag-and-drop | ✅ `@dnd-kit/core` |
+| ⌘K command palette | ⬜ |
+| Backlog / planning / list views | ⬜ (routes exist, placeholders only) |
+| Auth | ⬜ |
+
+---
+
 ## Current state
 
 | Layer | Status |
 |-------|--------|
 | Postgres (Docker `:5435`) | Done — `docker compose up -d` |
 | .NET API (`:5050`) | Done — dev migrate + seed on startup |
-| Read API | Done — programs, sprints, epics, stories (incl. backlog filter) |
-| Write API | Partial — CreateStory, UpdateStory |
-| React app (`:5175`) | Partial — shell + Kanban + story drawer |
+| Read API | Done — programs, sprints, epics, stories (incl. `backlogOnly`) |
+| Write API | Partial — `CreateStory`, `UpdateStory` (no delete, batch, or sprint transitions) |
+| React app (`:5175`) | Partial — shell, routed views, Kanban, story drawer |
+| Client routing | Done — `react-router-dom` v7 |
 | Design prototype | Done — 8 surfaces in `docs/design/` |
 | Auth | Not started |
 
@@ -22,14 +40,14 @@ Living roadmap from prototype → production app. Design reference: [`docs/desig
 
 | # | Surface | Design | Frontend | API |
 |---|---------|--------|----------|-----|
-| 01 | App shell + Kanban | ✅ | 🟡 Kanban + drawer; no DnD yet | 🟡 GET/PATCH stories |
-| 02 | Sprint planning | ✅ | ⬜ placeholder nav | 🟡 GET sprints |
-| 03 | Backlog table | ✅ | ⬜ | 🟡 GET stories `backlogOnly` |
-| 04 | List (by Epic) | ✅ | ⬜ placeholder view | 🟡 GET epics + stories |
-| 05 | Calendar / Gantt | ✅ | ⬜ placeholder view | ⬜ needs date-range query |
-| 06 | Story detail drawer | ✅ | 🟡 Sheet + inline edits | 🟡 GET/PATCH story |
-| 07 | Activity log | ✅ | ⬜ | ⬜ needs Activity entity + feed |
-| 08 | Sign in | ✅ | ⬜ | ⬜ needs auth |
+| 01 | App shell + Kanban | ✅ | 🟡 board + drawer + DnD | 🟡 GET/PATCH stories |
+| 02 | Sprint planning | ✅ | 🟡 `/planning` placeholder | 🟡 GET sprints |
+| 03 | Backlog table | ✅ | 🟡 `/backlog` placeholder; sidebar Inbox → route | 🟡 GET `backlogOnly` |
+| 04 | List (by Epic) | ✅ | 🟡 `/list` placeholder | 🟡 GET epics + stories |
+| 05 | Calendar / Gantt | ✅ | 🟡 `/calendar` placeholder | ⬜ date-range query |
+| 06 | Story detail drawer | ✅ | 🟡 drawer + edits; `?story=` deep link | 🟡 GET/PATCH story |
+| 07 | Activity log | ✅ | ⬜ `/activity` not in router yet | ⬜ Activity entity + feed |
+| 08 | Sign in | ✅ | ⬜ | ⬜ auth |
 
 Legend: ✅ done · 🟡 partial · ⬜ not started
 
@@ -39,18 +57,79 @@ Legend: ✅ done · 🟡 partial · ⬜ not started
 
 - **Backend:** vertical slices under `api/Features/{Entity}/{UseCase}/` — Command or Query + Handler + Validator + thin Controller
 - **CQRS:** reads never mutate; writes never return projection graphs
-- **Frontend:** Shadcn first, lucide-react icons, TanStack Query for server state, Zustand for UI (`activeProject`, `view`, `activeSprint`, drawer open/id)
-- **Story drawer:** Shadcn `Sheet`, `side="right"`, 720–920px
+- **Frontend:** Shadcn + lucide-react; TanStack Query for server data
+- **Routing:** `react-router-dom` — project + view in path; sprint + story in search params ([details](#client-routing))
+- **Zustand:** `activeProjectId` / `activeSprintId` synced from URL in `AppShell` (not view or drawer state)
+- **Story drawer:** Radix Dialog ~860px; open via `?story=<uuid>`
 - **Points:** Fibonacci only — 1 2 3 5 8 13 21
 - **Public repo:** no real PII; fictional design names are OK
 
 ---
 
-## Phase 1 — Interactive core (next)
+## Client routing
 
-Goal: click a card → edit story → drag across columns. This is the minimum usable board.
+**Library:** `react-router-dom` v7 · **Helpers:** `web/src/lib/routes.ts`, `web/src/hooks/useAppNavigate.ts`
 
-### 1.1 API — story commands ✅ (shipped 2026-05-20)
+### URL contract
+
+```
+/                                    → redirect to last project (localStorage) or AUTH
+/p/:projectKey/board?sprint=<uuid>&story=<uuid>
+/p/:projectKey/backlog
+/p/:projectKey/planning
+/p/:projectKey/list
+/p/:projectKey/calendar
+/login                               → Phase 5 (not wired)
+/p/:projectKey/activity              → Phase 4 (route TBD)
+```
+
+| Param | Example | Maps to |
+|-------|---------|---------|
+| `:projectKey` | `AUTH` | Resolve → `activeProjectId` via programs |
+| view segment | `board` | Kanban, backlog table, etc. |
+| `?sprint=` | UUID | Sprint filter (board); default active sprint injected if missing |
+| `?story=` | UUID | Story drawer open; Back/Esc removes param |
+
+### Route table (implemented)
+
+| Path | Component | Notes |
+|------|-----------|-------|
+| `/` | `<RootRedirect />` | `kcw_last_project_key` in localStorage |
+| `/p/:projectKey` | redirect → `board` | |
+| `/p/:projectKey/board` | `Kanban` | |
+| `/p/:projectKey/backlog` | `ViewPlaceholder` | replace with `Backlog` in Phase 2 |
+| `/p/:projectKey/planning` | `ViewPlaceholder` | replace with `SprintPlanning` |
+| `/p/:projectKey/list` | `ViewPlaceholder` | replace with `ListView` |
+| `/p/:projectKey/calendar` | `ViewPlaceholder` | replace with `CalendarView` |
+
+`AppShell` uses `<Outlet />`; `StoryDrawer` is global (outside nested routes).
+
+### Navigation API (`useAppNavigate`)
+
+- `goToProject(key, view?)` — switch project; preserves sprint/story unless overridden
+- `goToView(view)` — TopBar Board / List / Calendar
+- `setSprint(id)` — updates `?sprint=`
+- `openStory(id)` / `closeStory()` — `?story=` add/remove
+
+Sidebar: project rows → `goToProject`; Inbox → `backlog`; Sprint planning → `planning`; Releases → `calendar`.
+
+### Routing checklist ✅ (2026-05-20)
+
+- [x] `BrowserRouter` in `main.tsx`
+- [x] Route table in `App.tsx`
+- [x] `AppShell` + URL ↔ Zustand sync
+- [x] TopBar + Sidebar use `navigate` / `useAppNavigate`
+- [x] Story drawer deep-linked
+- [ ] `/activity` route + sidebar link
+- [ ] `/login` route (Phase 5)
+
+---
+
+## Phase 1 — Interactive core (in progress)
+
+Goal: click a card → edit story → **drag across columns**. Minimum usable board.
+
+### 1.1 API — story commands ✅ (2026-05-20)
 
 | Slice | Endpoint | Status |
 |-------|----------|--------|
@@ -58,64 +137,66 @@ Goal: click a card → edit story → drag across columns. This is the minimum u
 | `CreateStory` | `POST /api/stories` | ✅ |
 | `UpdateStory` | `PATCH /api/stories/{id}` | ✅ |
 
-Validators: Fibonacci points, enum status/priority, epic/sprint belong to same project.
+Validators: Fibonacci points; status/priority enums; epic/sprint belong to project.
 
 ### 1.2 API — supporting reads
 
 | Slice | Endpoint | Notes |
 |-------|----------|-------|
-| `GetProject` | `GET /api/projects/{id}` | Optional; may fold into programs payload |
-| Users / assignees | `GET /api/users` or embed in story DTO | Design uses avatars; seed a `User` table or static map until auth |
+| `GetProject` | `GET /api/projects/{id}` | Optional; programs payload may suffice |
+| Users / assignees | `GET /api/users` or story DTO | Replace GUID avatar hack; seed fictional users |
 
-### 1.3 Frontend — story drawer (surface 06) ✅ (shipped 2026-05-20)
+### 1.3 Frontend — story drawer (surface 06) ✅ (2026-05-20)
 
-- [x] `StoryDrawer` — Radix Dialog, ~860px
-- [x] `useStory(id)` + `useUpdateStory` + `useCreateStory`
-- [x] Open from Kanban card; Zustand `storyDrawerId`
-- [x] Inline edits: title, description, status, priority, points, blocked
-- [x] Query invalidation on save; New issue button in TopBar
+- [x] `StoryDrawer` — Radix Dialog
+- [x] `useStory` + `useUpdateStory` + `useCreateStory`
+- [x] Open from Kanban; deep link `?story=`
+- [x] Edits: title, description, status, priority, points, blocked
+- [x] New issue → create + open drawer
 
-### 1.4 Frontend — Kanban interactions (surface 01)
+### 1.4 Frontend — Kanban interactions (surface 01) ✅ (2026-05-20)
 
-- [ ] Drag-and-drop between columns (status) — `@dnd-kit/core` or native HTML DnD
-- [ ] Drop → `PATCH` status
-- [ ] Column counts / point totals (already computed client-side)
-- [ ] “New issue” → create flow (modal or drawer empty state)
-- [ ] Sprint selector in TopBar (change `activeSprintId` — chip exists, no picker yet)
+- [x] Drag-and-drop — `@dnd-kit/core` (same stack as [shadcn Kanban](https://shadcn.io/components/data/kanban))
+- [x] Drop → `PATCH` status + optimistic cache update
+- [x] Column counts / point totals
+- [x] New issue + sprint selector (URL-backed)
+- [x] 6px activation distance so click still opens drawer
 
 ### 1.5 Frontend — keyboard
 
-- [ ] `⌘K` command palette (Shadcn `Command`) — search issues, switch project/view
-- [ ] `C` new issue (TopBar hint already shown)
+- [ ] `⌘K` command palette — Shadcn `Command` + `cmdk` already installed; search stories, jump routes
+- [ ] `C` → New issue (hint in TopBar; wire global shortcut)
+- [x] `Esc` → close drawer (`?story=` cleared)
 
-**Phase 1 exit criteria:** Create AUTH-### story, drag todo → done, open drawer and edit fields, refresh persists.
+**Phase 1 exit criteria:** Create AUTH-###, drag todo → done, edit in drawer, **refresh restores** `/p/AUTH/board?sprint=…&story=…`.
 
 ---
 
 ## Phase 2 — Planning & backlog views
 
-Goal: sprint planning and backlog match design surfaces 02–04.
+Goal: replace placeholders at `/backlog`, `/planning`, `/list` with real surfaces.
 
 ### 2.1 Backlog (surface 03)
 
-- [ ] `Backlog.tsx` — dense table, sortable columns, bulk select (later)
-- [ ] `useBacklog(projectId)` — already stubbed in `api/stories.ts`
-- [ ] Drag row → sprint assignment (calls UpdateStory)
-- [ ] Sidebar “Inbox” / backlog route or view mode in store
+- [ ] `Backlog.tsx` — dense table (design `docs/design/components/Backlog.jsx`)
+- [ ] `useBacklog(projectId)` — hook exists
+- [ ] Drag row → sprint (`UpdateStory` + `sprintId`)
+- [x] Route + sidebar Inbox link
 
 ### 2.2 Sprint planning (surface 02)
 
-- [ ] `SprintPlanning.tsx` — split pane: backlog list | sprint scope
-- [ ] Capacity meter from sprint `committedPoints` / team velocity (seed or config)
-- [ ] `AssignSprintStories` command — batch move stories into sprint
-- [ ] Start / complete sprint commands (`SprintState` transitions)
+- [ ] `SprintPlanning.tsx` — split pane + capacity meter
+- [ ] `AssignSprintStories` or repeated PATCH
+- [ ] `StartSprint` / `CompleteSprint` commands
+- [x] Route + sidebar link
 
 ### 2.3 List view (surface 04)
 
-- [ ] `ListView.tsx` — group by epic, collapse sections, progress pts per epic
-- [ ] `useEpics` hook + stories grouped client-side or `GET /api/epics?includeStories=true`
+- [ ] `ListView.tsx` — group by epic, progress pts
+- [ ] `useEpics` — hook exists
+- [x] Route + TopBar “List” link
 
-**Phase 2 exit criteria:** Plan Sprint 33 from backlog, see updates on Kanban and List.
+**Phase 2 exit criteria:** Move backlog items into Sprint 33 at `/p/AUTH/planning`; see board + list update.
 
 ---
 
@@ -123,21 +204,21 @@ Goal: sprint planning and backlog match design surfaces 02–04.
 
 ### 3.1 Calendar / Gantt (surface 05)
 
-- [ ] `CalendarView.tsx` — stories on timeline by `DueDate` / sprint bounds
-- [ ] API: `GET /api/stories?projectId=&from=&to=` date filter
-- [ ] Epic swimlanes optional v2
+- [ ] `CalendarView.tsx` at `/p/:projectKey/calendar`
+- [ ] `GET /api/stories?projectId=&from=&to=`
 
 ### 3.2 App shell polish
 
-- [ ] Sidebar view links wired (`Sprint planning`, etc.) to `useUiStore.view`
-- [ ] Breadcrumb + project switcher persistence (localStorage)
-- [ ] Loading / error boundaries per view
-- [ ] Empty states per project with no sprints
+- [x] Sidebar primary routes wired
+- [x] `/` → last project redirect
+- [ ] `/p/:projectKey/activity` route
+- [ ] Per-route loading / error boundaries
+- [ ] Empty states (no sprints, empty board)
 
 ### 3.3 Programs / projects CRUD
 
-- [ ] Create program, project, epic (admin-lite, no roles yet)
-- [ ] Project key uniqueness validation
+- [ ] Create program, project, epic
+- [ ] Navigate to `/p/{key}/board` on create
 
 ---
 
@@ -145,83 +226,74 @@ Goal: sprint planning and backlog match design surfaces 02–04.
 
 ### 4.1 Activity log (surface 07)
 
-- [ ] Domain: `ActivityEvent` (actor, type, target, payload, timestamp)
-- [ ] Emit events from story/sprint handlers (MediatR pipeline behavior or domain events)
-- [ ] `GET /api/activity?projectId=&cursor=`
-- [ ] `ActivityLog.tsx` — day groups, filters, sparkline header
+- [ ] `ActivityEvent` domain + `GET /api/activity`
+- [ ] `ActivityLog.tsx` + `/activity` route
 
-### 4.2 Comments (drawer tab)
+### 4.2 Comments (drawer)
 
-- [ ] `Comment` entity + `POST /api/stories/{id}/comments`
-- [ ] Thread in StoryDetail drawer
+- [ ] `Comment` entity + POST endpoint
+- [ ] Thread in drawer
 
 ### 4.3 Real assignees
 
-- [ ] `User` entity (id, display name, initials, color) — replace GUID avatar hack
-- [ ] Seed users matching design personas (fictional names only)
+- [ ] `User` entity + seed personas (fictional names only)
 
 ---
 
-## Phase 5 — Auth & hardening (surface 08)
+## Phase 5 — Auth (surface 08)
 
-- [ ] `LoginPage.tsx` — design surface 08 (can defer OAuth; start with dev-only cookie)
-- [ ] ASP.NET Identity or simple API key / magic link for single-user local mode
-- [ ] Protect write endpoints; read-only public demo mode optional
-- [ ] CORS + env-based API URL for production build
+- [ ] `LoginPage` at `/login`
+- [ ] API auth + route guards
+- [ ] Env-based API URL for production
 
 ---
 
 ## Phase 6 — Production quality
 
 - [ ] CI: `dotnet test`, `npm run build`, lint
-- [ ] EF migrations workflow documented; no manual schema drift
-- [ ] API integration tests per slice (WebApplicationFactory)
-- [ ] E2E smoke: Playwright — load board, open story, change status
-- [ ] Docker Compose profile: api + web + db (optional)
-- [ ] Performance: story list pagination if >200 cards
-- [ ] Accessibility pass on Shadcn components (focus trap in Sheet, kanban DnD announcements)
+- [ ] API integration tests (WebApplicationFactory)
+- [ ] E2E: Playwright — `/p/AUTH/board`, `?story=`, DnD, browser back
+- [ ] Docker Compose: api + web + db
+- [ ] Story list pagination if >200 cards
+- [ ] a11y: drawer focus trap, DnD live regions
 
 ---
 
-## Suggested build order (single-threaded)
+## Suggested build order
 
 ```
-Phase 1.1 GetStory + UpdateStory API
-    → 1.3 Story drawer
-    → 1.4 Kanban DnD + create story
-    → 1.5 ⌘K palette
-Phase 2.1 Backlog
-    → 2.2 Sprint planning
-    → 2.3 List view
-Phase 3.1 Calendar
-    → 3.2 Shell polish
-Phase 4.1 Activity log
-    → 4.2 Comments
-Phase 5 Auth
-Phase 6 CI / tests / deploy
+1.5 ⌘K palette (+ route jumps)    ← current focus
+2.1 Backlog
+2.2 Sprint planning
+2.3 List view
+3.1 Calendar
+3.2 activity route + shell polish
+4.x Activity + comments
+5 Auth
+6 CI / E2E
 ```
-
-Parallelizable later: Calendar vs Activity; Comments vs Auth.
 
 ---
 
-## Key files (today)
+## Key files
 
 | Area | Path |
 |------|------|
 | API entry | `api/Program.cs` |
-| Domain | `api/Domain/Entities.cs` |
-| Seed data | `api/Infrastructure/Persistence/DataSeeder.cs` |
-| Read slices | `api/Features/{Programs,Stories,Sprints,Epics}/` |
-| Query client | `web/src/api/client.ts` |
-| UI state | `web/src/store/ui.ts` |
+| Story slices | `api/Features/Stories/` |
+| Routes | `web/src/App.tsx` |
+| Route helpers | `web/src/lib/routes.ts`, `web/src/hooks/useAppNavigate.ts` |
 | Layout | `web/src/components/layout/` |
 | Kanban | `web/src/components/kanban/Kanban.tsx` |
+| Story drawer | `web/src/components/story/StoryDrawer.tsx` |
+| Placeholders | `web/src/components/shared/ViewPlaceholder.tsx` |
+| API hooks | `web/src/api/` |
+| UI store | `web/src/store/ui.ts` |
 | Design tokens | `web/src/index.css`, `docs/design/tokens.css` |
 
 ---
 
-## Running locally (verify any phase)
+## Running locally
 
 ```bash
 docker compose up -d
@@ -229,7 +301,17 @@ dotnet run --project api          # http://localhost:5050
 cd web && npm run dev             # http://localhost:5175
 ```
 
-Design-only preview:
+**Example URLs:**
+
+```
+http://localhost:5175/
+http://localhost:5175/p/AUTH/board
+http://localhost:5175/p/AUTH/board?sprint=<uuid>&story=<uuid>
+http://localhost:5175/p/AUTH/backlog
+http://localhost:5175/p/AUTH/planning
+```
+
+Design prototype only:
 
 ```bash
 cd docs/design && python3 -m http.server 8080
@@ -241,8 +323,8 @@ cd docs/design && python3 -m http.server 8080
 
 - Multi-tenant / org billing
 - Notifications, email, webhooks
-- GitHub PR integration (design shows merge events — activity feed only)
+- GitHub PR links in UI (activity feed may reference merges later)
 - Mobile native apps
 - Real-time multiplayer cursors
 
-These can be revisited after Phase 2 feels good day-to-day.
+Revisit after Phase 2 is usable day-to-day.

@@ -35,6 +35,10 @@ public class CreateStoryHandler(AppDbContext db) : IRequestHandler<CreateStoryCo
 
         var points = cmd.Points ?? 1;
 
+        var maxSort = await db.Stories
+            .Where(s => s.ProjectId == cmd.ProjectId && s.SprintId == cmd.SprintId && s.Status == status)
+            .MaxAsync(s => (int?)s.SortOrder, ct) ?? 0;
+
         var story = new Story
         {
             Id = Guid.NewGuid(),
@@ -42,6 +46,7 @@ public class CreateStoryHandler(AppDbContext db) : IRequestHandler<CreateStoryCo
             EpicId = cmd.EpicId,
             SprintId = cmd.SprintId,
             Number = maxNumber + 1,
+            SortOrder = maxSort + 1000,
             Title = cmd.Title.Trim(),
             Status = status,
             Priority = priority,

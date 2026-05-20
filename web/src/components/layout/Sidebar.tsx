@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import { ChevronRight, Folder, Inbox, Eye, Star, GitBranch, CalendarDays, Map, Zap, Settings } from 'lucide-react'
 import { usePrograms } from '../../api/programs'
-import { useUiStore } from '../../store/ui'
+import { useAppNavigate } from '../../hooks/useAppNavigate'
+import type { AppView } from '../../lib/routes'
 import type { ProgramDto, ProjectDto } from '../../types'
 
 export function Sidebar() {
   const { data: programs = [] } = usePrograms()
-  const { activeProjectId, setActiveProject } = useUiStore()
+  const { view, goToProject, goToView } = useAppNavigate()
 
   return (
     <aside style={{
@@ -22,7 +23,7 @@ export function Sidebar() {
       <WorkspaceHeader />
 
       <nav style={{ padding: '8px 6px 4px', display: 'flex', flexDirection: 'column', gap: 1 }}>
-        <NavRow icon={<Inbox size={14} />} label="Inbox" trail="3" />
+        <NavRow icon={<Inbox size={14} />} label="Inbox" trail="3" active={view === 'backlog'} onClick={() => goToView('backlog')} />
         <NavRow icon={<Eye size={14} />} label="My issues" trail="14" />
         <NavRow icon={<Star size={14} />} label="Starred" />
         <NavRow icon={<GitBranch size={14} />} label="Drafts" />
@@ -36,15 +37,15 @@ export function Sidebar() {
             key={pg.id}
             program={pg}
             defaultOpen={i === 0}
-            activeProjectId={activeProjectId}
-            onSelectProject={setActiveProject}
+            activeView={view}
+            onSelectProject={goToProject}
           />
         ))}
 
         <SectionHeader label="Views" style={{ padding: '20px 8px 6px 8px' }} />
-        <NavRow icon={<Zap size={14} />} label="Sprint planning" />
+        <NavRow icon={<Zap size={14} />} label="Sprint planning" active={view === 'planning'} onClick={() => goToView('planning')} />
         <NavRow icon={<Map size={14} />} label="Roadmap" />
-        <NavRow icon={<CalendarDays size={14} />} label="Releases" />
+        <NavRow icon={<CalendarDays size={14} />} label="Releases" active={view === 'calendar'} onClick={() => goToView('calendar')} />
       </div>
 
       <UserFooter />
@@ -85,15 +86,18 @@ function WorkspaceHeader() {
   )
 }
 
-function NavRow({ icon, label, trail, active }: {
+function NavRow({ icon, label, trail, active, onClick }: {
   icon: React.ReactNode
   label: string
   trail?: string
   active?: boolean
+  onClick?: () => void
 }) {
   const [hovered, setHovered] = useState(false)
   return (
     <button
+      type="button"
+      onClick={onClick}
       style={{
         display: 'flex', alignItems: 'center', gap: 8,
         padding: '4px 8px', borderRadius: 4,
@@ -127,11 +131,11 @@ function SectionHeader({ label, action, style }: { label: string; action?: React
   )
 }
 
-function ProgramNode({ program, defaultOpen, activeProjectId, onSelectProject }: {
+function ProgramNode({ program, defaultOpen, activeView, onSelectProject }: {
   program: ProgramDto
   defaultOpen: boolean
-  activeProjectId: string | null
-  onSelectProject: (id: string) => void
+  activeView: AppView
+  onSelectProject: (key: string, view?: AppView) => void
 }) {
   const [open, setOpen] = useState(defaultOpen)
   return (
@@ -163,8 +167,7 @@ function ProgramNode({ program, defaultOpen, activeProjectId, onSelectProject }:
             <ProjectRow
               key={pr.id}
               project={pr}
-              active={pr.id === activeProjectId}
-              onClick={() => onSelectProject(pr.id)}
+              onClick={() => onSelectProject(pr.key, activeView)}
             />
           ))}
         </div>
@@ -173,7 +176,9 @@ function ProgramNode({ program, defaultOpen, activeProjectId, onSelectProject }:
   )
 }
 
-function ProjectRow({ project, active, onClick }: { project: ProjectDto; active: boolean; onClick: () => void }) {
+function ProjectRow({ project, onClick }: { project: ProjectDto; onClick: () => void }) {
+  const { projectKey } = useAppNavigate()
+  const active = project.key === projectKey
   const [hovered, setHovered] = useState(false)
   return (
     <button

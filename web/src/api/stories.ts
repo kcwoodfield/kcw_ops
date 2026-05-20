@@ -45,10 +45,65 @@ export function useUpdateStory() {
   return useMutation({
     mutationFn: ({ id, ...body }: UpdateStoryPayload & { id: string }) =>
       patch<StoryDetailDto>(`/stories/${id}`, body),
+    onMutate: async ({ id, ...patchBody }) => {
+      await qc.cancelQueries({ queryKey: ['stories'] })
+      const previous = qc.getQueriesData<StoryDto[]>({ queryKey: ['stories'] })
+      qc.setQueriesData<StoryDto[]>({ queryKey: ['stories'] }, old =>
+        old?.map(s =>
+          s.id === id
+            ? {
+                ...s,
+                ...patchBody,
+                status: patchBody.status ?? s.status,
+                priority: patchBody.priority ?? s.priority,
+                points: patchBody.points ?? s.points,
+                blocked: patchBody.blocked ?? s.blocked,
+                title: patchBody.title ?? s.title,
+              }
+            : s,
+        ),
+      )
+      return { previous }
+    },
+    onError: (_err, _vars, ctx) => {
+      ctx?.previous.forEach(([key, data]) => qc.setQueryData(key, data))
+    },
     onSuccess: (story) => {
       qc.invalidateQueries({ queryKey: ['stories'] })
       qc.invalidateQueries({ queryKey: ['sprints'] })
       qc.setQueryData(['story', story.id], story)
+    },
+  })
+}
+
+export function useReorderStories() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (body: {
+      projectId: string
+      sprintId?: string
+      status: string
+      orderedStoryIds: string[]
+    }) => post<void>('/stories/reorder', body),
+    onMutate: async ({ orderedStoryIds, status }) => {
+      await qc.cancelQueries({ queryKey: ['stories'] })
+      const previous = qc.getQueriesData<StoryDto[]>({ queryKey: ['stories'] })
+      const orderMap = new Map(orderedStoryIds.map((id, i) => [id, (i + 1) * 1000]))
+      qc.setQueriesData<StoryDto[]>({ queryKey: ['stories'] }, old =>
+        old?.map(s => {
+          const newOrder = orderMap.get(s.id)
+          if (s.status !== status || newOrder === undefined) return s
+          return { ...s, sortOrder: newOrder }
+        }),
+      )
+      return { previous }
+    },
+    onError: (_err, _vars, ctx) => {
+      ctx?.previous.forEach(([key, data]) => qc.setQueryData(key, data))
+    },
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: ['stories'] })
+      qc.invalidateQueries({ queryKey: ['sprints'] })
     },
   })
 }

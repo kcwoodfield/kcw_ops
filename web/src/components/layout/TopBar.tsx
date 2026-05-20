@@ -1,19 +1,27 @@
 import { Search, Filter, Bell, Plus, LayoutDashboard, List, CalendarDays } from 'lucide-react'
 import { useEpics } from '../../api/epics'
 import { useCreateStory, useSprints } from '../../api/stories'
+import { useAppNavigate } from '../../hooks/useAppNavigate'
 import { useUiStore } from '../../store/ui'
-import type { View } from '../../types'
+import type { AppView } from '../../lib/routes'
 
 interface TopBarProps {
   breadcrumb: string[]
 }
 
+const TOP_VIEWS: { id: AppView; icon: React.ReactNode; label: string }[] = [
+  { id: 'board', icon: <LayoutDashboard size={12} />, label: 'Board' },
+  { id: 'list', icon: <List size={12} />, label: 'List' },
+  { id: 'calendar', icon: <CalendarDays size={12} />, label: 'Calendar' },
+]
+
 export function TopBar({ breadcrumb }: TopBarProps) {
-  const { view, setView, activeProjectId, activeSprintId, setActiveSprint, openStoryDrawer } = useUiStore()
+  const { view, sprintId, goToView, setSprint, openStory } = useAppNavigate()
+  const { activeProjectId } = useUiStore()
   const { data: sprints = [] } = useSprints(activeProjectId ?? '')
   const { data: epics = [] } = useEpics(activeProjectId ?? '')
   const createStory = useCreateStory()
-  const activeSprint = sprints.find(s => s.id === activeSprintId) ?? sprints.find(s => s.state === 'active')
+  const activeSprint = sprints.find(s => s.id === sprintId) ?? sprints.find(s => s.state === 'active')
 
   const handleNewIssue = async () => {
     if (!activeProjectId || epics.length === 0) return
@@ -21,9 +29,9 @@ export function TopBar({ breadcrumb }: TopBarProps) {
       projectId: activeProjectId,
       epicId: epics[0].id,
       title: 'New issue',
-      sprintId: activeSprintId ?? undefined,
+      sprintId: sprintId ?? undefined,
     })
-    openStoryDrawer(story.id)
+    openStory(story.id)
   }
 
   return (
@@ -36,7 +44,6 @@ export function TopBar({ breadcrumb }: TopBarProps) {
       minWidth: 0,
       flexShrink: 0,
     }}>
-      {/* Breadcrumb */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
         {breadcrumb.map((crumb, i) => (
           <span key={i} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -54,16 +61,12 @@ export function TopBar({ breadcrumb }: TopBarProps) {
         ))}
       </div>
 
-      {/* Sprint selector */}
       {sprints.length > 0 && (
         <select
-          value={activeSprintId ?? ''}
-          onChange={e => setActiveSprint(e.target.value)}
+          value={sprintId ?? ''}
+          onChange={e => setSprint(e.target.value || null)}
           className="mono"
           style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 6,
             padding: '3px 8px 3px 6px',
             background: 'var(--accent-bg)',
             border: '1px solid var(--accent-line)',
@@ -80,16 +83,12 @@ export function TopBar({ breadcrumb }: TopBarProps) {
           ))}
         </select>
       )}
-      {activeSprint && (
-        <SprintDaysLeft endDate={activeSprint.endDate} />
-      )}
+      {activeSprint && <SprintDaysLeft endDate={activeSprint.endDate} />}
 
-      {/* View switcher */}
-      <ViewSwitcher view={view} onChange={setView} />
+      <ViewSwitcher view={view} onChange={goToView} />
 
       <div style={{ flex: 1 }} />
 
-      {/* Search */}
       <div style={{
         display: 'flex', alignItems: 'center', gap: 6,
         padding: '0 8px', height: 26, minWidth: 220,
@@ -111,14 +110,15 @@ export function TopBar({ breadcrumb }: TopBarProps) {
         disabled={!activeProjectId || epics.length === 0 || createStory.isPending}
         onClick={() => void handleNewIssue()}
         style={{
-        display: 'inline-flex', alignItems: 'center', gap: 6,
-        height: 26, padding: '0 10px',
-        background: 'var(--accent)', color: 'var(--accent-ink)',
-        borderRadius: 'var(--r-sm)',
-        fontSize: 12, fontWeight: 600,
-        flexShrink: 0,
-        opacity: !activeProjectId || epics.length === 0 ? 0.5 : 1,
-      }}>
+          display: 'inline-flex', alignItems: 'center', gap: 6,
+          height: 26, padding: '0 10px',
+          background: 'var(--accent)', color: 'var(--accent-ink)',
+          borderRadius: 'var(--r-sm)',
+          fontSize: 12, fontWeight: 600,
+          flexShrink: 0,
+          opacity: !activeProjectId || epics.length === 0 ? 0.5 : 1,
+        }}
+      >
         <Plus size={12} />
         New issue
         <span className="kbd" style={{ marginLeft: 2, background: 'rgba(0,0,0,0.15)', borderColor: 'rgba(0,0,0,0.2)', color: 'var(--accent-ink)' }}>C</span>
@@ -127,12 +127,7 @@ export function TopBar({ breadcrumb }: TopBarProps) {
   )
 }
 
-function ViewSwitcher({ view, onChange }: { view: View; onChange: (v: View) => void }) {
-  const views: { id: View; icon: React.ReactNode; label: string }[] = [
-    { id: 'kanban',   icon: <LayoutDashboard size={12} />, label: 'Board' },
-    { id: 'list',     icon: <List size={12} />,            label: 'List' },
-    { id: 'calendar', icon: <CalendarDays size={12} />,    label: 'Calendar' },
-  ]
+function ViewSwitcher({ view, onChange }: { view: AppView; onChange: (v: AppView) => void }) {
   return (
     <div style={{
       display: 'inline-flex',
@@ -143,9 +138,10 @@ function ViewSwitcher({ view, onChange }: { view: View; onChange: (v: View) => v
       gap: 2,
       flexShrink: 0,
     }}>
-      {views.map(v => (
+      {TOP_VIEWS.map(v => (
         <button
           key={v.id}
+          type="button"
           onClick={() => onChange(v.id)}
           style={{
             display: 'inline-flex', alignItems: 'center', gap: 5,
@@ -155,7 +151,8 @@ function ViewSwitcher({ view, onChange }: { view: View; onChange: (v: View) => v
             color: view === v.id ? 'var(--fg)' : 'var(--fg-2)',
             background: view === v.id ? 'var(--bg-3)' : 'transparent',
             boxShadow: view === v.id ? '0 0 0 1px var(--border-1)' : 'none',
-          }}>
+          }}
+        >
           {v.icon}{v.label}
         </button>
       ))}
@@ -165,7 +162,7 @@ function ViewSwitcher({ view, onChange }: { view: View; onChange: (v: View) => v
 
 function IconBtn({ icon }: { icon: React.ReactNode }) {
   return (
-    <button style={{ color: 'var(--fg-2)', padding: 5, borderRadius: 4, display: 'flex' }}
+    <button type="button" style={{ color: 'var(--fg-2)', padding: 5, borderRadius: 4, display: 'flex' }}
       onMouseOver={e => (e.currentTarget.style.background = 'var(--hover)')}
       onMouseOut={e => (e.currentTarget.style.background = 'transparent')}>
       {icon}

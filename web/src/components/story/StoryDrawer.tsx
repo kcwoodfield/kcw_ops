@@ -2,12 +2,11 @@ import { useEffect, useState } from 'react'
 import * as Dialog from '@radix-ui/react-dialog'
 import { X } from 'lucide-react'
 import { useStory, useUpdateStory } from '../../api/stories'
-import { useUiStore } from '../../store/ui'
+import { useAppNavigate } from '../../hooks/useAppNavigate'
 import {
   FIBONACCI_POINTS,
   PRIORITY_LABELS,
   STATUS_LABELS,
-  type StoryPriority,
   type StoryPriority,
   type StoryStatus,
   type UpdateStoryPayload,
@@ -21,21 +20,20 @@ import {
 } from './StoryPrimitives'
 
 export function StoryDrawer() {
-  const storyDrawerId = useUiStore(s => s.storyDrawerId)
-  const closeStoryDrawer = useUiStore(s => s.closeStoryDrawer)
-  const open = !!storyDrawerId
+  const { storyId, closeStory } = useAppNavigate()
+  const open = !!storyId
 
   useEffect(() => {
     if (!open) return
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') closeStoryDrawer()
+      if (e.key === 'Escape') closeStory()
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [open, closeStoryDrawer])
+  }, [open, closeStory])
 
   return (
-    <Dialog.Root open={open} onOpenChange={v => !v && closeStoryDrawer()}>
+    <Dialog.Root open={open} onOpenChange={v => !v && closeStory()}>
       <Dialog.Portal>
         <Dialog.Overlay
           style={{
@@ -62,7 +60,7 @@ export function StoryDrawer() {
           }}
           aria-describedby={undefined}
         >
-          {storyDrawerId && <StoryDrawerBody storyId={storyDrawerId} onClose={closeStoryDrawer} />}
+          {storyId && <StoryDrawerBody storyId={storyId} onClose={closeStory} />}
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>

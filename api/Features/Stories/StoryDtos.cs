@@ -15,7 +15,8 @@ public record StoryDto(
     string? SprintName,
     string[] Labels,
     string? DueDate,
-    string? AssigneeId
+    string? AssigneeId,
+    int SortOrder
 );
 
 public record StoryDetailDto(
@@ -37,5 +38,6 @@ public record StoryDetailDto(
     string? SprintState,
     string[] Labels,
     string? DueDate,
-    string? AssigneeId
+    string? AssigneeId,
+    int SortOrder
 );

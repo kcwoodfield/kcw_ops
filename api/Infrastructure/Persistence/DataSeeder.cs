@@ -57,6 +57,16 @@ public static class DataSeeder
             new() { Id = Guid.NewGuid(), ProjectId = auth.Id, EpicId = ep12.Id, SprintId = null,    Number = 271, Title = "Doc: passkey FAQ for support",                 Status = StoryStatus.Todo,     Priority = Priority.Low,    Points = 1,  Labels = ["docs"]                   },
         };
 
+        foreach (StoryStatus status in Enum.GetValues<StoryStatus>())
+        {
+            var rank = 1000;
+            foreach (var s in stories.Where(x => x.Status == status).OrderBy(x => x.Number))
+            {
+                s.SortOrder = rank;
+                rank += 1000;
+            }
+        }
+
         db.Programs.AddRange(platform, growth, infra);
         db.Projects.AddRange(auth, bil, onb, act, refs, obs, mig);
         db.Epics.AddRange(ep12, ep14, ep17, ep19);

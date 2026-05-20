@@ -1,5 +1,27 @@
+import { useEffect, useMemo, useRef, useState } from 'react'
+import {
+  DndContext,
+  DragOverlay,
+  PointerSensor,
+  closestCenter,
+  pointerWithin,
+  useDroppable,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+  type DragOverEvent,
+  type DragStartEvent,
+} from '@dnd-kit/core'
+import {
+  SortableContext,
+  arrayMove,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import { Settings, Plus } from 'lucide-react'
-import { useStories } from '../../api/stories'
+import { useReorderStories, useStories, useUpdateStory } from '../../api/stories'
+import { useAppNavigate } from '../../hooks/useAppNavigate'
 import { useUiStore } from '../../store/ui'
 import type { StoryDto, StoryStatus } from '../../types'
 import {
@@ -22,18 +44,151 @@ const COLUMNS: {
   { id: 'done', label: 'Done' },
 ]
 
+const COLUMN_IDS = new Set<string>(COLUMNS.map(c => c.id))
+
+type ColumnItems = Record<StoryStatus, string[]>
+
+function buildColumnItems(stories: StoryDto[]): ColumnItems {
+  const sorted = [...stories].sort((a, b) => a.sortOrder - b.sortOrder)
+  return Object.fromEntries(
+    COLUMNS.map(c => [
+      c.id,
+      sorted.filter(s => s.status === c.id).map(s => s.id),
+    ]),
+  ) as ColumnItems
+}
+
+function findColumn(id: string, items: ColumnItems): StoryStatus | null {
+  if (COLUMN_IDS.has(id)) return id as StoryStatus
+  for (const col of COLUMNS) {
+    if (items[col.id].includes(id)) return col.id
+  }
+  return null
+}
+
 export function Kanban() {
-  const { activeProjectId, activeSprintId, openStoryDrawer } = useUiStore()
+  const { activeProjectId, activeSprintId } = useUiStore()
+  const { openStory } = useAppNavigate()
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+  )
   const { data: stories = [], isLoading, isError } = useStories(
     activeProjectId ?? '',
     activeSprintId ?? undefined,
   )
+  const updateStory = useUpdateStory()
+  const reorderStories = useReorderStories()
+  const [activeId, setActiveId] = useState<string | null>(null)
+  const [items, setItems] = useState<ColumnItems>(() => buildColumnItems([]))
+  const didDragRef = useRef(false)
 
-  const grouped = Object.fromEntries(
-    COLUMNS.map(c => [c.id, stories.filter(s => s.status === c.id)]),
-  ) as Record<StoryStatus, StoryDto[]>
+  const storyMap = useMemo(
+    () => Object.fromEntries(stories.map(s => [s.id, s])) as Record<string, StoryDto>,
+    [stories],
+  )
 
+  useEffect(() => {
+    if (activeId === null) setItems(buildColumnItems(stories))
+  }, [stories, activeId])
+
+  const activeStory = activeId ? storyMap[activeId] : null
   const totalPts = stories.reduce((a, s) => a + s.points, 0)
+
+  const handleDragStart = (event: DragStartEvent) => {
+    didDragRef.current = true
+    setActiveId(String(event.active.id))
+  }
+
+  const handleDragOver = (event: DragOverEvent) => {
+    const { active, over } = event
+    if (!over) return
+
+    const activeColumn = findColumn(String(active.id), items)
+    const overColumn =
+      findColumn(String(over.id), items) ??
+      (COLUMN_IDS.has(String(over.id)) ? (String(over.id) as StoryStatus) : null)
+
+    if (!activeColumn || !overColumn) return
+
+    if (activeColumn === overColumn) {
+      const activeIndex = items[activeColumn].indexOf(String(active.id))
+      const overIndex = items[overColumn].indexOf(String(over.id))
+      if (activeIndex === -1 || overIndex === -1 || activeIndex === overIndex) return
+      setItems(prev => ({
+        ...prev,
+        [activeColumn]: arrayMove(prev[activeColumn], activeIndex, overIndex),
+      }))
+      return
+    }
+
+    setItems(prev => {
+      const source = [...prev[activeColumn]]
+      const target = [...prev[overColumn]]
+      const activeIndex = source.indexOf(String(active.id))
+      if (activeIndex === -1) return prev
+
+      source.splice(activeIndex, 1)
+      const overIndex = target.indexOf(String(over.id))
+      const insertAt = overIndex >= 0 ? overIndex : target.length
+      target.splice(insertAt, 0, String(active.id))
+
+      return { ...prev, [activeColumn]: source, [overColumn]: target }
+    })
+  }
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event
+    setActiveId(null)
+    setTimeout(() => {
+      didDragRef.current = false
+    }, 0)
+
+    if (!over || !activeProjectId) return
+
+    const activeColumn = findColumn(String(active.id), items)
+    const overColumn =
+      findColumn(String(over.id), items) ??
+      (COLUMN_IDS.has(String(over.id)) ? (String(over.id) as StoryStatus) : null)
+
+    if (!activeColumn || !overColumn) return
+
+    const story = storyMap[String(active.id)]
+    if (!story) return
+
+    if (activeColumn !== overColumn) {
+      updateStory.mutate(
+        { id: story.id, status: overColumn },
+        {
+          onSuccess: () => {
+            reorderStories.mutate({
+              projectId: activeProjectId,
+              sprintId: activeSprintId ?? undefined,
+              status: activeColumn,
+              orderedStoryIds: items[activeColumn],
+            })
+            reorderStories.mutate({
+              projectId: activeProjectId,
+              sprintId: activeSprintId ?? undefined,
+              status: overColumn,
+              orderedStoryIds: items[overColumn],
+            })
+          },
+        },
+      )
+    } else {
+      reorderStories.mutate({
+        projectId: activeProjectId,
+        sprintId: activeSprintId ?? undefined,
+        status: activeColumn,
+        orderedStoryIds: items[activeColumn],
+      })
+    }
+  }
+
+  const handleCardOpen = (storyId: string) => {
+    if (didDragRef.current) return
+    openStory(storyId)
+  }
 
   if (!activeProjectId) {
     return <EmptyState message="Select a project from the sidebar" />
@@ -90,28 +245,48 @@ export function Kanban() {
         </button>
       </div>
 
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
-          overflow: 'hidden',
+      <DndContext
+        sensors={sensors}
+        collisionDetection={args => {
+          const pointer = pointerWithin(args)
+          if (pointer.length > 0) return pointer
+          return closestCenter(args)
         }}
+        onDragStart={handleDragStart}
+        onDragOver={handleDragOver}
+        onDragEnd={handleDragEnd}
       >
-        {COLUMNS.map((col, i) => {
-          const colStories = grouped[col.id]
-          const pts = colStories.reduce((a, s) => a + s.points, 0)
-          return (
-            <Column
-              key={col.id}
-              col={col}
-              stories={colStories}
-              count={colStories.length}
-              pts={pts}
-              isLast={i === COLUMNS.length - 1}
-            />
-          )
-        })}
-      </div>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
+            overflow: 'hidden',
+            height: '100%',
+          }}
+        >
+          {COLUMNS.map((col, i) => {
+            const ids = items[col.id]
+            const colStories = ids.map(id => storyMap[id]).filter(Boolean)
+            const pts = colStories.reduce((a, s) => a + s.points, 0)
+            return (
+              <Column
+                key={col.id}
+                col={col}
+                itemIds={ids}
+                stories={colStories}
+                count={colStories.length}
+                pts={pts}
+                isLast={i === COLUMNS.length - 1}
+                onOpenCard={handleCardOpen}
+              />
+            )
+          })}
+        </div>
+
+        <DragOverlay dropAnimation={{ duration: 180, easing: 'cubic-bezier(0.18, 0.67, 0.6, 1)' }}>
+          {activeStory ? <KanbanCard story={activeStory} isOverlay /> : null}
+        </DragOverlay>
+      </DndContext>
     </div>
   )
 }
@@ -153,27 +328,37 @@ function FilterChip({
 
 function Column({
   col,
+  itemIds,
   stories,
   count,
   pts,
   isLast,
+  onOpenCard,
 }: {
   col: (typeof COLUMNS)[number]
+  itemIds: string[]
   stories: StoryDto[]
   count: number
   pts: number
   isLast: boolean
+  onOpenCard: (id: string) => void
 }) {
+  const { setNodeRef, isOver } = useDroppable({ id: col.id })
+
   return (
     <div
+      ref={setNodeRef}
       style={{
         display: 'flex',
         flexDirection: 'column',
         borderRight: isLast ? 'none' : '1px solid var(--border)',
         minWidth: 0,
+        minHeight: 0,
         background: col.accent
           ? 'linear-gradient(180deg, var(--accent-tint) 0%, transparent 200px)'
           : 'transparent',
+        outline: isOver ? '1px solid var(--accent-line)' : 'none',
+        outlineOffset: -1,
       }}
     >
       <div
@@ -211,68 +396,118 @@ function Column({
         </button>
       </div>
 
-      <div
-        style={{
-          flex: 1,
-          padding: '0 10px 12px',
-          overflow: 'auto',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 6,
-        }}
-      >
-        {stories.map(s => (
-          <KanbanCard key={s.id} story={s} onOpen={() => openStoryDrawer(s.id)} />
-        ))}
-        <button
-          type="button"
+      <SortableContext items={itemIds} strategy={verticalListSortingStrategy}>
+        <div
           style={{
+            flex: 1,
+            padding: '0 10px 12px',
+            overflow: 'auto',
             display: 'flex',
-            alignItems: 'center',
+            flexDirection: 'column',
             gap: 6,
-            padding: '6px 8px',
-            fontSize: 11.5,
-            color: 'var(--fg-3)',
-            borderRadius: 4,
-            border: '1px dashed transparent',
-            marginTop: 2,
-          }}
-          onMouseOver={e => {
-            e.currentTarget.style.borderColor = 'var(--border-1)'
-          }}
-          onMouseOut={e => {
-            e.currentTarget.style.borderColor = 'transparent'
+            minHeight: 80,
           }}
         >
-          <Plus size={11} /> Add issue
-        </button>
-      </div>
+          {itemIds.map(id => {
+            const story = stories.find(s => s.id === id)
+            if (!story) return null
+            return (
+              <SortableKanbanCard key={id} story={story} onOpen={() => onOpenCard(id)} />
+            )
+          })}
+          <button
+            type="button"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              padding: '6px 8px',
+              fontSize: 11.5,
+              color: 'var(--fg-3)',
+              borderRadius: 4,
+              border: '1px dashed transparent',
+              marginTop: 2,
+            }}
+            onMouseOver={e => {
+              e.currentTarget.style.borderColor = 'var(--border-1)'
+            }}
+            onMouseOut={e => {
+              e.currentTarget.style.borderColor = 'transparent'
+            }}
+          >
+            <Plus size={11} /> Add issue
+          </button>
+        </div>
+      </SortableContext>
     </div>
   )
 }
 
-function KanbanCard({ story, onOpen }: { story: StoryDto; onOpen: () => void }) {
+function SortableKanbanCard({
+  story,
+  onOpen,
+}: {
+  story: StoryDto
+  onOpen: () => void
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: story.id,
+    data: { story, column: story.status },
+  })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.35 : 1,
+  }
+
+  return (
+    <div ref={setNodeRef} style={style} {...listeners} {...attributes}>
+      <KanbanCard story={story} onClick={onOpen} />
+    </div>
+  )
+}
+
+function KanbanCard({
+  story,
+  onClick,
+  isOverlay,
+}: {
+  story: StoryDto
+  onClick?: () => void
+  isOverlay?: boolean
+}) {
   return (
     <article
-      role="button"
-      tabIndex={0}
-      onClick={onOpen}
-      onKeyDown={e => e.key === 'Enter' && onOpen()}
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onClick={onClick}
+      onKeyDown={onClick ? e => e.key === 'Enter' && onClick() : undefined}
       style={{
         background: 'var(--bg-1)',
-        border: '1px solid var(--border)',
+        border: `1px solid ${isOverlay ? 'var(--accent-line)' : 'var(--border)'}`,
         borderRadius: 5,
         padding: '8px 10px 8px 11px',
         position: 'relative',
-        cursor: 'pointer',
-        transition: 'border-color .12s, background .12s',
+        cursor: isOverlay ? 'grabbing' : 'grab',
+        boxShadow: isOverlay ? 'var(--shadow-2)' : 'none',
+        transition: isOverlay ? 'none' : 'border-color .12s',
+        touchAction: 'none',
       }}
-      onMouseOver={e => {
-        e.currentTarget.style.borderColor = 'var(--border-2)'
-      }}
-      onMouseOut={e => {
-        e.currentTarget.style.borderColor = 'var(--border)'
-      }}
+      onMouseOver={
+        onClick && !isOverlay
+          ? e => {
+              e.currentTarget.style.borderColor = 'var(--border-2)'
+            }
+          : undefined
+      }
+      onMouseOut={
+        onClick && !isOverlay
+          ? e => {
+              e.currentTarget.style.borderColor = 'var(--border)'
+            }
+          : undefined
+      }
     >
       <span
         style={{
@@ -373,9 +608,7 @@ function KanbanCard({ story, onOpen }: { story: StoryDto; onOpen: () => void }) 
           </span>
         </span>
         <span style={{ flex: 1 }} />
-        {story.dueDate && (
-          <span style={{ fontSize: 10.5 }}>{story.dueDate}</span>
-        )}
+        {story.dueDate && <span style={{ fontSize: 10.5 }}>{story.dueDate}</span>}
         <AssigneeAvatar assigneeId={story.assigneeId} />
       </div>
     </article>

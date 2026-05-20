@@ -19,7 +19,7 @@ public class GetStoriesHandler(AppDbContext db) : IRequestHandler<GetStoriesQuer
         else if (q.SprintId.HasValue)
             query = query.Where(s => s.SprintId == q.SprintId);
 
-        var stories = await query.OrderBy(s => s.Number).ToListAsync(ct);
+        var stories = await query.OrderBy(s => s.SortOrder).ThenBy(s => s.Number).ToListAsync(ct);
         return stories.Select(StoryMapper.ToDto).ToList();
     }
 }

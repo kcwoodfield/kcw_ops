@@ -3,6 +3,7 @@ using System;
 using KcwOps.Api.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace KcwOps.Api.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260520194541_AddStorySortOrder")]
+    partial class AddStorySortOrder
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -147,9 +150,6 @@ namespace KcwOps.Api.Infrastructure.Persistence.Migrations
                         .HasColumnType("text[]");
 
                     b.Property<int>("Number")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("SortOrder")
                         .HasColumnType("integer");
 
                     b.Property<int>("Points")

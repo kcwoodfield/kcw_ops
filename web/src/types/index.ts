@@ -41,6 +41,7 @@ export interface StoryDto {
   labels: string[]
   dueDate: string | null
   assigneeId: string | null
+  sortOrder: number
 }
 
 export interface StoryDetailDto extends StoryDto {
@@ -97,4 +98,5 @@ export const PRIORITY_LABELS: Record<StoryPriority, string> = {
   low: 'Low',
 }
 
+/** @deprecated Use AppView from lib/routes — URL segments: board, list, calendar, etc. */
 export type View = 'kanban' | 'list' | 'calendar'
