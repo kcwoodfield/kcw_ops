@@ -1,5 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { AppShell } from './components/layout/AppShell'
+import { Backlog } from './components/backlog/Backlog'
+import { CommandPalette } from './components/CommandPalette'
 import { Kanban } from './components/kanban/Kanban'
 import { StoryDrawer } from './components/story/StoryDrawer'
 import { ViewPlaceholder } from './components/shared/ViewPlaceholder'
@@ -18,7 +20,7 @@ export default function App() {
         <Route path="/p/:projectKey" element={<AppShell />}>
           <Route index element={<Navigate to="board" replace />} />
           <Route path="board" element={<Kanban />} />
-          <Route path="backlog" element={<ViewPlaceholder name="Backlog" />} />
+          <Route path="backlog" element={<Backlog />} />
           <Route path="planning" element={<ViewPlaceholder name="Sprint planning" />} />
           <Route path="list" element={<ViewPlaceholder name="List view" />} />
           <Route path="calendar" element={<ViewPlaceholder name="Calendar" />} />
@@ -27,6 +29,7 @@ export default function App() {
         <Route path="*" element={<RootRedirect />} />
       </Routes>
       <StoryDrawer />
+      <CommandPalette />
     </>
   )
 }

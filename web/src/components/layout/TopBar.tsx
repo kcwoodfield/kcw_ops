@@ -17,7 +17,7 @@ const TOP_VIEWS: { id: AppView; icon: React.ReactNode; label: string }[] = [
 
 export function TopBar({ breadcrumb }: TopBarProps) {
   const { view, sprintId, goToView, setSprint, openStory } = useAppNavigate()
-  const { activeProjectId } = useUiStore()
+  const { activeProjectId, setCmdPaletteOpen } = useUiStore()
   const { data: sprints = [] } = useSprints(activeProjectId ?? '')
   const { data: epics = [] } = useEpics(activeProjectId ?? '')
   const createStory = useCreateStory()
@@ -89,18 +89,23 @@ export function TopBar({ breadcrumb }: TopBarProps) {
 
       <div style={{ flex: 1 }} />
 
-      <div style={{
-        display: 'flex', alignItems: 'center', gap: 6,
-        padding: '0 8px', height: 26, minWidth: 220,
-        background: 'var(--bg-1)',
-        border: '1px solid var(--border)',
-        borderRadius: 4,
-        color: 'var(--fg-3)',
-      }}>
+      <button
+        type="button"
+        onClick={() => setCmdPaletteOpen(true)}
+        style={{
+          display: 'flex', alignItems: 'center', gap: 6,
+          padding: '0 8px', height: 26, minWidth: 220,
+          background: 'var(--bg-1)',
+          border: '1px solid var(--border)',
+          borderRadius: 4,
+          color: 'var(--fg-3)',
+          textAlign: 'left',
+        }}
+      >
         <Search size={13} />
         <span style={{ fontSize: 12, flex: 1 }}>Search issues, epics…</span>
         <span className="kbd">⌘K</span>
-      </div>
+      </button>
 
       <IconBtn icon={<Filter size={14} />} />
       <IconBtn icon={<Bell size={14} />} />

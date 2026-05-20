@@ -2,7 +2,7 @@
 
 Living roadmap from prototype → production app. Design reference: [`docs/design/index.html`](design/index.html). Agent context: [`CLAUDE.md`](../CLAUDE.md).
 
-**Last updated:** 2026-05-20
+**Last updated:** 2026-05-20 (palette + Phase 1 complete)
 
 ---
 
@@ -17,7 +17,7 @@ Living roadmap from prototype → production app. Design reference: [`docs/desig
 | Story drawer + inline edits | ✅ |
 | **URL routing (`react-router-dom`)** | ✅ |
 | Kanban drag-and-drop | ✅ `@dnd-kit/core` |
-| ⌘K command palette | ⬜ |
+| ⌘K command palette | ✅ |
 | Backlog / planning / list views | ⬜ (routes exist, placeholders only) |
 | Auth | ⬜ |
 
@@ -156,19 +156,20 @@ Validators: Fibonacci points; status/priority enums; epic/sprint belong to proje
 
 ### 1.4 Frontend — Kanban interactions (surface 01) ✅ (2026-05-20)
 
-- [x] Drag-and-drop — `@dnd-kit/core` (same stack as [shadcn Kanban](https://shadcn.io/components/data/kanban))
-- [x] Drop → `PATCH` status + optimistic cache update
+- [x] Drag-and-drop — `@dnd-kit/core` + `@dnd-kit/sortable`
+- [x] Drop across columns → `PATCH` status + optimistic cache update
+- [x] Reorder within column → `POST /api/stories/reorder` + optimistic update
 - [x] Column counts / point totals
 - [x] New issue + sprint selector (URL-backed)
 - [x] 6px activation distance so click still opens drawer
 
-### 1.5 Frontend — keyboard
+### 1.5 Frontend — keyboard ✅ (2026-05-20)
 
-- [ ] `⌘K` command palette — Shadcn `Command` + `cmdk` already installed; search stories, jump routes
-- [ ] `C` → New issue (hint in TopBar; wire global shortcut)
+- [x] `⌘K` command palette — `cmdk` primitives + Radix Dialog; search stories, jump views, project switch, create story
+- [x] `C` → opens palette (wire global shortcut when no input focused)
 - [x] `Esc` → close drawer (`?story=` cleared)
 
-**Phase 1 exit criteria:** Create AUTH-###, drag todo → done, edit in drawer, **refresh restores** `/p/AUTH/board?sprint=…&story=…`.
+**Phase 1 exit criteria:** Create AUTH-###, drag todo → done, edit in drawer, **refresh restores** `/p/AUTH/board?sprint=…&story=…`. ✅
 
 ---
 
@@ -262,8 +263,7 @@ Goal: replace placeholders at `/backlog`, `/planning`, `/list` with real surface
 ## Suggested build order
 
 ```
-1.5 ⌘K palette (+ route jumps)    ← current focus
-2.1 Backlog
+2.1 Backlog                        ← current focus
 2.2 Sprint planning
 2.3 List view
 3.1 Calendar
