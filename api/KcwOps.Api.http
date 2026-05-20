@@ -1,0 +1,16 @@
+@host = http://localhost:5050
+
+### Programs
+GET {{host}}/api/programs
+
+### Sprints (replace projectId)
+GET {{host}}/api/sprints?projectId=
+
+### Stories for sprint (replace ids)
+GET {{host}}/api/stories?projectId=&sprintId=
+
+### Backlog
+GET {{host}}/api/stories?projectId=&backlogOnly=true
+
+### Epics
+GET {{host}}/api/epics?projectId=

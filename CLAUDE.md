@@ -39,16 +39,40 @@ Program ─┬─ Project ─┬─ Epic ─┬─ Sprint ─┬─ Story / Task
 
 ---
 
-## Design reference
+## Project structure
 
-The `index.html` at repo root is the living design prototype (React + Babel, no build step). Open with a local server:
-
-```bash
-python3 -m http.server 8080
-# → http://localhost:8080
+```
+kcw_operations/
+├── api/              .NET backend
+│   ├── Controllers/
+│   ├── Domain/
+│   ├── Features/     vertical slices — one folder per use case
+│   └── Infrastructure/Persistence/
+├── web/              React frontend
+│   └── src/
+│       ├── api/      TanStack Query hooks (client.ts + per-domain files)
+│       ├── components/layout/   AppShell, Sidebar, TopBar
+│       ├── store/    Zustand (ui.ts — activeProject, view, sprint)
+│       └── types/    shared TS interfaces mirroring API DTOs
+└── docs/
+    └── design/       HTML prototype (open with python3 -m http.server)
 ```
 
-All tokens, colors, spacing, and component specs are in `tokens.css` and the design handoff README (see below).
+## Ports
+
+| Service | Port |
+|---------|------|
+| Frontend (Vite) | 5175 |
+| .NET API | 5050 |
+| Postgres (Docker) | 5435 |
+
+## Design reference
+
+`docs/design/index.html` — living prototype of all 8 surfaces. Run with:
+
+```bash
+cd docs/design && python3 -m http.server 8080
+```
 
 Design surfaces:
 | # | Surface | Component |

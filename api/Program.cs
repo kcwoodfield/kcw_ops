@@ -17,7 +17,7 @@ builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
 
 builder.Services.AddCors(opts =>
     opts.AddDefaultPolicy(p => p
-        .WithOrigins("http://localhost:3000")
+        .WithOrigins("http://localhost:5175")
         .AllowAnyHeader()
         .AllowAnyMethod()));
 
