@@ -5,12 +5,6 @@ export interface ProjectDto {
   color: string
 }
 
-export interface ProgramDto {
-  id: string
-  name: string
-  projects: ProjectDto[]
-}
-
 export interface SprintDto {
   id: string
   name: string

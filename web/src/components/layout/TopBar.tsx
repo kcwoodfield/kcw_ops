@@ -36,7 +36,7 @@ export function TopBar({ breadcrumb }: TopBarProps) {
 
   return (
     <header style={{
-      height: 40,
+      height: 80,
       display: 'flex', alignItems: 'center', gap: 10,
       padding: '0 14px',
       background: 'var(--panel)',

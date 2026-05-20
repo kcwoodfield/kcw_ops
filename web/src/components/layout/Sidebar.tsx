@@ -1,13 +1,14 @@
 import { useState } from 'react'
-import { ChevronRight, Folder, Inbox, Eye, Star, GitBranch, CalendarDays, Map, Zap, Settings } from 'lucide-react'
-import { usePrograms } from '../../api/programs'
+import { ChevronRight, Inbox, Eye, Star, GitBranch, CalendarDays, Map, Zap, Settings, Sun, Moon } from 'lucide-react'
+import { useProjects } from '../../api/projects'
+import { useUiStore } from '../../store/ui'
 import { useAppNavigate } from '../../hooks/useAppNavigate'
-import type { AppView } from '../../lib/routes'
-import type { ProgramDto, ProjectDto } from '../../types'
+import type { ProjectDto } from '../../types'
 
 export function Sidebar() {
-  const { data: programs = [] } = usePrograms()
-  const { view, goToProject, goToView } = useAppNavigate()
+  const { data: projects = [] } = useProjects()
+  const { activeProjectId } = useUiStore()
+  const { goToProject, goToView } = useAppNavigate()
 
   return (
     <aside style={{
@@ -23,29 +24,28 @@ export function Sidebar() {
       <WorkspaceHeader />
 
       <nav style={{ padding: '8px 6px 4px', display: 'flex', flexDirection: 'column', gap: 1 }}>
-        <NavRow icon={<Inbox size={14} />} label="Inbox" trail="3" active={view === 'backlog'} onClick={() => goToView('backlog')} />
+        <NavRow icon={<Inbox size={14} />} label="Inbox" trail="3" onClick={() => goToView('backlog')} />
         <NavRow icon={<Eye size={14} />} label="My issues" trail="14" />
         <NavRow icon={<Star size={14} />} label="Starred" />
         <NavRow icon={<GitBranch size={14} />} label="Drafts" />
       </nav>
 
-      <SectionHeader label="Programs" action={<PlusIcon />} />
+      <SectionHeader label="Projects" action={<PlusIcon />} />
 
       <div style={{ flex: 1, overflowY: 'auto', padding: '0 6px 12px' }}>
-        {programs.map((pg, i) => (
-          <ProgramNode
-            key={pg.id}
-            program={pg}
-            defaultOpen={i === 0}
-            activeView={view}
-            onSelectProject={goToProject}
+        {projects.map(p => (
+          <ProjectRow
+            key={p.id}
+            project={p}
+            active={p.id === activeProjectId}
+            onClick={() => goToProject(p.key, 'board')}
           />
         ))}
 
         <SectionHeader label="Views" style={{ padding: '20px 8px 6px 8px' }} />
-        <NavRow icon={<Zap size={14} />} label="Sprint planning" active={view === 'planning'} onClick={() => goToView('planning')} />
+        <NavRow icon={<Zap size={14} />} label="Sprint planning" onClick={() => goToView('planning')} />
         <NavRow icon={<Map size={14} />} label="Roadmap" />
-        <NavRow icon={<CalendarDays size={14} />} label="Releases" active={view === 'calendar'} onClick={() => goToView('calendar')} />
+        <NavRow icon={<CalendarDays size={14} />} label="Releases" onClick={() => goToView('calendar')} />
       </div>
 
       <UserFooter />
@@ -56,7 +56,7 @@ export function Sidebar() {
 function WorkspaceHeader() {
   return (
     <div style={{
-      height: 40,
+      height: 80,
       padding: '0 12px',
       display: 'flex',
       alignItems: 'center',
@@ -77,7 +77,9 @@ function WorkspaceHeader() {
         <div style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--fg)' }}>kcw / ops</div>
         <div className="mono" style={{ fontSize: 10, color: 'var(--fg-3)' }}>personal workspace</div>
       </div>
-      <button style={{ color: 'var(--fg-3)', padding: 4, borderRadius: 3, flexShrink: 0 }}
+      <button
+        type="button"
+        style={{ color: 'var(--fg-3)', padding: 4, borderRadius: 3, flexShrink: 0 }}
         onMouseOver={e => (e.currentTarget.style.background = 'var(--hover)')}
         onMouseOut={e => (e.currentTarget.style.background = 'transparent')}>
         <ChevronRight size={12} />
@@ -116,7 +118,11 @@ function NavRow({ icon, label, trail, active, onClick }: {
   )
 }
 
-function SectionHeader({ label, action, style }: { label: string; action?: React.ReactNode; style?: React.CSSProperties }) {
+function SectionHeader({ label, action, style }: {
+  label: string
+  action?: React.ReactNode
+  style?: React.CSSProperties
+}) {
   return (
     <div style={{
       padding: '12px 14px 4px',
@@ -131,57 +137,11 @@ function SectionHeader({ label, action, style }: { label: string; action?: React
   )
 }
 
-function ProgramNode({ program, defaultOpen, activeView, onSelectProject }: {
-  program: ProgramDto
-  defaultOpen: boolean
-  activeView: AppView
-  onSelectProject: (key: string, view?: AppView) => void
-}) {
-  const [open, setOpen] = useState(defaultOpen)
-  return (
-    <div style={{ marginBottom: 2 }}>
-      <button
-        onClick={() => setOpen(o => !o)}
-        style={{
-          width: '100%', display: 'flex', alignItems: 'center', gap: 6,
-          padding: '4px 6px', borderRadius: 4,
-          fontSize: 12.5, fontWeight: 500, color: 'var(--fg-1)',
-        }}
-        onMouseOver={e => (e.currentTarget.style.background = 'var(--hover)')}
-        onMouseOut={e => (e.currentTarget.style.background = 'transparent')}>
-        <span style={{
-          display: 'inline-flex', width: 12,
-          transform: open ? 'rotate(90deg)' : 'none',
-          transition: 'transform .12s',
-          color: 'var(--fg-3)',
-        }}>
-          <ChevronRight size={11} />
-        </span>
-        <Folder size={13} style={{ color: 'var(--fg-3)' }} />
-        <span style={{ flex: 1, textAlign: 'left' }}>{program.name}</span>
-      </button>
-
-      {open && (
-        <div style={{ marginLeft: 18, borderLeft: '1px solid var(--border)', paddingLeft: 8, marginTop: 2 }}>
-          {program.projects.map(pr => (
-            <ProjectRow
-              key={pr.id}
-              project={pr}
-              onClick={() => onSelectProject(pr.key, activeView)}
-            />
-          ))}
-        </div>
-      )}
-    </div>
-  )
-}
-
-function ProjectRow({ project, onClick }: { project: ProjectDto; onClick: () => void }) {
-  const { projectKey } = useAppNavigate()
-  const active = project.key === projectKey
+function ProjectRow({ project, active, onClick }: { project: ProjectDto; active: boolean; onClick: () => void }) {
   const [hovered, setHovered] = useState(false)
   return (
     <button
+      type="button"
       onClick={onClick}
       style={{
         width: '100%', display: 'flex', alignItems: 'center', gap: 8,
@@ -199,6 +159,7 @@ function ProjectRow({ project, onClick }: { project: ProjectDto; onClick: () => 
 }
 
 function UserFooter() {
+  const { theme, toggleTheme } = useUiStore()
   return (
     <div style={{
       padding: '8px 10px',
@@ -218,7 +179,18 @@ function UserFooter() {
         <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--fg)' }}>You</div>
         <div className="mono" style={{ fontSize: 10, color: 'var(--fg-3)' }}>staff PM</div>
       </div>
-      <button style={{ color: 'var(--fg-3)', padding: 4, borderRadius: 3 }}
+      <button
+        type="button"
+        title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
+        onClick={toggleTheme}
+        style={{ color: 'var(--fg-3)', padding: 4, borderRadius: 3, display: 'flex' }}
+        onMouseOver={e => (e.currentTarget.style.background = 'var(--hover)')}
+        onMouseOut={e => (e.currentTarget.style.background = 'transparent')}>
+        {theme === 'dark' ? <Sun size={13} /> : <Moon size={13} />}
+      </button>
+      <button
+        type="button"
+        style={{ color: 'var(--fg-3)', padding: 4, borderRadius: 3, display: 'flex' }}
         onMouseOver={e => (e.currentTarget.style.background = 'var(--hover)')}
         onMouseOut={e => (e.currentTarget.style.background = 'transparent')}>
         <Settings size={13} />
@@ -229,7 +201,7 @@ function UserFooter() {
 
 function PlusIcon() {
   return (
-    <button style={{ color: 'var(--fg-3)', padding: 2, borderRadius: 3 }}
+    <button type="button" style={{ color: 'var(--fg-3)', padding: 2, borderRadius: 3 }}
       onMouseOver={e => (e.currentTarget.style.background = 'var(--hover)')}
       onMouseOut={e => (e.currentTarget.style.background = 'transparent')}>
       <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round">

@@ -1,20 +1,11 @@
 namespace KcwOps.Api.Domain;
 
-public class Program_
-{
-    public Guid Id { get; set; }
-    public string Name { get; set; } = "";
-    public ICollection<Project> Projects { get; set; } = [];
-}
-
 public class Project
 {
     public Guid Id { get; set; }
-    public Guid ProgramId { get; set; }
     public string Name { get; set; } = "";
     public string Key { get; set; } = "";   // e.g. "AUTH"
     public string Color { get; set; } = "#7c5cff";
-    public Program_ Program { get; set; } = null!;
     public ICollection<Epic> Epics { get; set; } = [];
     public ICollection<Sprint> Sprints { get; set; } = [];
 }

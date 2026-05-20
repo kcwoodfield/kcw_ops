@@ -5,7 +5,7 @@ import {
   LayoutDashboard, List, CalendarDays, Inbox,
   Zap, ArrowRight, Search, Plus,
 } from 'lucide-react'
-import { usePrograms } from '../api/programs'
+import { useProjects } from '../api/projects'
 import { useStories, useCreateStory } from '../api/stories'
 import { useEpics } from '../api/epics'
 import { useUiStore } from '../store/ui'
@@ -36,7 +36,7 @@ const isEditable = (el: Element | null) => {
 
 export function CommandPalette() {
   const { activeProjectId, activeSprintId, cmdPaletteOpen, setCmdPaletteOpen } = useUiStore()
-  const { data: programs = [] } = usePrograms()
+  const { data: projects = [] } = useProjects()
   const { data: stories = [] } = useStories(activeProjectId ?? '', activeSprintId ?? undefined)
   const { data: epics = [] } = useEpics(activeProjectId ?? '')
   const { goToProject, goToView, openStory } = useAppNavigate()
@@ -90,8 +90,6 @@ export function CommandPalette() {
       { onSuccess: s => { openStory(s.id); close() } },
     )
   }
-
-  const projects = programs.flatMap(p => p.projects)
 
   return (
     <Dialog.Root open={cmdPaletteOpen} onOpenChange={v => !v && close()}>

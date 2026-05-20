@@ -64,6 +64,54 @@
   --shadow-pop: 0 16px 48px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.08);
 }
 
+/* ── Light mode overrides ────────────────────────────────────── */
+[data-theme="light"] {
+  --bg:       #faf9f5;
+  --bg-1:     #f3f1eb;
+  --bg-2:     #ebe8e0;
+  --bg-3:     #e2ddd4;
+  --panel:    #f7f5f0;
+  --raised:   #ede9e0;
+
+  --fg:       #1c1a16;
+  --fg-1:     #3a3730;
+  --fg-2:     #6b6559;
+  --fg-3:     #9c9589;
+  --fg-4:     #c8c2b8;
+
+  --border:   rgba(0,0,0,0.07);
+  --border-1: rgba(0,0,0,0.11);
+  --border-2: rgba(0,0,0,0.17);
+
+  --hover:    rgba(0,0,0,0.04);
+  --active:   rgba(0,0,0,0.07);
+
+  --pts-bg:   rgba(0,0,0,0.06);
+  --pts-fg:   #4a4540;
+
+  --accent-bg:   oklch(0.60 0.14 40 / 0.10);
+  --accent-line: oklch(0.60 0.14 40 / 0.25);
+  --accent-fg:   oklch(0.38 0.12 40);
+
+  --todo:     #8888a0;
+  --progress: #0e8faa;
+  --review:   #a87a00;
+  --done:     #16a34a;
+  --blocked:  #dc2626;
+
+  --p0: #dc2626;
+  --p1: #a87a00;
+  --p2: #64748b;
+  --p3: #94a3b8;
+
+  --shadow-1:   0 1px 0 rgba(255,255,255,0.9) inset, 0 1px 3px rgba(0,0,0,0.08);
+  --shadow-2:   0 10px 40px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.06);
+  --shadow-pop: 0 16px 48px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.08);
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.14); }
+[data-theme="light"] ::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.22); }
+
 /* ── Reset ───────────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; }
 
