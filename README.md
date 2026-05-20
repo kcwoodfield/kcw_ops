@@ -69,8 +69,13 @@ kcw_operations/
 │       ├── store/    Zustand
 │       └── types/
 └── docs/
-    └── design/       HTML prototype — open docs/design/index.html
+    ├── BUILD_PLAN.md  phased roadmap
+    └── design/        HTML prototype — open docs/design/index.html
 ```
+
+## Build plan
+
+Phased roadmap from the current read-only Kanban to full app: [`docs/BUILD_PLAN.md`](docs/BUILD_PLAN.md).
 
 ## Design reference
 

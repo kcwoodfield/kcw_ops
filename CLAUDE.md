@@ -55,8 +55,13 @@ kcw_operations/
 │       ├── store/    Zustand (ui.ts — activeProject, view, sprint)
 │       └── types/    shared TS interfaces mirroring API DTOs
 └── docs/
-    └── design/       HTML prototype (open with python3 -m http.server)
+    ├── BUILD_PLAN.md  phased roadmap (what to build next)
+    └── design/        HTML prototype (open with python3 -m http.server)
 ```
+
+## Build plan
+
+See [`docs/BUILD_PLAN.md`](docs/BUILD_PLAN.md) for phased delivery: current surface checklist, API slices to add, and suggested build order. Update it when a phase ships.
 
 ## Ports
 
