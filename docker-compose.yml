@@ -4,14 +4,14 @@ services:
     container_name: kcw_operations
     environment:
       POSTGRES_DB: kcw_operations
-      POSTGRES_USER: kcw
+      POSTGRES_USER: kcw_operations
       POSTGRES_PASSWORD: kcw_local
     ports:
       - "5435:5432"
     volumes:
       - kcw_operations_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U kcw -d kcw_operations"]
+      test: ["CMD-SHELL", "pg_isready -U kcw_operations -d kcw_operations"]
       interval: 5s
       timeout: 5s
       retries: 5
