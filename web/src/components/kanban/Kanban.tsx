@@ -23,6 +23,7 @@ import { Settings, Plus } from 'lucide-react'
 import { useReorderStories, useSprints, useStories, useUpdateStory } from '../../api/stories'
 import { useAppNavigate } from '../../hooks/useAppNavigate'
 import { useUiStore } from '../../store/ui'
+import { EpicFilterPopover } from '../shared/EpicFilterPopover'
 import type { StoryDto, StoryStatus } from '../../types'
 import {
   AssigneeAvatar,
@@ -79,6 +80,7 @@ export function Kanban() {
   )
   const updateStory = useUpdateStory()
   const reorderStories = useReorderStories()
+  const [epicFilter, setEpicFilter] = useState('')
   const [activeId, setActiveId] = useState<string | null>(null)
   const [items, setItems] = useState<ColumnItems>(() => buildColumnItems([]))
   const didDragRef = useRef(false)
@@ -236,7 +238,9 @@ export function Kanban() {
         }}
       >
         <FilterChip label="Group by" value="Status" />
-        <FilterChip label="Epic" value="All" badge={String(new Set(stories.map(s => s.epicId)).size)} />
+        {activeProjectId && (
+          <EpicFilterPopover projectId={activeProjectId} value={epicFilter} onChange={setEpicFilter} />
+        )}
         <FilterChip label="Assignee" value="All" />
         <span style={{ flex: 1 }} />
         <span className="mono" style={{ fontSize: 11, color: 'var(--fg-3)' }}>
@@ -273,6 +277,7 @@ export function Kanban() {
           {COLUMNS.map((col, i) => {
             const ids = items[col.id]
             const colStories = ids.map(id => storyMap[id]).filter(Boolean)
+              .filter(s => !epicFilter || s.epicId === epicFilter)
             const pts = colStories.reduce((a, s) => a + s.points, 0)
             return (
               <Column

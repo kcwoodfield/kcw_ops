@@ -200,7 +200,8 @@ function StoryDrawerBody({ storyId, onClose }: { storyId: string; onClose: () =>
               onKeyDown={e => {
                 if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
                   e.preventDefault()
-                  if (description !== (story.description ?? '')) save({ description })
+                  save({ title, description })
+                  onClose()
                 }
               }}
               placeholder="Add a description…"
@@ -394,19 +395,21 @@ function StoryDrawerBody({ storyId, onClose }: { storyId: string; onClose: () =>
       }}>
         <button
           type="button"
-          onClick={() => setDescription(story.description ?? '')}
+          onClick={() => {
+            setTitle(story.title)
+            setDescription(story.description ?? '')
+            onClose()
+          }}
           style={{ height: 30, padding: '0 14px', background: 'transparent', border: '1px solid var(--border-1)', borderRadius: 4, fontSize: 12, color: 'var(--fg-2)' }}
         >
           Cancel
         </button>
         <button
           type="button"
-          disabled={description === (story.description ?? '')}
-          onClick={() => save({ description })}
+          onClick={() => { save({ title, description }); onClose() }}
           style={{
             height: 30, padding: '0 16px', borderRadius: 4, fontSize: 12, fontWeight: 600,
-            background: description !== (story.description ?? '') ? 'var(--accent)' : 'var(--bg-2)',
-            color: description !== (story.description ?? '') ? 'var(--accent-ink)' : 'var(--fg-3)',
+            background: 'var(--accent)', color: 'var(--accent-ink)',
             border: '1px solid transparent',
           }}
         >

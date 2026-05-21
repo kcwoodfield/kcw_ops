@@ -91,8 +91,8 @@ export function TopBar() {
             }}>
               <MenuItem onClick={() => void handleNewIssue()}>New issue</MenuItem>
               <div style={{ height: 1, background: 'var(--border)', margin: '4px 0' }} />
-              <MenuItem onClick={() => { setMenuOpen(false); setEpicModalOpen(true) }}>New epic</MenuItem>
               <MenuItem onClick={() => { setMenuOpen(false); setSprintModalOpen(true) }}>New sprint</MenuItem>
+              <MenuItem onClick={() => { setMenuOpen(false); setEpicModalOpen(true) }}>New epic</MenuItem>
             </div>
           )}
         </div>

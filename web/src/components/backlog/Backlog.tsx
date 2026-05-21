@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import { Plus, ArrowRight } from 'lucide-react'
 import { useBacklog, useCreateStory, useSprints, useUpdateStory } from '../../api/stories'
-import { useEpics } from '../../api/epics'
 import { useUiStore } from '../../store/ui'
 import { useAppNavigate } from '../../hooks/useAppNavigate'
 import { Label, PriorityBars, Pts, StatusDot, StoryId } from '../story/StoryPrimitives'
+import { EpicFilterPopover } from '../shared/EpicFilterPopover'
 import type { StoryDto } from '../../types'
 
 type Tab = 'all' | 'urgent_high'
@@ -14,7 +14,6 @@ const PRIORITY_ORDER: Record<string, number> = { urgent: 0, high: 1, med: 2, low
 export function Backlog() {
   const { activeProjectId } = useUiStore()
   const { data: stories = [], isLoading } = useBacklog(activeProjectId ?? '')
-  const { data: epics = [] } = useEpics(activeProjectId ?? '')
   const { data: sprints = [] } = useSprints(activeProjectId ?? '')
   const { openStory } = useAppNavigate()
   const createStory = useCreateStory()
@@ -192,21 +191,9 @@ export function Backlog() {
 
         <span style={{ width: 1, height: 18, background: 'var(--border)', margin: '0 2px', flexShrink: 0 }} />
 
-        <select
-          value={epicFilter}
-          onChange={e => setEpicFilter(e.target.value)}
-          style={{
-            height: 22, padding: '0 6px',
-            background: epicFilter ? 'var(--bg-2)' : 'transparent',
-            border: `1px ${epicFilter ? 'solid' : 'dashed'} var(--border-1)`,
-            borderRadius: 4, fontSize: 11.5,
-            color: epicFilter ? 'var(--fg)' : 'var(--fg-2)',
-            maxWidth: 160, flexShrink: 0,
-          }}
-        >
-          <option value="">Epic: All</option>
-          {epics.map(e => <option key={e.id} value={e.id}>{e.title}</option>)}
-        </select>
+        {activeProjectId && (
+          <EpicFilterPopover projectId={activeProjectId} value={epicFilter} onChange={setEpicFilter} />
+        )}
 
         <span style={{ flex: 1 }} />
         <span className="mono" style={{ fontSize: 11, color: 'var(--fg-3)', flexShrink: 0 }}>
