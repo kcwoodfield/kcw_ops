@@ -25,6 +25,7 @@ import { useAppNavigate } from '../../hooks/useAppNavigate'
 import { useIsCompact } from '../../hooks/useMediaQuery'
 import { useUiStore } from '../../store/ui'
 import { EpicFilterPopover } from '../shared/EpicFilterPopover'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '../ui/tabs'
 import type { StoryDto, StoryStatus } from '../../types'
 import {
   AssigneeAvatar,
@@ -93,8 +94,13 @@ export function Kanban() {
   )
 
   useEffect(() => {
+    // Only sync from server when not dragging. Removing activeId from deps
+    // prevents the snap-back: without this, the effect fires the moment
+    // activeId becomes null (drag end) and rebuilds from stale server state
+    // before the mutation has returned.
     if (activeId === null) setItems(buildColumnItems(stories))
-  }, [stories, activeId])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stories])
 
   const activeStory = activeId ? storyMap[activeId] : null
   const totalPts = stories.reduce((a, s) => a + s.points, 0)
@@ -221,65 +227,118 @@ export function Kanban() {
     )
   }
 
-  return (
-    <div
-      style={{
-        width: '100%',
-        height: '100%',
-        display: 'grid',
-        gridTemplateRows: '36px 1fr',
-        background: 'var(--bg)',
+  const dndContext = (children: React.ReactNode) => (
+    <DndContext
+      sensors={sensors}
+      collisionDetection={args => {
+        const pointer = pointerWithin(args)
+        if (pointer.length > 0) return pointer
+        return closestCenter(args)
       }}
+      onDragStart={handleDragStart}
+      onDragOver={handleDragOver}
+      onDragEnd={handleDragEnd}
     >
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 8,
-          padding: '0 14px',
-          borderBottom: '1px solid var(--border)',
-          fontSize: 12,
-          color: 'var(--fg-2)',
-        }}
-      >
-        <FilterChip label="Group by" value="Status" />
-        {activeProjectId && (
-          <EpicFilterPopover projectId={activeProjectId} value={epicFilter} onChange={setEpicFilter} />
+      {children}
+      <DragOverlay dropAnimation={{ duration: 180, easing: 'cubic-bezier(0.18, 0.67, 0.6, 1)' }}>
+        {activeStory ? <KanbanCard story={activeStory} isOverlay /> : null}
+      </DragOverlay>
+    </DndContext>
+  )
+
+  return (
+    <div style={{ width: '100%', height: '100%', display: 'grid', gridTemplateRows: '36px 1fr', background: 'var(--bg)' }}>
+
+      {/* ── Toolbar ── */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '0 14px', borderBottom: '1px solid var(--border)', fontSize: 12, color: 'var(--fg-2)' }}>
+        {compact ? (
+          <>
+            {activeProjectId && (
+              <EpicFilterPopover projectId={activeProjectId} value={epicFilter} onChange={setEpicFilter} />
+            )}
+            <span style={{ flex: 1 }} />
+            <span className="mono" style={{ fontSize: 11, color: 'var(--fg-3)' }}>
+              {stories.length} issues · {totalPts} pts
+            </span>
+          </>
+        ) : (
+          <>
+            <FilterChip label="Group by" value="Status" />
+            {activeProjectId && (
+              <EpicFilterPopover projectId={activeProjectId} value={epicFilter} onChange={setEpicFilter} />
+            )}
+            <FilterChip label="Assignee" value="All" />
+            <span style={{ flex: 1 }} />
+            <span className="mono" style={{ fontSize: 11, color: 'var(--fg-3)' }}>
+              {stories.length} issues · {totalPts} pts
+            </span>
+            <span style={{ width: 1, height: 14, background: 'var(--border)' }} />
+            <button type="button" style={{ padding: '3px 6px', fontSize: 11.5, color: 'var(--fg-2)' }}>
+              <Settings size={12} />
+            </button>
+          </>
         )}
-        <FilterChip label="Assignee" value="All" />
-        <span style={{ flex: 1 }} />
-        <span className="mono" style={{ fontSize: 11, color: 'var(--fg-3)' }}>
-          {stories.length} issues · {totalPts} pts
-        </span>
-        <span style={{ width: 1, height: 14, background: 'var(--border)' }} />
-        <button
-          type="button"
-          style={{ padding: '3px 6px', fontSize: 11.5, color: 'var(--fg-2)' }}
-        >
-          <Settings size={12} />
-        </button>
       </div>
 
-      <DndContext
-        sensors={sensors}
-        collisionDetection={args => {
-          const pointer = pointerWithin(args)
-          if (pointer.length > 0) return pointer
-          return closestCenter(args)
-        }}
-        onDragStart={handleDragStart}
-        onDragOver={handleDragOver}
-        onDragEnd={handleDragEnd}
-      >
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: compact ? 'repeat(4, 240px)' : 'repeat(4, minmax(0, 1fr))',
-            overflowX: compact ? 'auto' : 'hidden',
-            overflowY: 'hidden',
-            height: '100%',
-          }}
-        >
+      {/* ── Board ── */}
+      {compact ? dndContext(
+        <Tabs defaultValue="todo" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+          <TabsList style={{
+            width: '100%', height: 38, borderRadius: 0, padding: '0 8px', gap: 2,
+            background: 'var(--bg)', borderBottom: '1px solid var(--border)',
+            justifyContent: 'stretch',
+          }}>
+            {COLUMNS.map(col => {
+              const count = items[col.id].filter(id => !epicFilter || storyMap[id]?.epicId === epicFilter).length
+              return (
+                <TabsTrigger
+                  key={col.id}
+                  value={col.id}
+                  style={{ flex: 1, gap: 5, fontSize: 11.5, padding: '0 4px', minWidth: 0 }}
+                >
+                  <StatusDot status={col.id} size={7} />
+                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {col.label}
+                  </span>
+                  <span style={{ fontSize: 10, opacity: 0.55 }}>{count}</span>
+                </TabsTrigger>
+              )
+            })}
+          </TabsList>
+
+          {COLUMNS.map(col => {
+            const ids = items[col.id]
+            const colStories = ids.map(id => storyMap[id]).filter(Boolean)
+              .filter(s => !epicFilter || s.epicId === epicFilter)
+            return (
+              <TabsContent
+                key={col.id}
+                value={col.id}
+                style={{ flex: 1, overflow: 'auto', margin: 0, outline: 'none' }}
+              >
+                <SortableContext items={ids} strategy={verticalListSortingStrategy}>
+                  <div style={{ padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    {ids.map(id => {
+                      const story = colStories.find(s => s.id === id)
+                      if (!story) return null
+                      return <SortableKanbanCard key={id} story={story} onOpen={() => handleCardOpen(id)} />
+                    })}
+                    <button
+                      type="button"
+                      style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 8px', fontSize: 11.5, color: 'var(--fg-3)', borderRadius: 4, border: '1px dashed transparent', marginTop: 2 }}
+                      onMouseOver={e => { e.currentTarget.style.borderColor = 'var(--border-1)' }}
+                      onMouseOut={e => { e.currentTarget.style.borderColor = 'transparent' }}
+                    >
+                      <Plus size={11} /> Add issue
+                    </button>
+                  </div>
+                </SortableContext>
+              </TabsContent>
+            )
+          })}
+        </Tabs>
+      ) : dndContext(
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', overflow: 'hidden', height: '100%' }}>
           {COLUMNS.map((col, i) => {
             const ids = items[col.id]
             const colStories = ids.map(id => storyMap[id]).filter(Boolean)
@@ -299,11 +358,7 @@ export function Kanban() {
             )
           })}
         </div>
-
-        <DragOverlay dropAnimation={{ duration: 180, easing: 'cubic-bezier(0.18, 0.67, 0.6, 1)' }}>
-          {activeStory ? <KanbanCard story={activeStory} isOverlay /> : null}
-        </DragOverlay>
-      </DndContext>
+      )}
     </div>
   )
 }
@@ -474,7 +529,7 @@ function SortableKanbanCard({
 
   const style = {
     transform: CSS.Transform.toString(transform),
-    transition,
+    transition: isDragging ? undefined : transition,
     opacity: isDragging ? 0.35 : 1,
   }
 
