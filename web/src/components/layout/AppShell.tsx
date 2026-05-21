@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { Outlet, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { Sidebar } from './Sidebar'
 import { TopBar } from './TopBar'
+import { ActionBar } from './ActionBar'
 import { useProjects } from '../../api/projects'
 import { useSprints } from '../../api/stories'
 import type { AppView } from '../../lib/routes'
@@ -69,18 +70,18 @@ export function AppShell() {
       height: '100vh',
       display: 'grid',
       gridTemplateColumns: sidebarCollapsed ? '52px 1fr' : '232px 1fr',
-      gridTemplateRows: '80px 1fr',
+      gridTemplateRows: '80px 44px 1fr',
       background: 'var(--bg)',
       color: 'var(--fg)',
       overflow: 'hidden',
     }}>
       <Sidebar />
       <TopBar breadcrumb={breadcrumb} />
+      <ActionBar />
       <main style={{
         background: 'var(--bg)',
         overflow: 'hidden',
         position: 'relative',
-        borderTop: '1px solid var(--border)',
       }}>
         <Outlet />
       </main>

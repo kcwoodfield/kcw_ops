@@ -1,11 +1,7 @@
-import { useState } from 'react'
-import { Search, Filter, Bell, Plus, LayoutDashboard, List, CalendarDays } from 'lucide-react'
-import { useEpics } from '../../api/epics'
-import { useCreateStory, useSprints } from '../../api/stories'
+import { Search, Filter, Bell, LayoutDashboard, List, CalendarDays } from 'lucide-react'
+import { useSprints } from '../../api/stories'
 import { useAppNavigate } from '../../hooks/useAppNavigate'
 import { useUiStore } from '../../store/ui'
-import { CreateEpicModal } from '../CreateEpicModal'
-import { CreateSprintModal } from '../CreateSprintModal'
 import type { AppView } from '../../lib/routes'
 
 interface TopBarProps {
@@ -19,87 +15,76 @@ const TOP_VIEWS: { id: AppView; icon: React.ReactNode; label: string }[] = [
 ]
 
 export function TopBar({ breadcrumb }: TopBarProps) {
-  const { view, sprintId, goToView, setSprint, openStory } = useAppNavigate()
+  const { view, sprintId, goToView, setSprint } = useAppNavigate()
   const { activeProjectId, setCmdPaletteOpen } = useUiStore()
-  const [epicModalOpen, setEpicModalOpen] = useState(false)
-  const [sprintModalOpen, setSprintModalOpen] = useState(false)
   const { data: sprints = [] } = useSprints(activeProjectId ?? '')
-  const { data: epics = [] } = useEpics(activeProjectId ?? '')
-  const createStory = useCreateStory()
   const activeSprint = sprints.find(s => s.id === sprintId) ?? sprints.find(s => s.state === 'active')
-
-  const handleNewIssue = async () => {
-    if (!activeProjectId || epics.length === 0) return
-    const story = await createStory.mutateAsync({
-      projectId: activeProjectId,
-      epicId: epics[0].id,
-      title: 'New issue',
-      sprintId: sprintId ?? undefined,
-    })
-    openStory(story.id)
-  }
 
   return (
     <header style={{
       height: 80,
-      display: 'flex', alignItems: 'center', gap: 10,
+      display: 'flex', alignItems: 'center',
       padding: '0 14px',
       background: 'var(--panel)',
       borderBottom: '1px solid var(--border)',
       minWidth: 0,
       flexShrink: 0,
+      position: 'relative',
     }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-        {breadcrumb.map((crumb, i) => (
-          <span key={i} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <span style={{
-              fontSize: 12.5,
-              color: i === breadcrumb.length - 1 ? 'var(--fg)' : 'var(--fg-2)',
-              fontWeight: i === breadcrumb.length - 1 ? 500 : 400,
-            }}>{crumb}</span>
-            {i < breadcrumb.length - 1 && (
-              <svg width={10} height={10} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round">
-                <path d="m9 6 6 6-6 6" />
-              </svg>
-            )}
-          </span>
-        ))}
+      {/* Left */}
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+          {breadcrumb.map((crumb, i) => (
+            <span key={i} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span style={{
+                fontSize: 12.5,
+                color: i === breadcrumb.length - 1 ? 'var(--fg)' : 'var(--fg-2)',
+                fontWeight: i === breadcrumb.length - 1 ? 500 : 400,
+              }}>{crumb}</span>
+              {i < breadcrumb.length - 1 && (
+                <svg width={10} height={10} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round">
+                  <path d="m9 6 6 6-6 6" />
+                </svg>
+              )}
+            </span>
+          ))}
+        </div>
+
+        {sprints.length > 0 && (
+          <select
+            value={sprintId ?? ''}
+            onChange={e => setSprint(e.target.value || null)}
+            className="mono"
+            style={{
+              padding: '3px 8px 3px 6px',
+              background: 'var(--accent-bg)',
+              border: '1px solid var(--accent-line)',
+              borderRadius: 4,
+              fontSize: 11.5,
+              fontWeight: 500,
+              color: 'var(--accent-fg)',
+              flexShrink: 0,
+              maxWidth: 200,
+            }}
+          >
+            {sprints.map(s => (
+              <option key={s.id} value={s.id}>{s.name}</option>
+            ))}
+          </select>
+        )}
+        {activeSprint && <SprintDaysLeft endDate={activeSprint.endDate} />}
+
+        <ViewSwitcher view={view} onChange={goToView} />
       </div>
 
-      {sprints.length > 0 && (
-        <select
-          value={sprintId ?? ''}
-          onChange={e => setSprint(e.target.value || null)}
-          className="mono"
-          style={{
-            padding: '3px 8px 3px 6px',
-            background: 'var(--accent-bg)',
-            border: '1px solid var(--accent-line)',
-            borderRadius: 4,
-            fontSize: 11.5,
-            fontWeight: 500,
-            color: 'var(--accent-fg)',
-            flexShrink: 0,
-            maxWidth: 200,
-          }}
-        >
-          {sprints.map(s => (
-            <option key={s.id} value={s.id}>{s.name}</option>
-          ))}
-        </select>
-      )}
-      {activeSprint && <SprintDaysLeft endDate={activeSprint.endDate} />}
-
-      <ViewSwitcher view={view} onChange={goToView} />
-
-      <div style={{ flex: 1 }} />
-
+      {/* Center */}
       <button
         type="button"
         onClick={() => setCmdPaletteOpen(true)}
         style={{
+          position: 'absolute', left: '50%', transform: 'translateX(-50%)',
           display: 'flex', alignItems: 'center', gap: 6,
-          padding: '0 8px', height: 26, minWidth: 220,
+          padding: '0 8px', height: 26, width: 240,
           background: 'var(--bg-1)',
           border: '1px solid var(--border)',
           borderRadius: 4,
@@ -112,53 +97,11 @@ export function TopBar({ breadcrumb }: TopBarProps) {
         <span className="kbd">⌘K</span>
       </button>
 
-      <IconBtn icon={<Filter size={14} />} />
-      <IconBtn icon={<Bell size={14} />} />
-
-      {activeProjectId && (
-        <>
-          <button
-            type="button"
-            onClick={() => setEpicModalOpen(true)}
-            style={secondaryBtnStyle}
-          >
-            <Plus size={12} /> Epic
-          </button>
-          <button
-            type="button"
-            onClick={() => setSprintModalOpen(true)}
-            style={secondaryBtnStyle}
-          >
-            <Plus size={12} /> Sprint
-          </button>
-        </>
-      )}
-
-      <button
-        type="button"
-        disabled={!activeProjectId || epics.length === 0 || createStory.isPending}
-        onClick={() => void handleNewIssue()}
-        style={{
-          display: 'inline-flex', alignItems: 'center', gap: 6,
-          height: 26, padding: '0 10px',
-          background: 'var(--accent)', color: 'var(--accent-ink)',
-          borderRadius: 'var(--r-sm)',
-          fontSize: 12, fontWeight: 600,
-          flexShrink: 0,
-          opacity: !activeProjectId || epics.length === 0 ? 0.5 : 1,
-        }}
-      >
-        <Plus size={12} />
-        New issue
-        <span className="kbd" style={{ marginLeft: 2, background: 'rgba(0,0,0,0.15)', borderColor: 'rgba(0,0,0,0.2)', color: 'var(--accent-ink)' }}>C</span>
-      </button>
-
-      {activeProjectId && (
-        <>
-          <CreateEpicModal projectId={activeProjectId} open={epicModalOpen} onClose={() => setEpicModalOpen(false)} />
-          <CreateSprintModal projectId={activeProjectId} open={sprintModalOpen} onClose={() => setSprintModalOpen(false)} />
-        </>
-      )}
+      {/* Right */}
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 4 }}>
+        <IconBtn icon={<Filter size={14} />} />
+        <IconBtn icon={<Bell size={14} />} />
+      </div>
     </header>
   )
 }
@@ -196,13 +139,6 @@ function ViewSwitcher({ view, onChange }: { view: AppView; onChange: (v: AppView
   )
 }
 
-const secondaryBtnStyle: React.CSSProperties = {
-  display: 'inline-flex', alignItems: 'center', gap: 5,
-  height: 26, padding: '0 10px',
-  background: 'var(--bg-2)', border: '1px solid var(--border-1)',
-  borderRadius: 'var(--r-sm)', fontSize: 12, fontWeight: 500,
-  color: 'var(--fg-1)', flexShrink: 0,
-}
 
 function IconBtn({ icon }: { icon: React.ReactNode }) {
   return (

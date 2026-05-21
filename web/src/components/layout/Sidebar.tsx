@@ -4,16 +4,18 @@ import { useProjects } from '../../api/projects'
 import { useUiStore } from '../../store/ui'
 import { useAppNavigate } from '../../hooks/useAppNavigate'
 import { Shield } from '../Shield'
+import { CreateProjectModal } from '../CreateProjectModal'
 import type { ProjectDto } from '../../types'
 
 export function Sidebar() {
   const { data: projects = [] } = useProjects()
   const { activeProjectId, sidebarCollapsed } = useUiStore()
   const { goToProject, goToView } = useAppNavigate()
+  const [projectModalOpen, setProjectModalOpen] = useState(false)
 
   return (
     <aside style={{
-      gridRow: '1 / span 2',
+      gridRow: '1 / span 3',
       background: 'var(--panel)',
       borderRight: '1px solid var(--border)',
       display: 'flex',
@@ -34,7 +36,7 @@ export function Sidebar() {
             <NavRow icon={<GitBranch size={14} />} label="Drafts" />
           </nav>
 
-          <SectionHeader label="Projects" action={<PlusIcon />} />
+          <SectionHeader label="Projects" action={<PlusIcon onClick={() => setProjectModalOpen(true)} />} />
 
           <div style={{ flex: 1, overflowY: 'auto', padding: '0 6px 12px' }}>
             {projects.map(p => (
@@ -55,6 +57,8 @@ export function Sidebar() {
           <UserFooter />
         </>
       )}
+
+      <CreateProjectModal open={projectModalOpen} onClose={() => setProjectModalOpen(false)} />
     </aside>
   )
 }
@@ -84,12 +88,12 @@ function WorkspaceHeader() {
           <div style={{ flex: 1, minWidth: 0, lineHeight: 1.2 }}>
             <div style={{
               fontFamily: 'var(--font-display)',
-              fontSize: 11, fontWeight: 600,
+              fontSize: 24, fontWeight: 600,
               color: 'var(--fg)',
               letterSpacing: '0.10em',
               textTransform: 'uppercase',
             }}>Ops</div>
-            <div className="mono" style={{ fontSize: 10, color: 'var(--fg-3)' }}>personal workspace</div>
+            <div className="mono" style={{ fontSize: 10, color: 'var(--fg-3)' }}>workspace</div>
           </div>
           <button
             type="button"
@@ -216,9 +220,9 @@ function UserFooter() {
   )
 }
 
-function PlusIcon() {
+function PlusIcon({ onClick }: { onClick?: () => void }) {
   return (
-    <button type="button" style={{ color: 'var(--fg-3)', padding: 2, borderRadius: 3 }}
+    <button type="button" onClick={onClick} style={{ color: 'var(--fg-3)', padding: 2, borderRadius: 3 }}
       onMouseOver={e => (e.currentTarget.style.background = 'var(--hover)')}
       onMouseOut={e => (e.currentTarget.style.background = 'transparent')}>
       <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round">
