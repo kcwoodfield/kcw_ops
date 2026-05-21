@@ -2,7 +2,7 @@
 
 Living roadmap from prototype → production app. Design reference: [`docs/design/index.html`](design/index.html). Agent context: [`CLAUDE.md`](../CLAUDE.md).
 
-**Last updated:** 2026-05-20 (palette + Phase 1 complete)
+**Last updated:** 2026-05-20 (Phase 2 complete)
 
 ---
 
@@ -18,7 +18,7 @@ Living roadmap from prototype → production app. Design reference: [`docs/desig
 | **URL routing (`react-router-dom`)** | ✅ |
 | Kanban drag-and-drop | ✅ `@dnd-kit/core` |
 | ⌘K command palette | ✅ |
-| Backlog / planning / list views | ⬜ (routes exist, placeholders only) |
+| Backlog / planning / list views | ✅ |
 | Auth | ⬜ |
 
 ---
@@ -41,9 +41,9 @@ Living roadmap from prototype → production app. Design reference: [`docs/desig
 | # | Surface | Design | Frontend | API |
 |---|---------|--------|----------|-----|
 | 01 | App shell + Kanban | ✅ | 🟡 board + drawer + DnD | 🟡 GET/PATCH stories |
-| 02 | Sprint planning | ✅ | 🟡 `/planning` placeholder | 🟡 GET sprints |
-| 03 | Backlog table | ✅ | 🟡 `/backlog` placeholder; sidebar Inbox → route | 🟡 GET `backlogOnly` |
-| 04 | List (by Epic) | ✅ | 🟡 `/list` placeholder | 🟡 GET epics + stories |
+| 02 | Sprint planning | ✅ | ✅ DnD, capacity meter, start/complete/delete sprint | ✅ GET/PATCH/DELETE sprints |
+| 03 | Backlog table | ✅ | ✅ table, filters, checkboxes, move-to-sprint | ✅ GET `backlogOnly` |
+| 04 | List (by Epic) | ✅ | ✅ epic groups, progress bars, inline edit/delete | ✅ GET epics + stories |
 | 05 | Calendar / Gantt | ✅ | 🟡 `/calendar` placeholder | ⬜ date-range query |
 | 06 | Story detail drawer | ✅ | 🟡 drawer + edits; `?story=` deep link | 🟡 GET/PATCH story |
 | 07 | Activity log | ✅ | ⬜ `/activity` not in router yet | ⬜ Activity entity + feed |
@@ -177,24 +177,24 @@ Validators: Fibonacci points; status/priority enums; epic/sprint belong to proje
 
 Goal: replace placeholders at `/backlog`, `/planning`, `/list` with real surfaces.
 
-### 2.1 Backlog (surface 03)
+### 2.1 Backlog (surface 03) ✅ (2026-05-20)
 
-- [ ] `Backlog.tsx` — dense table (design `docs/design/components/Backlog.jsx`)
-- [ ] `useBacklog(projectId)` — hook exists
-- [ ] Drag row → sprint (`UpdateStory` + `sprintId`)
+- [x] `Backlog.tsx` — dense table with filters and checkboxes
+- [x] `useBacklog(projectId)` — hook
+- [x] Checkbox multi-select + “Move to sprint” bulk action
 - [x] Route + sidebar Inbox link
 
-### 2.2 Sprint planning (surface 02)
+### 2.2 Sprint planning (surface 02) ✅ (2026-05-20)
 
-- [ ] `SprintPlanning.tsx` — split pane + capacity meter
-- [ ] `AssignSprintStories` or repeated PATCH
-- [ ] `StartSprint` / `CompleteSprint` commands
+- [x] `SprintPlanning.tsx` — split pane + capacity meter + DnD
+- [x] Drag stories between backlog ↔ sprint
+- [x] `StartSprint` / `CompleteSprint` via PATCH state
 - [x] Route + sidebar link
 
-### 2.3 List view (surface 04)
+### 2.3 List view (surface 04) ✅ (2026-05-20)
 
-- [ ] `ListView.tsx` — group by epic, progress pts
-- [ ] `useEpics` — hook exists
+- [x] `ListView.tsx` — group by epic, progress bars, inline edit/delete
+- [x] `useEpics` — hook
 - [x] Route + TopBar “List” link
 
 **Phase 2 exit criteria:** Move backlog items into Sprint 33 at `/p/AUTH/planning`; see board + list update.
