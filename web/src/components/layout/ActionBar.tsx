@@ -80,7 +80,7 @@ export function ActionBar() {
 const secondaryBtnStyle: React.CSSProperties = {
   display: 'inline-flex', alignItems: 'center', gap: 5,
   height: 28, padding: '0 10px',
-  background: 'var(--bg-2)', border: '1px solid var(--border-1)',
+  background: 'var(--accent-bg)', border: '1px solid var(--accent-line)',
   borderRadius: 'var(--r-sm)', fontSize: 12, fontWeight: 500,
-  color: 'var(--fg-1)', flexShrink: 0,
+  color: 'var(--accent-fg)', flexShrink: 0,
 }
