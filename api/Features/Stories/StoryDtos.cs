@@ -39,5 +39,8 @@ public record StoryDetailDto(
     string[] Labels,
     string? DueDate,
     string? AssigneeId,
+    string? AssigneeName,
+    string? AssigneeInitials,
+    string? AssigneeColor,
     int SortOrder
 );

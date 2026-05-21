@@ -23,7 +23,7 @@ public static class StoryMapper
         s.SortOrder
     );
 
-    public static StoryDetailDto ToDetailDto(Story s) => new(
+    public static StoryDetailDto ToDetailDto(Story s, User? assignee = null) => new(
         s.Id,
         $"{s.Project.Key}-{s.Number}",
         s.ProjectId,
@@ -43,6 +43,9 @@ public static class StoryMapper
         s.Labels,
         s.DueDate.HasValue ? s.DueDate.Value.ToString("yyyy-MM-dd") : null,
         s.AssigneeId,
+        assignee?.Name,
+        assignee?.Initials,
+        assignee?.Color,
         s.SortOrder
     );
 }

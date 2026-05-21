@@ -14,6 +14,8 @@ public class GetStoryHandler(AppDbContext db) : IRequestHandler<GetStoryQuery, S
             .Include(s => s.Project)
             .FirstOrDefaultAsync(s => s.Id == q.Id, ct);
 
-        return story is null ? null : StoryMapper.ToDetailDto(story);
+        if (story is null) return null;
+        var assignee = story.AssigneeId is null ? null : await db.Users.FindAsync([story.AssigneeId], ct);
+        return StoryMapper.ToDetailDto(story, assignee);
     }
 }

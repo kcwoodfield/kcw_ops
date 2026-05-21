@@ -20,6 +20,10 @@ public class UpdateStoryHandler(AppDbContext db) : IRequestHandler<UpdateStoryCo
         if (cmd.Title is not null) story.Title = cmd.Title.Trim();
         if (cmd.Description is not null) story.Description = string.IsNullOrWhiteSpace(cmd.Description) ? null : cmd.Description;
 
+        var prevStatus = story.Status;
+        var prevPoints = story.Points;
+        var prevSprintId = story.SprintId;
+
         if (cmd.Status is not null && StoryEnums.TryParseStatus(cmd.Status, out var status))
             story.Status = status;
 
@@ -52,12 +56,56 @@ public class UpdateStoryHandler(AppDbContext db) : IRequestHandler<UpdateStoryCo
 
         if (cmd.Labels is not null) story.Labels = cmd.Labels;
 
+        var storyKey = $"{story.Project.Key}-{story.Number}";
+        var now = DateTime.UtcNow;
+
+        if (story.Status != prevStatus)
+            db.ActivityEvents.Add(new ActivityEvent
+            {
+                Id = Guid.NewGuid(), ProjectId = story.ProjectId, StoryId = story.Id,
+                ActorId = "kcw", Type = "status_changed",
+                Detail = $"{prevStatus.ToString().ToLower()} → {story.Status.ToString().ToLower()}",
+                CreatedAt = now,
+            });
+
+        if (story.Points != prevPoints)
+            db.ActivityEvents.Add(new ActivityEvent
+            {
+                Id = Guid.NewGuid(), ProjectId = story.ProjectId, StoryId = story.Id,
+                ActorId = "kcw", Type = "points_changed",
+                Detail = $"{prevPoints} → {story.Points} pts",
+                CreatedAt = now,
+            });
+
+        if (story.SprintId != prevSprintId)
+            db.ActivityEvents.Add(new ActivityEvent
+            {
+                Id = Guid.NewGuid(), ProjectId = story.ProjectId, StoryId = story.Id,
+                SprintId = story.SprintId,
+                ActorId = "kcw", Type = story.SprintId.HasValue ? "added_to_sprint" : "removed_from_sprint",
+                Detail = story.SprintId.HasValue ? $"moved {storyKey} to sprint" : $"moved {storyKey} to backlog",
+                CreatedAt = now,
+            });
+
+        if (cmd.AssigneeId is not null)
+        {
+            story.AssigneeId = string.IsNullOrWhiteSpace(cmd.AssigneeId) ? null : cmd.AssigneeId;
+            db.ActivityEvents.Add(new ActivityEvent
+            {
+                Id = Guid.NewGuid(), ProjectId = story.ProjectId, StoryId = story.Id,
+                ActorId = "kcw", Type = "assignee_changed",
+                Detail = story.AssigneeId is null ? "unassigned" : $"assigned to {story.AssigneeId}",
+                CreatedAt = now,
+            });
+        }
+
         await db.SaveChangesAsync(ct);
 
         await db.Entry(story).Reference(s => s.Epic).LoadAsync(ct);
         await db.Entry(story).Reference(s => s.Sprint).LoadAsync(ct);
         await db.Entry(story).Reference(s => s.Project).LoadAsync(ct);
 
-        return StoryMapper.ToDetailDto(story);
+        var assignee = story.AssigneeId is null ? null : await db.Users.FindAsync([story.AssigneeId], ct);
+        return StoryMapper.ToDetailDto(story, assignee);
     }
 }
