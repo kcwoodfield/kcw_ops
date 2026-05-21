@@ -38,18 +38,19 @@ export function AppShell() {
     }
   }, [projects, project, projectKey, activeProjectId, setActiveProject, navigate, searchParams, pathname])
 
+  const sprintInUrl = searchParams.get('sprint')
+
   // Sync sprint search param → store
   useEffect(() => {
-    const sprintFromUrl = searchParams.get('sprint')
-    if (sprintFromUrl && sprintFromUrl !== activeSprintId) {
-      setActiveSprint(sprintFromUrl)
+    if (sprintInUrl && sprintInUrl !== activeSprintId) {
+      setActiveSprint(sprintInUrl)
     }
-  }, [searchParams, activeSprintId, setActiveSprint])
+  }, [sprintInUrl, activeSprintId, setActiveSprint])
 
   // Default sprint into URL when missing
   useEffect(() => {
     if (!activeProjectId || sprints.length === 0) return
-    if (searchParams.get('sprint')) return
+    if (sprintInUrl) return
 
     const next = sprints.find(s => s.state === 'active') ?? sprints[sprints.length - 1]
     if (!next) return
@@ -60,7 +61,7 @@ export function AppShell() {
       p.set('sprint', next.id)
       return p
     }, { replace: true })
-  }, [activeProjectId, sprints, searchParams, setActiveSprint, setSearchParams])
+  }, [activeProjectId, sprints, sprintInUrl, setActiveSprint, setSearchParams])
 
   const breadcrumb = project ? [project.name] : ['kcw / ops']
 
