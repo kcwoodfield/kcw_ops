@@ -2,7 +2,7 @@
 
 Living roadmap from prototype → production app. Design reference: [`docs/design/index.html`](design/index.html). Agent context: [`CLAUDE.md`](../CLAUDE.md).
 
-**Last updated:** 2026-05-20 (Phase 2 complete)
+**Last updated:** 2026-05-20 (Phase 3 complete)
 
 ---
 
@@ -44,7 +44,7 @@ Living roadmap from prototype → production app. Design reference: [`docs/desig
 | 02 | Sprint planning | ✅ | ✅ DnD, capacity meter, start/complete/delete sprint | ✅ GET/PATCH/DELETE sprints |
 | 03 | Backlog table | ✅ | ✅ table, filters, checkboxes, move-to-sprint | ✅ GET `backlogOnly` |
 | 04 | List (by Epic) | ✅ | ✅ epic groups, progress bars, inline edit/delete | ✅ GET epics + stories |
-| 05 | Calendar / Gantt | ✅ | 🟡 `/calendar` placeholder | ⬜ date-range query |
+| 05 | Calendar / Gantt | ✅ | ✅ sprint timeline gantt, today line, nav | 🟡 GET sprints (no date-range filter yet) |
 | 06 | Story detail drawer | ✅ | 🟡 drawer + edits; `?story=` deep link | 🟡 GET/PATCH story |
 | 07 | Activity log | ✅ | ⬜ `/activity` not in router yet | ⬜ Activity entity + feed |
 | 08 | Sign in | ✅ | ⬜ | ⬜ auth |
@@ -203,23 +203,25 @@ Goal: replace placeholders at `/backlog`, `/planning`, `/list` with real surface
 
 ## Phase 3 — Timeline & workspace chrome
 
-### 3.1 Calendar / Gantt (surface 05)
+### 3.1 Calendar / Gantt (surface 05) ✅ (2026-05-20)
 
-- [ ] `CalendarView.tsx` at `/p/:projectKey/calendar`
-- [ ] `GET /api/stories?projectId=&from=&to=`
+- [x] `CalendarView.tsx` at `/p/:projectKey/calendar`
+- [x] Sprint gantt bars with real start/end dates, today line, prev/next navigation
+- [ ] Epic rows (requires date fields on epics — deferred)
+- [ ] `GET /api/stories?from=&to=` date-range filter (deferred)
 
-### 3.2 App shell polish
+### 3.2 App shell polish ✅ (2026-05-20)
 
 - [x] Sidebar primary routes wired
 - [x] `/` → last project redirect
-- [ ] `/p/:projectKey/activity` route
-- [ ] Per-route loading / error boundaries
-- [ ] Empty states (no sprints, empty board)
+- [x] `/p/:projectKey/activity` route (ViewPlaceholder — Phase 4)
+- [x] `ErrorBoundary` wrapping `<Outlet />` in AppShell
+- [x] Kanban empty state: "No sprints yet" when project has no sprints
 
-### 3.3 Programs / projects CRUD
+### 3.3 Programs / projects CRUD ✅ (2026-05-20, prev session)
 
-- [ ] Create program, project, epic
-- [ ] Navigate to `/p/{key}/board` on create
+- [x] Create / edit / delete project, epic, sprint
+- [x] Navigate to `/p/{key}/board` on create
 
 ---
 

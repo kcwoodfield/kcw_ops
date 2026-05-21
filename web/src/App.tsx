@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { AppShell } from './components/layout/AppShell'
 import { Backlog } from './components/backlog/Backlog'
+import { CalendarView } from './components/calendar/CalendarView'
 import { CommandPalette } from './components/CommandPalette'
 import { Kanban } from './components/kanban/Kanban'
 import { SprintPlanning } from './components/planning/SprintPlanning'
@@ -25,7 +26,7 @@ export default function App() {
           <Route path="backlog" element={<Backlog />} />
           <Route path="planning" element={<SprintPlanning />} />
           <Route path="list" element={<ListView />} />
-          <Route path="calendar" element={<ViewPlaceholder name="Calendar" />} />
+          <Route path="calendar" element={<CalendarView />} />
           <Route path="activity" element={<ViewPlaceholder name="Activity log" />} />
         </Route>
         <Route path="*" element={<RootRedirect />} />

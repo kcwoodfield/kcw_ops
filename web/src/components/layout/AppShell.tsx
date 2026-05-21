@@ -3,6 +3,7 @@ import { Outlet, useLocation, useNavigate, useParams, useSearchParams } from 're
 import { Sidebar } from './Sidebar'
 import { TopBar } from './TopBar'
 import { ActionBar } from './ActionBar'
+import { ErrorBoundary } from '../shared/ErrorBoundary'
 import { useProjects } from '../../api/projects'
 import { useSprints } from '../../api/stories'
 import type { AppView } from '../../lib/routes'
@@ -84,7 +85,9 @@ export function AppShell() {
         overflow: 'hidden',
         position: 'relative',
       }}>
-        <Outlet />
+        <ErrorBoundary>
+          <Outlet />
+        </ErrorBoundary>
       </main>
     </div>
   )
