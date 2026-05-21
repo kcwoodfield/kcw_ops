@@ -5,6 +5,7 @@ import { useUiStore } from '../../store/ui'
 import { useAppNavigate } from '../../hooks/useAppNavigate'
 import { Shield } from '../Shield'
 import { CreateProjectModal } from '../CreateProjectModal'
+import { ConfirmModal } from '../shared/ConfirmModal'
 import type { ProjectDto } from '../../types'
 
 export function Sidebar() {
@@ -171,43 +172,53 @@ function ProjectRow({ project, active, onClick, onEdit }: {
   project: ProjectDto; active: boolean; onClick: () => void; onEdit: () => void
 }) {
   const [hovered, setHovered] = useState(false)
+  const [confirming, setConfirming] = useState(false)
   const deleteProject = useDeleteProject()
 
   return (
-    <div
-      style={{
-        display: 'flex', alignItems: 'center', gap: 0,
-        borderRadius: 4, marginBottom: 1,
-        background: active ? 'var(--active)' : hovered ? 'var(--hover)' : 'transparent',
-      }}
-      onMouseOver={() => setHovered(true)}
-      onMouseOut={() => setHovered(false)}
-    >
-      <button
-        type="button"
-        onClick={onClick}
+    <>
+      <div
         style={{
-          flex: 1, display: 'flex', alignItems: 'center', gap: 8,
-          padding: '4px 8px',
-          color: active ? 'var(--fg)' : 'var(--fg-1)',
-          minWidth: 0,
+          display: 'flex', alignItems: 'center', gap: 0,
+          borderRadius: 4, marginBottom: 1,
+          background: active ? 'var(--active)' : hovered ? 'var(--hover)' : 'transparent',
         }}
+        onMouseOver={() => setHovered(true)}
+        onMouseOut={() => setHovered(false)}
       >
-        <span style={{ width: 8, height: 8, borderRadius: 2, background: project.color, flexShrink: 0 }} />
-        <span style={{ flex: 1, textAlign: 'left', fontSize: 12.5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{project.name}</span>
-        <span className="mono" style={{ fontSize: 10, color: 'var(--fg-3)', flexShrink: 0 }}>{project.key}</span>
-      </button>
-      {hovered && (
-        <div style={{ display: 'flex', alignItems: 'center', paddingRight: 4, gap: 1 }}>
-          <RowIconBtn title="Edit" onClick={e => { e.stopPropagation(); onEdit() }}>
-            <Pencil size={11} />
-          </RowIconBtn>
-          <RowIconBtn title="Delete" onClick={e => { e.stopPropagation(); deleteProject.mutate(project.id) }}>
-            <Trash2 size={11} />
-          </RowIconBtn>
-        </div>
-      )}
-    </div>
+        <button
+          type="button"
+          onClick={onClick}
+          style={{
+            flex: 1, display: 'flex', alignItems: 'center', gap: 8,
+            padding: '4px 8px',
+            color: active ? 'var(--fg)' : 'var(--fg-1)',
+            minWidth: 0,
+          }}
+        >
+          <span style={{ width: 8, height: 8, borderRadius: 2, background: project.color, flexShrink: 0 }} />
+          <span style={{ flex: 1, textAlign: 'left', fontSize: 12.5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{project.name}</span>
+          <span className="mono" style={{ fontSize: 10, color: 'var(--fg-3)', flexShrink: 0 }}>{project.key}</span>
+        </button>
+        {hovered && (
+          <div style={{ display: 'flex', alignItems: 'center', paddingRight: 4, gap: 1 }}>
+            <RowIconBtn title="Edit" onClick={e => { e.stopPropagation(); onEdit() }}>
+              <Pencil size={11} />
+            </RowIconBtn>
+            <RowIconBtn title="Delete" onClick={e => { e.stopPropagation(); setConfirming(true) }}>
+              <Trash2 size={11} />
+            </RowIconBtn>
+          </div>
+        )}
+      </div>
+      <ConfirmModal
+        open={confirming}
+        title="Delete project"
+        message={`"${project.name}" and all its epics, sprints, and stories will be permanently deleted.`}
+        onConfirm={() => deleteProject.mutate(project.id)}
+        onClose={() => setConfirming(false)}
+      />
+    </>
   )
 }
 

@@ -6,6 +6,7 @@ import { useDeleteEpic, useEpics } from '../../api/epics'
 import { useUiStore } from '../../store/ui'
 import { useAppNavigate } from '../../hooks/useAppNavigate'
 import { CreateEpicModal } from '../CreateEpicModal'
+import { ConfirmModal } from '../shared/ConfirmModal'
 import { StatusDot, StoryId, PriorityBars, Pts } from '../story/StoryPrimitives'
 import type { EpicDto, StoryDto } from '../../types'
 
@@ -80,6 +81,7 @@ function EpicGroup({ epic, projectId, stories, onStoryClick, onEdit }: {
 }) {
   const [collapsed, setCollapsed] = useState(false)
   const [hovered, setHovered] = useState(false)
+  const [confirming, setConfirming] = useState(false)
   const deleteEpic = useDeleteEpic(projectId)
   const done = stories.filter(s => s.status === 'done').length
   const total = stories.length
@@ -125,7 +127,7 @@ function EpicGroup({ epic, projectId, stories, onStoryClick, onEdit }: {
             {hovered && (
               <div style={{ display: 'flex', gap: 2, marginLeft: 4 }} onClick={e => e.stopPropagation()}>
                 <EpicIconBtn title="Edit" onClick={() => onEdit(epic)}><Pencil size={11} /></EpicIconBtn>
-                <EpicIconBtn title="Delete" onClick={() => deleteEpic.mutate(epic.id)}><Trash2 size={11} /></EpicIconBtn>
+                <EpicIconBtn title="Delete" onClick={() => setConfirming(true)}><Trash2 size={11} /></EpicIconBtn>
               </div>
             )}
           </div>
@@ -149,6 +151,13 @@ function EpicGroup({ epic, projectId, stories, onStoryClick, onEdit }: {
           </td>
         </tr>
       )}
+      <ConfirmModal
+        open={confirming}
+        title="Delete epic"
+        message={`"${epic.title}" and all its stories will be permanently deleted.`}
+        onConfirm={() => deleteEpic.mutate(epic.id)}
+        onClose={() => setConfirming(false)}
+      />
     </>
   )
 }

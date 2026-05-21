@@ -7,6 +7,7 @@ import { useEpics } from '../../api/epics'
 import { useUiStore } from '../../store/ui'
 import { useAppNavigate } from '../../hooks/useAppNavigate'
 import { CreateSprintModal } from '../CreateSprintModal'
+import { ConfirmModal } from '../shared/ConfirmModal'
 import { StatusDot, StoryId, PriorityBars, Pts } from '../story/StoryPrimitives'
 import type { StoryDto, SprintDto } from '../../types'
 
@@ -199,6 +200,7 @@ function SprintPanel({
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: 'sprint-drop' })
   const deleteSprint = useDeleteSprint()
+  const [confirmDelete, setConfirmDelete] = useState(false)
   const pct = Math.min(100, Math.round((sprintPoints / CAPACITY) * 100))
   const over = sprintPoints > CAPACITY
 
@@ -235,7 +237,7 @@ function SprintPanel({
           <Plus size={13} />
         </button>
         {sprint && (
-          <button type="button" onClick={() => deleteSprint.mutate(sprint.id)} style={iconBtnStyle} title="Delete sprint">
+          <button type="button" onClick={() => setConfirmDelete(true)} style={iconBtnStyle} title="Delete sprint">
             <Trash2 size={13} />
           </button>
         )}
@@ -301,6 +303,15 @@ function SprintPanel({
           ))
         )}
       </div>
+      {sprint && (
+        <ConfirmModal
+          open={confirmDelete}
+          title="Delete sprint"
+          message={`"${sprint.name}" will be permanently deleted. Stories will move to the backlog.`}
+          onConfirm={() => deleteSprint.mutate(sprint.id)}
+          onClose={() => setConfirmDelete(false)}
+        />
+      )}
     </div>
   )
 }

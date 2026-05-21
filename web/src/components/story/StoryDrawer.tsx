@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import * as Dialog from '@radix-ui/react-dialog'
 import { Trash2, X } from 'lucide-react'
 import { useDeleteStory, useStory, useUpdateStory, useSprints } from '../../api/stories'
+import { ConfirmModal } from '../shared/ConfirmModal'
 import { useEpics } from '../../api/epics'
 import { useAppNavigate } from '../../hooks/useAppNavigate'
 import {
@@ -72,6 +73,7 @@ function StoryDrawerBody({ storyId, onClose }: { storyId: string; onClose: () =>
   const { data: story, isLoading, isError } = useStory(storyId)
   const update = useUpdateStory()
   const deleteStory = useDeleteStory()
+  const [confirmDelete, setConfirmDelete] = useState(false)
   const { data: epics = [] } = useEpics(story?.projectId ?? '')
   const { data: sprints = [] } = useSprints(story?.projectId ?? '')
   const [title, setTitle] = useState('')
@@ -119,7 +121,7 @@ function StoryDrawerBody({ storyId, onClose }: { storyId: string; onClose: () =>
         <button
           type="button"
           title="Delete story"
-          onClick={() => deleteStory.mutate(story.id, { onSuccess: onClose })}
+          onClick={() => setConfirmDelete(true)}
           style={{ display: 'flex', color: 'var(--fg-3)', padding: '4px 6px', borderRadius: 4 }}
           onMouseOver={e => (e.currentTarget.style.color = 'var(--blocked)')}
           onMouseOut={e => (e.currentTarget.style.color = 'var(--fg-3)')}
@@ -298,6 +300,13 @@ function StoryDrawerBody({ storyId, onClose }: { storyId: string; onClose: () =>
           </Prop>
         </aside>
       </div>
+      <ConfirmModal
+        open={confirmDelete}
+        title="Delete story"
+        message={`"${story.title}" will be permanently deleted.`}
+        onConfirm={() => deleteStory.mutate(story.id, { onSuccess: onClose })}
+        onClose={() => setConfirmDelete(false)}
+      />
     </>
   )
 }
