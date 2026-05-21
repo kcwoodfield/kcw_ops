@@ -1,5 +1,6 @@
 import { useActivity } from '../../api/activity'
 import { useUiStore } from '../../store/ui'
+import { useIsCompact } from '../../hooks/useMediaQuery'
 import type { ActivityEventDto } from '../../types'
 
 const TYPE_COLOR: Record<string, string> = {
@@ -72,6 +73,7 @@ function Sparkline({ events }: { events: ActivityEventDto[] }) {
 export function ActivityLog() {
   const { activeProjectId } = useUiStore()
   const { data: events = [], isLoading } = useActivity(activeProjectId ?? '')
+  const compact = useIsCompact()
 
   if (!activeProjectId) return <Centered>Select a project</Centered>
   if (isLoading) return <Centered>Loading…</Centered>
@@ -90,14 +92,16 @@ export function ActivityLog() {
         <span style={{ width: 1, height: 18, background: 'var(--border)' }} />
         <Sparkline events={events} />
         <span style={{ flex: 1 }} />
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          {Object.entries({ comment_added: 'comment', status_changed: 'status', points_changed: 'estimate', sprint_started: 'sprint', added_to_sprint: 'moved' }).map(([type, label]) => (
-            <span key={type} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'var(--fg-2)' }}>
-              <span style={{ width: 7, height: 7, borderRadius: 1, background: TYPE_COLOR[type] }} />
-              {label}
-            </span>
-          ))}
-        </div>
+        {!compact && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            {Object.entries({ comment_added: 'comment', status_changed: 'status', points_changed: 'estimate', sprint_started: 'sprint', added_to_sprint: 'moved' }).map(([type, label]) => (
+              <span key={type} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'var(--fg-2)' }}>
+                <span style={{ width: 7, height: 7, borderRadius: 1, background: TYPE_COLOR[type] }} />
+                {label}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* ── Feed ─────────────────────────────────────────────── */}

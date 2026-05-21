@@ -31,7 +31,7 @@ export function ListView() {
   return (
     <>
       <div style={{ height: '100%', overflowY: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+        <table style={{ width: '100%', minWidth: 500, borderCollapse: 'collapse' }}>
           <thead>
             <tr style={{ borderBottom: '1px solid var(--border)' }}>
               <Th style={{ paddingLeft: 16, width: 28 }} />

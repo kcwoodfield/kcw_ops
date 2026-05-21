@@ -2,6 +2,7 @@ import { useState, Fragment } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useSprints } from '../../api/stories'
 import { useUiStore } from '../../store/ui'
+import { useIsCompact } from '../../hooks/useMediaQuery'
 import type { SprintDto } from '../../types'
 
 const WEEKS = 8
@@ -38,6 +39,7 @@ function fmt(d: Date) { return `${MONTHS[d.getMonth()]} ${d.getDate()}` }
 export function CalendarView() {
   const { activeProjectId } = useUiStore()
   const { data: sprints = [], isLoading } = useSprints(activeProjectId ?? '')
+  const compact = useIsCompact()
   const [weekOffset, setWeekOffset] = useState(0)
 
   const today = new Date()
@@ -78,7 +80,7 @@ export function CalendarView() {
       </div>
 
       {/* ── Gantt ─────────────────────────────────────────────── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '200px 1fr', overflowY: 'auto', overflowX: 'hidden' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: compact ? '120px 1fr' : '200px 1fr', overflowY: 'auto', overflowX: compact ? 'auto' : 'hidden' }}>
 
         {/* top-left corner */}
         <div style={{ ...stickyTop, borderRight: '1px solid var(--border)', padding: '8px 12px', display: 'flex', alignItems: 'center' }}>

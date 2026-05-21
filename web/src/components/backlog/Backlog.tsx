@@ -211,7 +211,7 @@ export function Backlog() {
             {stories.length === 0 ? 'No backlog stories — all caught up!' : 'No stories match this filter.'}
           </div>
         ) : (
-          <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
+          <table style={{ width: '100%', minWidth: 560, borderCollapse: 'collapse', tableLayout: 'fixed' }}>
             <colgroup>
               <col style={{ width: 32 }} />   {/* checkbox */}
               <col style={{ width: 90 }} />   {/* ID */}

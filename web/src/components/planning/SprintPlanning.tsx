@@ -6,6 +6,7 @@ import { useBacklog, useDeleteSprint, useSprints, useUpdateStory, useUpdateSprin
 import { useEpics } from '../../api/epics'
 import { useUiStore } from '../../store/ui'
 import { useAppNavigate } from '../../hooks/useAppNavigate'
+import { useIsCompact } from '../../hooks/useMediaQuery'
 import { CreateSprintModal } from '../CreateSprintModal'
 import { ConfirmModal } from '../shared/ConfirmModal'
 import { StatusDot, StoryId, PriorityBars, Pts } from '../story/StoryPrimitives'
@@ -24,6 +25,7 @@ export function SprintPlanning() {
   const updateStory = useUpdateStory()
   const updateSprint = useUpdateSprint()
 
+  const compact = useIsCompact()
   const [epicFilter, setEpicFilter] = useState<string>('all')
   const [sprintModalOpen, setSprintModalOpen] = useState(false)
   const [draggingStory, setDraggingStory] = useState<StoryDto | null>(null)
@@ -78,7 +80,7 @@ export function SprintPlanning() {
       }}
       onDragEnd={handleDragEnd}
     >
-      <div style={{ display: 'flex', height: '100%', overflow: 'hidden' }}>
+      <div style={{ display: 'flex', height: '100%', overflow: compact ? 'auto' : 'hidden', flexDirection: compact ? 'column' : 'row' }}>
 
         {/* ── LEFT: Backlog ── */}
         <BacklogPanel
@@ -88,6 +90,7 @@ export function SprintPlanning() {
           onEpicFilter={setEpicFilter}
           onMoveToSprint={moveToSprint}
           hasSprint={!!activeSprint}
+          compact={compact}
           onStoryClick={openStory}
         />
 
@@ -120,7 +123,7 @@ export function SprintPlanning() {
 // ── Sub-components ────────────────────────────────────────────
 
 function BacklogPanel({
-  stories, epics, epicFilter, onEpicFilter, onMoveToSprint, hasSprint, onStoryClick,
+  stories, epics, epicFilter, onEpicFilter, onMoveToSprint, hasSprint, compact, onStoryClick,
 }: {
   stories: StoryDto[]
   epics: { id: string; title: string; color: string }[]
@@ -128,6 +131,7 @@ function BacklogPanel({
   onEpicFilter: (id: string) => void
   onMoveToSprint: (s: StoryDto) => void
   hasSprint: boolean
+  compact: boolean
   onStoryClick: (id: string) => void
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: 'backlog-drop' })
@@ -136,7 +140,8 @@ function BacklogPanel({
     <div
       ref={setNodeRef}
       style={{
-        width: '50%',
+        width: compact ? '100%' : '50%',
+        minHeight: compact ? 300 : undefined,
         borderRight: '1px solid var(--border)',
         display: 'flex',
         flexDirection: 'column',

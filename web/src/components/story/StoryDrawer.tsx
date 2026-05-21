@@ -7,6 +7,7 @@ import { useUsers } from '../../api/users'
 import { ConfirmModal } from '../shared/ConfirmModal'
 import { useEpics } from '../../api/epics'
 import { useAppNavigate } from '../../hooks/useAppNavigate'
+import { useIsCompact } from '../../hooks/useMediaQuery'
 import {
   FIBONACCI_POINTS,
   PRIORITY_LABELS,
@@ -84,6 +85,7 @@ function StoryDrawerBody({ storyId, onClose }: { storyId: string; onClose: () =>
   const { data: users = [] } = useUsers()
   const { data: comments = [] } = useComments(storyId)
   const addComment = useAddComment(storyId)
+  const compact = useIsCompact()
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [commentBody, setCommentBody] = useState('')
@@ -144,8 +146,8 @@ function StoryDrawerBody({ storyId, onClose }: { storyId: string; onClose: () =>
         </button>
       </header>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 240px', flex: 1, minHeight: 0 }}>
-        <div style={{ padding: '18px 22px', overflow: 'auto', borderRight: '1px solid var(--border)' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: compact ? '1fr' : '1fr 240px', flex: 1, minHeight: 0, overflow: compact ? 'auto' : undefined }}>
+        <div style={{ padding: '18px 22px', overflow: compact ? 'visible' : 'auto', borderRight: compact ? 'none' : '1px solid var(--border)', borderBottom: compact ? '1px solid var(--border)' : 'none' }}>
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 14 }}>
             <span style={{ marginTop: 6 }}>
               <StatusDot status={story.status} size={12} />
@@ -281,7 +283,7 @@ function StoryDrawerBody({ storyId, onClose }: { storyId: string; onClose: () =>
           </Section>
         </div>
 
-        <aside style={{ overflow: 'auto', padding: '14px 14px 24px' }}>
+        <aside style={{ overflow: compact ? 'visible' : 'auto', padding: '14px 14px 24px' }}>
           <Prop label="Status">
             <StatusSelect value={story.status} onChange={s => save({ status: s })} />
           </Prop>
