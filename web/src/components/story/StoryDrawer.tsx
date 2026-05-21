@@ -66,6 +66,7 @@ export function StoryDrawer() {
           }}
           aria-describedby={undefined}
         >
+          <Dialog.Title className="sr-only">Story detail</Dialog.Title>
           {storyId && <StoryDrawerBody storyId={storyId} onClose={closeStory} />}
         </Dialog.Content>
       </Dialog.Portal>
@@ -196,7 +197,6 @@ function StoryDrawerBody({ storyId, onClose }: { storyId: string; onClose: () =>
             <textarea
               value={description}
               onChange={e => setDescription(e.target.value)}
-              onBlur={() => description !== (story.description ?? '') && save({ description })}
               placeholder="Add a description…"
               rows={6}
               style={{
@@ -212,6 +212,24 @@ function StoryDrawerBody({ storyId, onClose }: { storyId: string; onClose: () =>
                 minHeight: 120,
               }}
             />
+            {description !== (story.description ?? '') && (
+              <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+                <button
+                  type="button"
+                  onClick={() => save({ description })}
+                  style={{ height: 28, padding: '0 14px', background: 'var(--accent)', color: 'var(--accent-ink)', borderRadius: 4, fontSize: 12, fontWeight: 600 }}
+                >
+                  Save
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDescription(story.description ?? '')}
+                  style={{ height: 28, padding: '0 12px', background: 'transparent', border: '1px solid var(--border-1)', borderRadius: 4, fontSize: 12, color: 'var(--fg-2)' }}
+                >
+                  Cancel
+                </button>
+              </div>
+            )}
           </Section>
 
           <Section title="Activity" trail={comments.length ? `${comments.length}` : undefined}>
