@@ -72,10 +72,9 @@ export function Backlog() {
   }
 
   const handleCreate = async () => {
-    if (!activeProjectId || !epics.length) return
+    if (!activeProjectId) return
     const s = await createStory.mutateAsync({
       projectId: activeProjectId,
-      epicId: epics[0].id,
       title: 'New issue',
     })
     openStory(s.id)
@@ -151,7 +150,7 @@ export function Backlog() {
 
         <button
           type="button"
-          disabled={!epics.length || createStory.isPending}
+          disabled={createStory.isPending}
           onClick={() => void handleCreate()}
           style={{
             display: 'inline-flex', alignItems: 'center', gap: 6,
@@ -159,7 +158,6 @@ export function Backlog() {
             background: 'var(--accent)', color: 'var(--accent-ink)',
             borderRadius: 'var(--r-sm)',
             fontSize: 12, fontWeight: 600,
-            opacity: !epics.length ? 0.5 : 1,
           }}
         >
           <Plus size={12} />

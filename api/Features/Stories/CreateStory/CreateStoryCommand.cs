@@ -4,7 +4,7 @@ namespace KcwOps.Api.Features.Stories.CreateStory;
 
 public record CreateStoryCommand(
     Guid ProjectId,
-    Guid EpicId,
+    Guid? EpicId,
     string Title,
     Guid? SprintId,
     string? Status,
@@ -14,7 +14,7 @@ public record CreateStoryCommand(
 
 public record CreateStoryRequest(
     Guid ProjectId,
-    Guid EpicId,
+    Guid? EpicId,
     string Title,
     Guid? SprintId,
     string? Status,

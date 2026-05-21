@@ -12,8 +12,20 @@ public class CreateStoryHandler(AppDbContext db) : IRequestHandler<CreateStoryCo
         var project = await db.Projects.FirstOrDefaultAsync(p => p.Id == cmd.ProjectId, ct)
             ?? throw new InvalidOperationException("Project not found.");
 
-        var epicOk = await db.Epics.AnyAsync(e => e.Id == cmd.EpicId && e.ProjectId == cmd.ProjectId, ct);
-        if (!epicOk) throw new InvalidOperationException("Epic does not belong to this project.");
+        // Resolve epic: use provided, fall back to first project epic, or null
+        Guid? resolvedEpicId = cmd.EpicId;
+        if (!resolvedEpicId.HasValue)
+        {
+            resolvedEpicId = await db.Epics
+                .Where(e => e.ProjectId == cmd.ProjectId)
+                .Select(e => (Guid?)e.Id)
+                .FirstOrDefaultAsync(ct);
+        }
+        else
+        {
+            var epicOk = await db.Epics.AnyAsync(e => e.Id == resolvedEpicId && e.ProjectId == cmd.ProjectId, ct);
+            if (!epicOk) throw new InvalidOperationException("Epic does not belong to this project.");
+        }
 
         if (cmd.SprintId.HasValue)
         {
@@ -43,7 +55,7 @@ public class CreateStoryHandler(AppDbContext db) : IRequestHandler<CreateStoryCo
         {
             Id = Guid.NewGuid(),
             ProjectId = cmd.ProjectId,
-            EpicId = cmd.EpicId,
+            EpicId = resolvedEpicId ?? Guid.Empty,
             SprintId = cmd.SprintId,
             Number = maxNumber + 1,
             SortOrder = maxSort + 1000,

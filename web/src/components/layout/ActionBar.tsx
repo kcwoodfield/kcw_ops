@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { Plus } from 'lucide-react'
-import { useEpics } from '../../api/epics'
 import { useCreateStory } from '../../api/stories'
 import { useAppNavigate } from '../../hooks/useAppNavigate'
 import { useUiStore } from '../../store/ui'
@@ -12,14 +11,12 @@ export function ActionBar() {
   const { activeProjectId } = useUiStore()
   const [epicModalOpen, setEpicModalOpen] = useState(false)
   const [sprintModalOpen, setSprintModalOpen] = useState(false)
-  const { data: epics = [] } = useEpics(activeProjectId ?? '')
   const createStory = useCreateStory()
 
   const handleNewIssue = async () => {
-    if (!activeProjectId || epics.length === 0) return
+    if (!activeProjectId) return
     const story = await createStory.mutateAsync({
       projectId: activeProjectId,
-      epicId: epics[0].id,
       title: 'New issue',
       sprintId: sprintId ?? undefined,
     })
@@ -50,7 +47,7 @@ export function ActionBar() {
 
       <button
         type="button"
-        disabled={!activeProjectId || epics.length === 0 || createStory.isPending}
+        disabled={!activeProjectId || createStory.isPending}
         onClick={() => void handleNewIssue()}
         style={{
           display: 'inline-flex', alignItems: 'center', gap: 6,
@@ -59,7 +56,7 @@ export function ActionBar() {
           borderRadius: 'var(--r-sm)',
           fontSize: 12, fontWeight: 600,
           flexShrink: 0,
-          opacity: !activeProjectId || epics.length === 0 ? 0.5 : 1,
+          opacity: !activeProjectId ? 0.5 : 1,
         }}
       >
         <Plus size={12} />

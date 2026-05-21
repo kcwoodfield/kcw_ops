@@ -30,7 +30,7 @@ public class StoriesController(IMediator mediator) : ControllerBase
         {
             var story = await mediator.Send(new CreateStoryCommand(
                 body.ProjectId,
-                body.EpicId,
+                body.EpicId,   // nullable — handler falls back to first epic
                 body.Title,
                 body.SprintId,
                 body.Status,

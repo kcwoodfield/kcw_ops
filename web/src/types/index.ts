@@ -106,7 +106,7 @@ export interface UpdateStoryPayload {
 
 export interface CreateStoryPayload {
   projectId: string
-  epicId: string
+  epicId?: string
   title: string
   sprintId?: string
   status?: StoryStatus

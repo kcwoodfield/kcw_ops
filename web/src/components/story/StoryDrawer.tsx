@@ -302,18 +302,6 @@ function StoryDrawerBody({ storyId, onClose }: { storyId: string; onClose: () =>
             </div>
           </Prop>
 
-          <Prop label="Epic">
-            <select
-              value={story.epicId}
-              onChange={e => save({ epicId: e.target.value })}
-              style={selectStyle}
-            >
-              {epics.map(ep => (
-                <option key={ep.id} value={ep.id}>{ep.title}</option>
-              ))}
-            </select>
-          </Prop>
-
           <Prop label="Sprint">
             <select
               value={story.sprintId ?? ''}
@@ -326,6 +314,18 @@ function StoryDrawerBody({ storyId, onClose }: { storyId: string; onClose: () =>
               <option value="">Backlog</option>
               {sprints.map(sp => (
                 <option key={sp.id} value={sp.id}>{sp.name}</option>
+              ))}
+            </select>
+          </Prop>
+
+          <Prop label="Epic">
+            <select
+              value={story.epicId}
+              onChange={e => save({ epicId: e.target.value })}
+              style={selectStyle}
+            >
+              {epics.map(ep => (
+                <option key={ep.id} value={ep.id}>{ep.title}</option>
               ))}
             </select>
           </Prop>
