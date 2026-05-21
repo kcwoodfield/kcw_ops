@@ -43,6 +43,42 @@ export interface StoryDetailDto extends StoryDto {
   projectKey: string
   description: string | null
   sprintState: string | null
+  assigneeName: string | null
+  assigneeInitials: string | null
+  assigneeColor: string | null
+}
+
+export interface UserDto {
+  id: string
+  name: string
+  initials: string
+  color: string
+}
+
+export interface CommentDto {
+  id: string
+  authorId: string
+  authorName: string
+  authorInitials: string
+  authorColor: string
+  body: string
+  createdAt: string
+}
+
+export interface ActivityEventDto {
+  id: string
+  projectId: string
+  storyId: string | null
+  storyKey: string | null
+  sprintId: string | null
+  sprintName: string | null
+  actorId: string
+  actorName: string
+  actorInitials: string
+  actorColor: string
+  type: string
+  detail: string
+  createdAt: string
 }
 
 export interface EpicDto {
@@ -64,6 +100,7 @@ export interface UpdateStoryPayload {
   sprintId?: string
   clearSprint?: boolean
   dueDate?: string | null
+  assigneeId?: string | null
   labels?: string[]
 }
 
