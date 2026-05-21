@@ -28,7 +28,7 @@ export function useAppNavigate() {
   const navigate = useNavigate()
   const projectKey = useProjectKey()
   const view = useAppView()
-  const [searchParams] = useSearchParams()
+  const [searchParams, setSearchParams] = useSearchParams()
   const { sprintId, storyId } = parseSearchParams(searchParams)
 
   const goToProject = useCallback(
@@ -67,9 +67,12 @@ export function useAppNavigate() {
   )
 
   const closeStory = useCallback(() => {
-    if (!projectKey) return
-    navigate(projectPath(projectKey, view, { sprint: sprintId, story: null }))
-  }, [navigate, projectKey, view, sprintId])
+    setSearchParams(prev => {
+      const p = new URLSearchParams(prev)
+      p.delete('story')
+      return p
+    }, { replace: true })
+  }, [setSearchParams])
 
   return {
     projectKey,
