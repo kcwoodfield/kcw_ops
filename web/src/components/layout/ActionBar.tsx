@@ -1,6 +1,7 @@
 import { CalendarDays, LayoutDashboard, List } from 'lucide-react'
 import { useSprints } from '../../api/stories'
 import { useAppNavigate } from '../../hooks/useAppNavigate'
+import { useIsCompact } from '../../hooks/useMediaQuery'
 import { useUiStore } from '../../store/ui'
 import type { AppView } from '../../lib/routes'
 
@@ -19,6 +20,7 @@ export function ActionBar({ breadcrumb }: ActionBarProps) {
   const { activeProjectId } = useUiStore()
   const { data: sprints = [] } = useSprints(activeProjectId ?? '')
   const activeSprint = sprints.find(s => s.id === sprintId) ?? sprints.find(s => s.state === 'active')
+  const compact = useIsCompact()
 
   return (
     <div style={{
@@ -68,14 +70,30 @@ export function ActionBar({ breadcrumb }: ActionBarProps) {
 
       {activeSprint && <DaysLeft endDate={activeSprint.endDate} />}
 
-      <ViewSwitcher view={view} onChange={goToView} />
+      <ViewSwitcher view={view} onChange={goToView} compact={compact} />
 
       <div style={{ flex: 1 }} />
     </div>
   )
 }
 
-function ViewSwitcher({ view, onChange }: { view: AppView; onChange: (v: AppView) => void }) {
+function ViewSwitcher({ view, onChange, compact }: { view: AppView; onChange: (v: AppView) => void; compact: boolean }) {
+  if (compact) {
+    return (
+      <select
+        value={view}
+        onChange={e => onChange(e.target.value as AppView)}
+        style={{
+          padding: '3px 8px', flexShrink: 0,
+          background: 'var(--bg-1)', border: '1px solid var(--border)',
+          borderRadius: 4, fontSize: 12, fontWeight: 500, color: 'var(--fg)',
+        }}
+      >
+        {VIEWS.map(v => <option key={v.id} value={v.id}>{v.label}</option>)}
+      </select>
+    )
+  }
+
   return (
     <div style={{
       display: 'inline-flex', padding: 2,
