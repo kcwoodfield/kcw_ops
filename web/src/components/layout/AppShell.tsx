@@ -9,6 +9,7 @@ import { useSprints } from '../../api/stories'
 import type { AppView } from '../../lib/routes'
 import { isAppView, LAST_PROJECT_KEY, parseSearchParams, projectPath } from '../../lib/routes'
 import { useUiStore } from '../../store/ui'
+import { useIsCompact } from '../../hooks/useMediaQuery'
 
 export function AppShell() {
   const { projectKey } = useParams()
@@ -16,8 +17,9 @@ export function AppShell() {
   const [searchParams, setSearchParams] = useSearchParams()
   const navigate = useNavigate()
   const { data: projects = [] } = useProjects()
-  const { activeProjectId, activeSprintId, setActiveProject, setActiveSprint, sidebarCollapsed } = useUiStore()
+  const { activeProjectId, activeSprintId, setActiveProject, setActiveSprint, sidebarCollapsed, mobileSidebarOpen, setMobileSidebarOpen } = useUiStore()
   const { data: sprints = [] } = useSprints(activeProjectId ?? '')
+  const compact = useIsCompact()
 
   const project = projects.find(p => p.key === projectKey?.toUpperCase())
 
@@ -66,18 +68,27 @@ export function AppShell() {
 
   const breadcrumb = project ? [project.name] : ['kcw / ops']
 
+  // Close the slide-over on navigation and when leaving compact width.
+  useEffect(() => {
+    setMobileSidebarOpen(false)
+  }, [pathname, setMobileSidebarOpen])
+
+  useEffect(() => {
+    if (!compact) setMobileSidebarOpen(false)
+  }, [compact, setMobileSidebarOpen])
+
   return (
     <div style={{
       width: '100%',
       height: '100vh',
       display: 'grid',
-      gridTemplateColumns: sidebarCollapsed ? '52px 1fr' : '232px 1fr',
+      gridTemplateColumns: compact ? '1fr' : sidebarCollapsed ? '52px 1fr' : '232px 1fr',
       gridTemplateRows: '44px 44px 1fr',
       background: 'var(--bg)',
       color: 'var(--fg)',
       overflow: 'hidden',
     }}>
-      <Sidebar />
+      <Sidebar compact={compact} />
       <TopBar />
       <ActionBar breadcrumb={breadcrumb} />
       <main style={{
@@ -89,6 +100,17 @@ export function AppShell() {
           <Outlet />
         </ErrorBoundary>
       </main>
+
+      {compact && mobileSidebarOpen && (
+        <div
+          onClick={() => setMobileSidebarOpen(false)}
+          style={{
+            position: 'fixed', inset: 0,
+            background: 'rgba(0,0,0,0.45)',
+            zIndex: 19,
+          }}
+        />
+      )}
     </div>
   )
 }

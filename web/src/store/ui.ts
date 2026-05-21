@@ -18,11 +18,13 @@ interface UiState {
   cmdPaletteOpen: boolean
   theme: Theme
   sidebarCollapsed: boolean
+  mobileSidebarOpen: boolean
   setActiveProject: (projectId: string) => void
   setActiveSprint: (sprintId: string) => void
   setCmdPaletteOpen: (open: boolean) => void
   toggleTheme: () => void
   toggleSidebar: () => void
+  setMobileSidebarOpen: (open: boolean) => void
 }
 
 const initialTheme = getInitialTheme()
@@ -34,6 +36,7 @@ export const useUiStore = create<UiState>((set) => ({
   cmdPaletteOpen: false,
   theme: initialTheme,
   sidebarCollapsed: false,
+  mobileSidebarOpen: false,
   setActiveProject: (projectId) => set({ activeProjectId: projectId }),
   setActiveSprint: (sprintId) => set({ activeSprintId: sprintId }),
   setCmdPaletteOpen: (open) => set({ cmdPaletteOpen: open }),
@@ -43,4 +46,5 @@ export const useUiStore = create<UiState>((set) => ({
     return { theme: next }
   }),
   toggleSidebar: () => set(s => ({ sidebarCollapsed: !s.sidebarCollapsed })),
+  setMobileSidebarOpen: (open) => set({ mobileSidebarOpen: open }),
 }))

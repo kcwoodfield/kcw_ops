@@ -1,14 +1,16 @@
 import { useEffect, useRef, useState } from 'react'
-import { Bell, Filter, Plus, Search } from 'lucide-react'
+import { Bell, Filter, Menu, Plus, Search } from 'lucide-react'
 import { useCreateStory } from '../../api/stories'
 import { useAppNavigate } from '../../hooks/useAppNavigate'
 import { useUiStore } from '../../store/ui'
+import { useIsCompact } from '../../hooks/useMediaQuery'
 import { CreateEpicModal } from '../CreateEpicModal'
 import { CreateSprintModal } from '../CreateSprintModal'
 
 export function TopBar() {
   const { sprintId, openStory } = useAppNavigate()
-  const { activeProjectId, setCmdPaletteOpen } = useUiStore()
+  const { activeProjectId, setCmdPaletteOpen, setMobileSidebarOpen } = useUiStore()
+  const compact = useIsCompact()
   const createStory = useCreateStory()
   const [menuOpen, setMenuOpen] = useState(false)
   const [epicModalOpen, setEpicModalOpen] = useState(false)
@@ -45,22 +47,49 @@ export function TopBar() {
       minWidth: 0, flexShrink: 0,
       position: 'relative',
     }}>
-      {/* Center: search */}
-      <button
-        type="button"
-        onClick={() => setCmdPaletteOpen(true)}
-        style={{
-          position: 'absolute', left: '50%', transform: 'translateX(-50%)',
-          display: 'flex', alignItems: 'center', gap: 6,
-          padding: '0 8px', height: 26, width: 240,
-          background: 'var(--bg-1)', border: '1px solid var(--border)',
-          borderRadius: 4, color: 'var(--fg-3)', textAlign: 'left',
-        }}
-      >
-        <Search size={13} />
-        <span style={{ fontSize: 12, flex: 1 }}>Search issues, epics…</span>
-        <span className="kbd">⌘K</span>
-      </button>
+      {/* Compact: hamburger + search icon */}
+      {compact && (
+        <button
+          type="button"
+          aria-label="Open menu"
+          onClick={() => setMobileSidebarOpen(true)}
+          style={{ color: 'var(--fg-1)', padding: 5, borderRadius: 4, display: 'flex', marginRight: 2 }}
+          onMouseOver={e => (e.currentTarget.style.background = 'var(--hover)')}
+          onMouseOut={e => (e.currentTarget.style.background = 'transparent')}
+        >
+          <Menu size={17} />
+        </button>
+      )}
+
+      {compact ? (
+        <button
+          type="button"
+          aria-label="Search"
+          onClick={() => setCmdPaletteOpen(true)}
+          style={{ color: 'var(--fg-2)', padding: 5, borderRadius: 4, display: 'flex' }}
+          onMouseOver={e => (e.currentTarget.style.background = 'var(--hover)')}
+          onMouseOut={e => (e.currentTarget.style.background = 'transparent')}
+        >
+          <Search size={15} />
+        </button>
+      ) : (
+        /* Center: search */
+        <button
+          type="button"
+          onClick={() => setCmdPaletteOpen(true)}
+          style={{
+            position: 'absolute', left: '50%', transform: 'translateX(-50%)',
+            display: 'flex', alignItems: 'center', gap: 6,
+            padding: '0 8px', height: 26, width: 240,
+            background: 'var(--bg-1)', border: '1px solid var(--border)',
+            borderRadius: 4, color: 'var(--fg-3)', textAlign: 'left',
+          }}
+        >
+          <Search size={13} />
+          <span style={{ fontSize: 12, flex: 1 }}>Search issues, epics…</span>
+          <span className="kbd">⌘K</span>
+        </button>
+      )}
 
       <div style={{ flex: 1 }} />
 

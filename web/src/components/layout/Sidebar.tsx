@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ChevronRight, Inbox, Eye, Star, GitBranch, CalendarDays, Map, Zap, Sun, Moon, Pencil, Trash2 } from 'lucide-react'
+import { ChevronRight, Inbox, Eye, Star, GitBranch, CalendarDays, Map, Zap, Sun, Moon, Pencil, Trash2, X } from 'lucide-react'
 import { useDeleteProject, useProjects } from '../../api/projects'
 import { useUiStore } from '../../store/ui'
 import { useAppNavigate } from '../../hooks/useAppNavigate'
@@ -8,9 +8,9 @@ import { CreateProjectModal } from '../CreateProjectModal'
 import { ConfirmModal } from '../shared/ConfirmModal'
 import type { ProjectDto } from '../../types'
 
-export function Sidebar() {
+export function Sidebar({ compact = false }: { compact?: boolean }) {
   const { data: projects = [] } = useProjects()
-  const { activeProjectId, sidebarCollapsed } = useUiStore()
+  const { activeProjectId, sidebarCollapsed, mobileSidebarOpen } = useUiStore()
   const { goToProject, goToView } = useAppNavigate()
   const [projectModalOpen, setProjectModalOpen] = useState(false)
   const [editingProject, setEditingProject] = useState<ProjectDto | undefined>()
@@ -18,21 +18,35 @@ export function Sidebar() {
   const openCreate = () => { setEditingProject(undefined); setProjectModalOpen(true) }
   const openEdit = (p: ProjectDto) => { setEditingProject(p); setProjectModalOpen(true) }
 
+  // In compact mode the sidebar is always full width — the collapse toggle
+  // only applies to the desktop docked sidebar.
+  const collapsed = compact ? false : sidebarCollapsed
+
   return (
     <aside style={{
-      gridRow: '1 / span 3',
+      ...(compact
+        ? {
+            position: 'fixed', top: 0, left: 0, bottom: 0,
+            width: 232, zIndex: 20,
+            transform: mobileSidebarOpen ? 'translateX(0)' : 'translateX(-100%)',
+            transition: 'transform 0.2s ease',
+            boxShadow: mobileSidebarOpen ? '0 0 40px rgba(0,0,0,0.5)' : 'none',
+          }
+        : {
+            gridRow: '1 / span 3',
+            width: collapsed ? 52 : 232,
+            transition: 'width 0.18s ease',
+          }),
       background: 'var(--panel)',
       borderRight: '1px solid var(--border)',
       display: 'flex',
       flexDirection: 'column',
-      width: sidebarCollapsed ? 52 : 232,
       minWidth: 0,
       overflow: 'hidden',
-      transition: 'width 0.18s ease',
     }}>
-      <WorkspaceHeader />
+      <WorkspaceHeader collapsed={collapsed} compact={compact} />
 
-      {!sidebarCollapsed && (
+      {!collapsed && (
         <>
           <nav style={{ padding: '8px 6px 4px', display: 'flex', flexDirection: 'column', gap: 1 }}>
             <NavRow icon={<Inbox size={14} />} label="Inbox" trail="3" onClick={() => goToView('backlog')} />
@@ -73,27 +87,27 @@ export function Sidebar() {
   )
 }
 
-function WorkspaceHeader() {
-  const { theme, sidebarCollapsed, toggleSidebar } = useUiStore()
+function WorkspaceHeader({ collapsed, compact }: { collapsed: boolean; compact: boolean }) {
+  const { theme, toggleSidebar, setMobileSidebarOpen } = useUiStore()
   return (
     <div style={{
       height: 80,
-      padding: sidebarCollapsed ? '0' : '0 12px',
+      padding: collapsed ? '0' : '0 12px',
       display: 'flex',
       alignItems: 'center',
-      justifyContent: sidebarCollapsed ? 'center' : undefined,
+      justifyContent: collapsed ? 'center' : undefined,
       gap: 10,
       borderBottom: '1px solid var(--border)',
       flexShrink: 0,
     }}>
       <button
         type="button"
-        onClick={sidebarCollapsed ? toggleSidebar : undefined}
-        style={{ display: 'flex', padding: 0, cursor: sidebarCollapsed ? 'pointer' : 'default', flexShrink: 0 }}
+        onClick={collapsed ? toggleSidebar : undefined}
+        style={{ display: 'flex', padding: 0, cursor: collapsed ? 'pointer' : 'default', flexShrink: 0 }}
       >
         <Shield size={28} variant={theme === 'dark' ? 'dark' : 'light'} />
       </button>
-      {!sidebarCollapsed && (
+      {!collapsed && (
         <>
           <div style={{ flex: 1, minWidth: 0, lineHeight: 1.2 }}>
             <div style={{
@@ -107,11 +121,12 @@ function WorkspaceHeader() {
           </div>
           <button
             type="button"
-            onClick={toggleSidebar}
+            onClick={compact ? () => setMobileSidebarOpen(false) : toggleSidebar}
+            title={compact ? 'Close menu' : 'Collapse sidebar'}
             style={{ color: 'var(--fg-3)', padding: 4, borderRadius: 3, flexShrink: 0 }}
             onMouseOver={e => (e.currentTarget.style.background = 'var(--hover)')}
             onMouseOut={e => (e.currentTarget.style.background = 'transparent')}>
-            <ChevronRight size={12} />
+            {compact ? <X size={14} /> : <ChevronRight size={12} />}
           </button>
         </>
       )}
