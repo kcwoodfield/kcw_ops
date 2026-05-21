@@ -1,4 +1,5 @@
 using KcwOps.Api.Features.Stories.CreateStory;
+using KcwOps.Api.Features.Stories.DeleteStory;
 using KcwOps.Api.Features.Stories.GetStories;
 using KcwOps.Api.Features.Stories.GetStory;
 using KcwOps.Api.Features.Stories.ReorderStories;
@@ -93,5 +94,12 @@ public class StoriesController(IMediator mediator) : ControllerBase
         {
             return BadRequest(new { error = ex.Message });
         }
+    }
+
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
+    {
+        await mediator.Send(new DeleteStoryCommand(id), ct);
+        return NoContent();
     }
 }

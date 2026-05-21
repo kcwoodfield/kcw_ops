@@ -1,10 +1,11 @@
 import { useState } from 'react'
-import { ChevronRight } from 'lucide-react'
+import { ChevronRight, Pencil, Trash2 } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { get } from '../../api/client'
-import { useEpics } from '../../api/epics'
+import { useDeleteEpic, useEpics } from '../../api/epics'
 import { useUiStore } from '../../store/ui'
 import { useAppNavigate } from '../../hooks/useAppNavigate'
+import { CreateEpicModal } from '../CreateEpicModal'
 import { StatusDot, StoryId, PriorityBars, Pts } from '../story/StoryPrimitives'
 import type { EpicDto, StoryDto } from '../../types'
 
@@ -12,6 +13,8 @@ export function ListView() {
   const { activeProjectId } = useUiStore()
   const { openStory } = useAppNavigate()
   const projectId = activeProjectId ?? ''
+  const [editingEpic, setEditingEpic] = useState<EpicDto | undefined>()
+  const [epicModalOpen, setEpicModalOpen] = useState(false)
 
   const { data: epics = [], isLoading: epicsLoading } = useEpics(projectId)
   const { data: stories = [], isLoading: storiesLoading } = useAllStories(projectId)
@@ -25,43 +28,59 @@ export function ListView() {
   }
 
   return (
-    <div style={{ height: '100%', overflowY: 'auto' }}>
-      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-        <thead>
-          <tr style={{ borderBottom: '1px solid var(--border)' }}>
-            <Th style={{ paddingLeft: 16, width: 28 }} />
-            <Th>Story</Th>
-            <Th style={{ width: 90 }}>Status</Th>
-            <Th style={{ width: 90 }}>Priority</Th>
-            <Th style={{ width: 70 }}>Points</Th>
-            <Th style={{ width: 100 }}>Sprint</Th>
-            <Th style={{ width: 90, paddingRight: 16 }}>Due</Th>
-          </tr>
-        </thead>
-        <tbody>
-          {epics.map(epic => {
-            const epicStories = stories.filter(s => s.epicId === epic.id)
-            return (
-              <EpicGroup
-                key={epic.id}
-                epic={epic}
-                stories={epicStories}
-                onStoryClick={openStory}
-              />
-            )
-          })}
-        </tbody>
-      </table>
-    </div>
+    <>
+      <div style={{ height: '100%', overflowY: 'auto' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid var(--border)' }}>
+              <Th style={{ paddingLeft: 16, width: 28 }} />
+              <Th>Story</Th>
+              <Th style={{ width: 90 }}>Status</Th>
+              <Th style={{ width: 90 }}>Priority</Th>
+              <Th style={{ width: 70 }}>Points</Th>
+              <Th style={{ width: 100 }}>Sprint</Th>
+              <Th style={{ width: 90, paddingRight: 16 }}>Due</Th>
+            </tr>
+          </thead>
+          <tbody>
+            {epics.map(epic => {
+              const epicStories = stories.filter(s => s.epicId === epic.id)
+              return (
+                <EpicGroup
+                  key={epic.id}
+                  epic={epic}
+                  projectId={projectId}
+                  stories={epicStories}
+                  onStoryClick={openStory}
+                  onEdit={ep => { setEditingEpic(ep); setEpicModalOpen(true) }}
+                />
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
+      {projectId && (
+        <CreateEpicModal
+          projectId={projectId}
+          open={epicModalOpen}
+          onClose={() => setEpicModalOpen(false)}
+          epic={editingEpic}
+        />
+      )}
+    </>
   )
 }
 
-function EpicGroup({ epic, stories, onStoryClick }: {
+function EpicGroup({ epic, projectId, stories, onStoryClick, onEdit }: {
   epic: EpicDto
+  projectId: string
   stories: StoryDto[]
   onStoryClick: (id: string) => void
+  onEdit: (epic: EpicDto) => void
 }) {
   const [collapsed, setCollapsed] = useState(false)
+  const [hovered, setHovered] = useState(false)
+  const deleteEpic = useDeleteEpic(projectId)
   const done = stories.filter(s => s.status === 'done').length
   const total = stories.length
   const pct = total === 0 ? 0 : Math.round((done / total) * 100)
@@ -72,11 +91,11 @@ function EpicGroup({ epic, stories, onStoryClick }: {
         onClick={() => setCollapsed(c => !c)}
         style={{
           borderBottom: '1px solid var(--border)',
-          background: 'var(--bg-1)',
+          background: hovered ? 'var(--hover)' : 'var(--bg-1)',
           cursor: 'pointer',
         }}
-        onMouseOver={e => (e.currentTarget.style.background = 'var(--hover)')}
-        onMouseOut={e => (e.currentTarget.style.background = 'var(--bg-1)')}
+        onMouseOver={() => setHovered(true)}
+        onMouseOut={() => setHovered(false)}
       >
         <td style={{ paddingLeft: 16, width: 28 }}>
           <ChevronRight
@@ -103,6 +122,12 @@ function EpicGroup({ epic, stories, onStoryClick }: {
               }} />
             </div>
             <span className="mono" style={{ fontSize: 10.5, color: 'var(--fg-3)' }}>{pct}%</span>
+            {hovered && (
+              <div style={{ display: 'flex', gap: 2, marginLeft: 4 }} onClick={e => e.stopPropagation()}>
+                <EpicIconBtn title="Edit" onClick={() => onEdit(epic)}><Pencil size={11} /></EpicIconBtn>
+                <EpicIconBtn title="Delete" onClick={() => deleteEpic.mutate(epic.id)}><Trash2 size={11} /></EpicIconBtn>
+              </div>
+            )}
           </div>
         </td>
         <td style={{ paddingRight: 16, textAlign: 'right' }}>
@@ -216,6 +241,21 @@ function Th({ children, style }: { children?: React.ReactNode; style?: React.CSS
     }}>
       {children}
     </th>
+  )
+}
+
+function EpicIconBtn({ children, title, onClick }: { children: React.ReactNode; title: string; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      title={title}
+      onClick={onClick}
+      style={{ color: 'var(--fg-3)', padding: 3, borderRadius: 3, display: 'flex' }}
+      onMouseOver={e => (e.currentTarget.style.color = 'var(--fg)')}
+      onMouseOut={e => (e.currentTarget.style.color = 'var(--fg-3)')}
+    >
+      {children}
+    </button>
   )
 }
 

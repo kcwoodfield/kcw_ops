@@ -1,5 +1,7 @@
 using KcwOps.Api.Features.Epics.CreateEpic;
+using KcwOps.Api.Features.Epics.DeleteEpic;
 using KcwOps.Api.Features.Epics.GetEpics;
+using KcwOps.Api.Features.Epics.UpdateEpic;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,4 +18,15 @@ public class EpicsController(IMediator mediator) : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateEpicRequest req, CancellationToken ct) =>
         Ok(await mediator.Send(new CreateEpicCommand(req.ProjectId, req.Title, req.Color), ct));
+
+    [HttpPatch("{id:guid}")]
+    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateEpicRequest body, CancellationToken ct) =>
+        Ok(await mediator.Send(new UpdateEpicCommand(id, body.Title, body.Color), ct));
+
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
+    {
+        await mediator.Send(new DeleteEpicCommand(id), ct);
+        return NoContent();
+    }
 }

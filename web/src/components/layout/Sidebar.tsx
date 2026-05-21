@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { ChevronRight, Inbox, Eye, Star, GitBranch, CalendarDays, Map, Zap, Settings, Sun, Moon } from 'lucide-react'
-import { useProjects } from '../../api/projects'
+import { ChevronRight, Inbox, Eye, Star, GitBranch, CalendarDays, Map, Zap, Settings, Sun, Moon, Pencil, Trash2 } from 'lucide-react'
+import { useDeleteProject, useProjects } from '../../api/projects'
 import { useUiStore } from '../../store/ui'
 import { useAppNavigate } from '../../hooks/useAppNavigate'
 import { Shield } from '../Shield'
@@ -12,6 +12,10 @@ export function Sidebar() {
   const { activeProjectId, sidebarCollapsed } = useUiStore()
   const { goToProject, goToView } = useAppNavigate()
   const [projectModalOpen, setProjectModalOpen] = useState(false)
+  const [editingProject, setEditingProject] = useState<ProjectDto | undefined>()
+
+  const openCreate = () => { setEditingProject(undefined); setProjectModalOpen(true) }
+  const openEdit = (p: ProjectDto) => { setEditingProject(p); setProjectModalOpen(true) }
 
   return (
     <aside style={{
@@ -36,7 +40,7 @@ export function Sidebar() {
             <NavRow icon={<GitBranch size={14} />} label="Drafts" />
           </nav>
 
-          <SectionHeader label="Projects" action={<PlusIcon onClick={() => setProjectModalOpen(true)} />} />
+          <SectionHeader label="Projects" action={<PlusIcon onClick={openCreate} />} />
 
           <div style={{ flex: 1, overflowY: 'auto', padding: '0 6px 12px' }}>
             {projects.map(p => (
@@ -45,6 +49,7 @@ export function Sidebar() {
                 project={p}
                 active={p.id === activeProjectId}
                 onClick={() => goToProject(p.key, 'board')}
+                onEdit={() => openEdit(p)}
               />
             ))}
 
@@ -58,7 +63,11 @@ export function Sidebar() {
         </>
       )}
 
-      <CreateProjectModal open={projectModalOpen} onClose={() => setProjectModalOpen(false)} />
+      <CreateProjectModal
+        open={projectModalOpen}
+        onClose={() => setProjectModalOpen(false)}
+        project={editingProject}
+      />
     </aside>
   )
 }
@@ -158,23 +167,61 @@ function SectionHeader({ label, action, style }: {
   )
 }
 
-function ProjectRow({ project, active, onClick }: { project: ProjectDto; active: boolean; onClick: () => void }) {
+function ProjectRow({ project, active, onClick, onEdit }: {
+  project: ProjectDto; active: boolean; onClick: () => void; onEdit: () => void
+}) {
   const [hovered, setHovered] = useState(false)
+  const deleteProject = useDeleteProject()
+
+  return (
+    <div
+      style={{
+        display: 'flex', alignItems: 'center', gap: 0,
+        borderRadius: 4, marginBottom: 1,
+        background: active ? 'var(--active)' : hovered ? 'var(--hover)' : 'transparent',
+      }}
+      onMouseOver={() => setHovered(true)}
+      onMouseOut={() => setHovered(false)}
+    >
+      <button
+        type="button"
+        onClick={onClick}
+        style={{
+          flex: 1, display: 'flex', alignItems: 'center', gap: 8,
+          padding: '4px 8px',
+          color: active ? 'var(--fg)' : 'var(--fg-1)',
+          minWidth: 0,
+        }}
+      >
+        <span style={{ width: 8, height: 8, borderRadius: 2, background: project.color, flexShrink: 0 }} />
+        <span style={{ flex: 1, textAlign: 'left', fontSize: 12.5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{project.name}</span>
+        <span className="mono" style={{ fontSize: 10, color: 'var(--fg-3)', flexShrink: 0 }}>{project.key}</span>
+      </button>
+      {hovered && (
+        <div style={{ display: 'flex', alignItems: 'center', paddingRight: 4, gap: 1 }}>
+          <RowIconBtn title="Edit" onClick={e => { e.stopPropagation(); onEdit() }}>
+            <Pencil size={11} />
+          </RowIconBtn>
+          <RowIconBtn title="Delete" onClick={e => { e.stopPropagation(); deleteProject.mutate(project.id) }}>
+            <Trash2 size={11} />
+          </RowIconBtn>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function RowIconBtn({ children, title, onClick }: { children: React.ReactNode; title: string; onClick: React.MouseEventHandler }) {
   return (
     <button
       type="button"
+      title={title}
       onClick={onClick}
-      style={{
-        width: '100%', display: 'flex', alignItems: 'center', gap: 8,
-        padding: '4px 8px', borderRadius: 4, marginBottom: 1,
-        background: active ? 'var(--active)' : hovered ? 'var(--hover)' : 'transparent',
-        color: active ? 'var(--fg)' : 'var(--fg-1)',
-      }}
-      onMouseOver={() => setHovered(true)}
-      onMouseOut={() => setHovered(false)}>
-      <span style={{ width: 8, height: 8, borderRadius: 2, background: project.color, flexShrink: 0 }} />
-      <span style={{ flex: 1, textAlign: 'left', fontSize: 12.5 }}>{project.name}</span>
-      <span className="mono" style={{ fontSize: 10, color: 'var(--fg-3)' }}>{project.key}</span>
+      style={{ color: 'var(--fg-3)', padding: 3, borderRadius: 3, display: 'flex' }}
+      onMouseOver={e => (e.currentTarget.style.color = 'var(--fg)')}
+      onMouseOut={e => (e.currentTarget.style.color = 'var(--fg-3)')}
+    >
+      {children}
     </button>
   )
 }

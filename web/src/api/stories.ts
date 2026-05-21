@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { get, patch, post } from './client'
+import { del, get, patch, post } from './client'
 import type {
   CreateStoryPayload,
   SprintDto,
@@ -135,6 +135,28 @@ export function useCreateStory() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: (body: CreateStoryPayload) => post<StoryDetailDto>('/stories', body),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['stories'] })
+      qc.invalidateQueries({ queryKey: ['sprints'] })
+    },
+  })
+}
+
+export function useDeleteSprint() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => del(`/sprints/${id}`),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['sprints'] })
+      qc.invalidateQueries({ queryKey: ['stories'] })
+    },
+  })
+}
+
+export function useDeleteStory() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => del(`/stories/${id}`),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['stories'] })
       qc.invalidateQueries({ queryKey: ['sprints'] })

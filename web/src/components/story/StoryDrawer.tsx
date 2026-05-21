@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import * as Dialog from '@radix-ui/react-dialog'
-import { X } from 'lucide-react'
-import { useStory, useUpdateStory, useSprints } from '../../api/stories'
+import { Trash2, X } from 'lucide-react'
+import { useDeleteStory, useStory, useUpdateStory, useSprints } from '../../api/stories'
 import { useEpics } from '../../api/epics'
 import { useAppNavigate } from '../../hooks/useAppNavigate'
 import {
@@ -71,6 +71,7 @@ export function StoryDrawer() {
 function StoryDrawerBody({ storyId, onClose }: { storyId: string; onClose: () => void }) {
   const { data: story, isLoading, isError } = useStory(storyId)
   const update = useUpdateStory()
+  const deleteStory = useDeleteStory()
   const { data: epics = [] } = useEpics(story?.projectId ?? '')
   const { data: sprints = [] } = useSprints(story?.projectId ?? '')
   const [title, setTitle] = useState('')
@@ -115,6 +116,16 @@ function StoryDrawerBody({ storyId, onClose }: { storyId: string; onClose: () =>
           {story.epicTitle}
         </span>
         <span style={{ flex: 1 }} />
+        <button
+          type="button"
+          title="Delete story"
+          onClick={() => deleteStory.mutate(story.id, { onSuccess: onClose })}
+          style={{ display: 'flex', color: 'var(--fg-3)', padding: '4px 6px', borderRadius: 4 }}
+          onMouseOver={e => (e.currentTarget.style.color = 'var(--blocked)')}
+          onMouseOut={e => (e.currentTarget.style.color = 'var(--fg-3)')}
+        >
+          <Trash2 size={14} />
+        </button>
         <button type="button" onClick={onClose} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11.5, color: 'var(--fg-2)', padding: '4px 6px' }}>
           <X size={14} />
           Close

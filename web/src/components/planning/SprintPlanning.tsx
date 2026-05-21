@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { DndContext, DragOverlay, useDroppable, useDraggable, type DragEndEvent } from '@dnd-kit/core'
 import { CSS } from '@dnd-kit/utilities'
-import { ChevronRight, Play, CheckCircle, Plus } from 'lucide-react'
-import { useBacklog, useSprints, useUpdateStory, useUpdateSprint } from '../../api/stories'
+import { ChevronRight, Play, CheckCircle, Plus, Trash2 } from 'lucide-react'
+import { useBacklog, useDeleteSprint, useSprints, useUpdateStory, useUpdateSprint } from '../../api/stories'
 import { useEpics } from '../../api/epics'
 import { useUiStore } from '../../store/ui'
 import { useAppNavigate } from '../../hooks/useAppNavigate'
@@ -198,6 +198,7 @@ function SprintPanel({
   onStoryClick: (id: string) => void
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: 'sprint-drop' })
+  const deleteSprint = useDeleteSprint()
   const pct = Math.min(100, Math.round((sprintPoints / CAPACITY) * 100))
   const over = sprintPoints > CAPACITY
 
@@ -233,6 +234,11 @@ function SprintPanel({
         <button type="button" onClick={onNewSprint} style={iconBtnStyle} title="New sprint">
           <Plus size={13} />
         </button>
+        {sprint && (
+          <button type="button" onClick={() => deleteSprint.mutate(sprint.id)} style={iconBtnStyle} title="Delete sprint">
+            <Trash2 size={13} />
+          </button>
+        )}
 
         <div style={{ flex: 1 }} />
 

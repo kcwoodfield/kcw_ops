@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { get, post } from './client'
+import { del, get, patch, post } from './client'
 import type { EpicDto } from '../types'
 
 export function useEpics(projectId: string) {
@@ -17,6 +17,26 @@ export function useCreateEpic() {
       post<EpicDto>('/epics', payload),
     onSuccess: (_, { projectId }) => {
       qc.invalidateQueries({ queryKey: ['epics', projectId] })
+    },
+  })
+}
+
+export function useUpdateEpic(projectId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, ...body }: { id: string; title?: string; color?: string }) =>
+      patch<EpicDto>(`/epics/${id}`, body),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['epics', projectId] }),
+  })
+}
+
+export function useDeleteEpic(projectId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => del(`/epics/${id}`),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['epics', projectId] })
+      qc.invalidateQueries({ queryKey: ['stories'] })
     },
   })
 }

@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import * as Dialog from '@radix-ui/react-dialog'
 import { X } from 'lucide-react'
-import { useCreateEpic } from '../api/epics'
+import { useCreateEpic, useUpdateEpic } from '../api/epics'
+import type { EpicDto } from '../types'
 
 const PRESET_COLORS = [
   '#C84A40', '#C4953A', '#5B9E6E', '#5A99C4',
@@ -12,20 +13,40 @@ interface Props {
   projectId: string
   open: boolean
   onClose: () => void
+  epic?: EpicDto
 }
 
-export function CreateEpicModal({ projectId, open, onClose }: Props) {
+export function CreateEpicModal({ projectId, open, onClose, epic }: Props) {
   const [title, setTitle] = useState('')
   const [color, setColor] = useState(PRESET_COLORS[0])
   const createEpic = useCreateEpic()
+  const updateEpic = useUpdateEpic(projectId)
+
+  useEffect(() => {
+    if (open) {
+      setTitle(epic?.title ?? '')
+      setColor(epic?.color ?? PRESET_COLORS[0])
+    }
+  }, [open, epic])
+
+  const isEditing = !!epic
 
   const submit = () => {
     if (!title.trim()) return
-    createEpic.mutate(
-      { projectId, title: title.trim(), color },
-      { onSuccess: () => { setTitle(''); setColor(PRESET_COLORS[0]); onClose() } },
-    )
+    if (isEditing) {
+      updateEpic.mutate(
+        { id: epic.id, title: title.trim(), color },
+        { onSuccess: onClose },
+      )
+    } else {
+      createEpic.mutate(
+        { projectId, title: title.trim(), color },
+        { onSuccess: () => { setTitle(''); setColor(PRESET_COLORS[0]); onClose() } },
+      )
+    }
   }
+
+  const isPending = createEpic.isPending || updateEpic.isPending
 
   return (
     <Dialog.Root open={open} onOpenChange={v => !v && onClose()}>
@@ -42,7 +63,7 @@ export function CreateEpicModal({ projectId, open, onClose }: Props) {
         >
           <div style={{ display: 'flex', alignItems: 'center', marginBottom: 16 }}>
             <Dialog.Title style={{ fontSize: 14, fontWeight: 600, color: 'var(--fg)', flex: 1 }}>
-              New epic
+              {isEditing ? 'Edit epic' : 'New epic'}
             </Dialog.Title>
             <button type="button" onClick={onClose} style={{ color: 'var(--fg-3)', display: 'flex' }}>
               <X size={14} />
@@ -68,14 +89,8 @@ export function CreateEpicModal({ projectId, open, onClose }: Props) {
             </div>
             <div style={{ display: 'flex', gap: 6 }}>
               {PRESET_COLORS.map(c => (
-                <button
-                  key={c}
-                  type="button"
-                  onClick={() => setColor(c)}
-                  style={{
-                    width: 22, height: 22, borderRadius: 4, background: c,
-                    border: c === color ? '2px solid var(--fg)' : '2px solid transparent',
-                  }}
+                <button key={c} type="button" onClick={() => setColor(c)}
+                  style={{ width: 22, height: 22, borderRadius: 4, background: c, border: c === color ? '2px solid var(--fg)' : '2px solid transparent' }}
                 />
               ))}
             </div>
@@ -88,14 +103,14 @@ export function CreateEpicModal({ projectId, open, onClose }: Props) {
             <button
               type="button"
               onClick={submit}
-              disabled={!title.trim() || createEpic.isPending}
+              disabled={!title.trim() || isPending}
               style={{
                 fontSize: 12.5, padding: '6px 14px', borderRadius: 4,
                 background: 'var(--accent)', color: 'var(--accent-ink)', fontWeight: 600,
                 opacity: !title.trim() ? 0.5 : 1,
               }}
             >
-              Create epic
+              {isEditing ? 'Save changes' : 'Create epic'}
             </button>
           </div>
         </Dialog.Content>

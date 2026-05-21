@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import * as Dialog from '@radix-ui/react-dialog'
 import { X } from 'lucide-react'
-import { useCreateProject } from '../api/projects'
+import { useCreateProject, useUpdateProject } from '../api/projects'
+import type { ProjectDto } from '../types'
 
 const PRESET_COLORS = [
   '#C84A40', '#C4953A', '#5B9E6E', '#5A99C4',
@@ -11,23 +12,43 @@ const PRESET_COLORS = [
 interface Props {
   open: boolean
   onClose: () => void
+  project?: ProjectDto
 }
 
-export function CreateProjectModal({ open, onClose }: Props) {
+export function CreateProjectModal({ open, onClose, project }: Props) {
   const [name, setName] = useState('')
   const [key, setKey] = useState('')
   const [color, setColor] = useState(PRESET_COLORS[0])
   const createProject = useCreateProject()
+  const updateProject = useUpdateProject()
+
+  useEffect(() => {
+    if (open) {
+      setName(project?.name ?? '')
+      setKey(project?.key ?? '')
+      setColor(project?.color ?? PRESET_COLORS[0])
+    }
+  }, [open, project])
 
   const derivedKey = key || name.slice(0, 4).toUpperCase().replace(/[^A-Z]/g, '')
+  const isEditing = !!project
 
   const submit = () => {
     if (!name.trim() || !derivedKey) return
-    createProject.mutate(
-      { name: name.trim(), key: derivedKey, color },
-      { onSuccess: () => { setName(''); setKey(''); setColor(PRESET_COLORS[0]); onClose() } },
-    )
+    if (isEditing) {
+      updateProject.mutate(
+        { id: project.id, name: name.trim(), key: derivedKey, color },
+        { onSuccess: onClose },
+      )
+    } else {
+      createProject.mutate(
+        { name: name.trim(), key: derivedKey, color },
+        { onSuccess: onClose },
+      )
+    }
   }
+
+  const isPending = createProject.isPending || updateProject.isPending
 
   return (
     <Dialog.Root open={open} onOpenChange={v => !v && onClose()}>
@@ -44,7 +65,7 @@ export function CreateProjectModal({ open, onClose }: Props) {
         >
           <div style={{ display: 'flex', alignItems: 'center', marginBottom: 16 }}>
             <Dialog.Title style={{ fontSize: 14, fontWeight: 600, color: 'var(--fg)', flex: 1 }}>
-              New project
+              {isEditing ? 'Edit project' : 'New project'}
             </Dialog.Title>
             <button type="button" onClick={onClose} style={{ color: 'var(--fg-3)', display: 'flex' }}>
               <X size={14} />
@@ -91,14 +112,8 @@ export function CreateProjectModal({ open, onClose }: Props) {
             </div>
             <div style={{ display: 'flex', gap: 6 }}>
               {PRESET_COLORS.map(c => (
-                <button
-                  key={c}
-                  type="button"
-                  onClick={() => setColor(c)}
-                  style={{
-                    width: 22, height: 22, borderRadius: 4, background: c,
-                    border: c === color ? '2px solid var(--fg)' : '2px solid transparent',
-                  }}
+                <button key={c} type="button" onClick={() => setColor(c)}
+                  style={{ width: 22, height: 22, borderRadius: 4, background: c, border: c === color ? '2px solid var(--fg)' : '2px solid transparent' }}
                 />
               ))}
             </div>
@@ -111,14 +126,14 @@ export function CreateProjectModal({ open, onClose }: Props) {
             <button
               type="button"
               onClick={submit}
-              disabled={!name.trim() || !derivedKey || createProject.isPending}
+              disabled={!name.trim() || !derivedKey || isPending}
               style={{
                 fontSize: 12.5, padding: '6px 14px', borderRadius: 4,
                 background: 'var(--accent)', color: 'var(--accent-ink)', fontWeight: 600,
                 opacity: !name.trim() || !derivedKey ? 0.5 : 1,
               }}
             >
-              Create project
+              {isEditing ? 'Save changes' : 'Create project'}
             </button>
           </div>
         </Dialog.Content>
