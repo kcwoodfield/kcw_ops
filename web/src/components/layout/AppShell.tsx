@@ -72,14 +72,14 @@ export function AppShell() {
       height: '100vh',
       display: 'grid',
       gridTemplateColumns: sidebarCollapsed ? '52px 1fr' : '232px 1fr',
-      gridTemplateRows: '80px 44px 1fr',
+      gridTemplateRows: '44px 44px 1fr',
       background: 'var(--bg)',
       color: 'var(--fg)',
       overflow: 'hidden',
     }}>
       <Sidebar />
-      <TopBar breadcrumb={breadcrumb} />
-      <ActionBar />
+      <TopBar />
+      <ActionBar breadcrumb={breadcrumb} />
       <main style={{
         background: 'var(--bg)',
         overflow: 'hidden',

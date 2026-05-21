@@ -20,7 +20,7 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { Settings, Plus } from 'lucide-react'
-import { useCreateStory, useReorderStories, useSprints, useStories, useUpdateStory } from '../../api/stories'
+import { useReorderStories, useSprints, useStories, useUpdateStory } from '../../api/stories'
 import { useAppNavigate } from '../../hooks/useAppNavigate'
 import { useUiStore } from '../../store/ui'
 import type { StoryDto, StoryStatus } from '../../types'
@@ -79,17 +79,6 @@ export function Kanban() {
   )
   const updateStory = useUpdateStory()
   const reorderStories = useReorderStories()
-  const createStory = useCreateStory()
-
-  const handleNewIssue = async () => {
-    if (!activeProjectId) return
-    const story = await createStory.mutateAsync({
-      projectId: activeProjectId,
-      title: 'New issue',
-      sprintId: activeSprintId ?? undefined,
-    })
-    openStory(story.id)
-  }
   const [activeId, setActiveId] = useState<string | null>(null)
   const [items, setItems] = useState<ColumnItems>(() => buildColumnItems([]))
   const didDragRef = useRef(false)
@@ -253,20 +242,6 @@ export function Kanban() {
         <span className="mono" style={{ fontSize: 11, color: 'var(--fg-3)' }}>
           {stories.length} issues · {totalPts} pts
         </span>
-        <button
-          type="button"
-          disabled={!activeProjectId || createStory.isPending}
-          onClick={() => void handleNewIssue()}
-          style={{
-            display: 'inline-flex', alignItems: 'center', gap: 5,
-            height: 24, padding: '0 10px',
-            background: 'var(--accent)', color: 'var(--accent-ink)',
-            borderRadius: 'var(--r-sm)', fontSize: 11.5, fontWeight: 600,
-            opacity: !activeProjectId ? 0.5 : 1,
-          }}
-        >
-          <Plus size={11} /> New issue
-        </button>
         <span style={{ width: 1, height: 14, background: 'var(--border)' }} />
         <button
           type="button"
