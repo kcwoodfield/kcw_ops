@@ -59,3 +59,33 @@ public class Story
 
 public enum StoryStatus { Todo, Progress, Review, Done }
 public enum Priority { Urgent = 0, High = 1, Med = 2, Low = 3 }
+
+public class User
+{
+    public string Id { get; set; } = "";       // short slug: "jt", "mr", etc.
+    public string Name { get; set; } = "";
+    public string Initials { get; set; } = "";
+    public string Color { get; set; } = "#7c5cff";
+}
+
+public class Comment
+{
+    public Guid Id { get; set; }
+    public Guid StoryId { get; set; }
+    public string AuthorId { get; set; } = "";
+    public string Body { get; set; } = "";
+    public DateTime CreatedAt { get; set; }
+    public Story Story { get; set; } = null!;
+}
+
+public class ActivityEvent
+{
+    public Guid Id { get; set; }
+    public Guid ProjectId { get; set; }
+    public Guid? StoryId { get; set; }
+    public Guid? SprintId { get; set; }
+    public string ActorId { get; set; } = "";
+    public string Type { get; set; } = "";     // status_changed, comment_added, sprint_started, etc.
+    public string Detail { get; set; } = "";
+    public DateTime CreatedAt { get; set; }
+}
