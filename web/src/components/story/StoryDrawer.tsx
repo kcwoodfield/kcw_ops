@@ -197,6 +197,12 @@ function StoryDrawerBody({ storyId, onClose }: { storyId: string; onClose: () =>
             <textarea
               value={description}
               onChange={e => setDescription(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                  e.preventDefault()
+                  if (description !== (story.description ?? '')) save({ description })
+                }
+              }}
               placeholder="Add a description…"
               rows={6}
               style={{
