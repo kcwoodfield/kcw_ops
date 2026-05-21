@@ -16,19 +16,17 @@ public class ReorderStoriesHandler(AppDbContext db) : IRequestHandler<ReorderSto
             .Where(s => cmd.SprintId == null ? s.SprintId == null : s.SprintId == cmd.SprintId)
             .ToListAsync(ct);
 
-        var idSet = cmd.OrderedStoryIds.ToHashSet();
-        if (idSet.Count != cmd.OrderedStoryIds.Count)
-            throw new InvalidOperationException("Duplicate story ids in order list.");
-
         var storyMap = stories.ToDictionary(s => s.Id);
-        foreach (var id in cmd.OrderedStoryIds)
-        {
-            if (!storyMap.ContainsKey(id))
-                throw new InvalidOperationException("Story not found in this column.");
-        }
 
-        for (var i = 0; i < cmd.OrderedStoryIds.Count; i++)
-            storyMap[cmd.OrderedStoryIds[i]].SortOrder = (i + 1) * 1000;
+        // Filter to only IDs that are actually in this column — cross-column drags
+        // can send an ID that hasn't fully committed to the DB yet; silently skip those.
+        var toOrder = cmd.OrderedStoryIds
+            .Distinct()
+            .Where(id => storyMap.ContainsKey(id))
+            .ToList();
+
+        for (var i = 0; i < toOrder.Count; i++)
+            storyMap[toOrder[i]].SortOrder = (i + 1) * 1000;
 
         await db.SaveChangesAsync(ct);
         return Unit.Value;
