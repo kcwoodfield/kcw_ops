@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import * as Dialog from '@radix-ui/react-dialog'
-import { Trash2, X } from 'lucide-react'
+import { Send, Trash2, X } from 'lucide-react'
 import { useDeleteStory, useStory, useUpdateStory, useSprints } from '../../api/stories'
+import { useComments, useAddComment } from '../../api/comments'
+import { useUsers } from '../../api/users'
 import { ConfirmModal } from '../shared/ConfirmModal'
 import { useEpics } from '../../api/epics'
 import { useAppNavigate } from '../../hooks/useAppNavigate'
@@ -76,8 +78,13 @@ function StoryDrawerBody({ storyId, onClose }: { storyId: string; onClose: () =>
   const [confirmDelete, setConfirmDelete] = useState(false)
   const { data: epics = [] } = useEpics(story?.projectId ?? '')
   const { data: sprints = [] } = useSprints(story?.projectId ?? '')
+  const { data: users = [] } = useUsers()
+  const { data: comments = [] } = useComments(storyId)
+  const addComment = useAddComment(storyId)
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
+  const [commentBody, setCommentBody] = useState('')
+  const [commentAuthor, setCommentAuthor] = useState('kcw')
 
   useEffect(() => {
     if (story) {
@@ -205,6 +212,65 @@ function StoryDrawerBody({ storyId, onClose }: { storyId: string; onClose: () =>
               }}
             />
           </Section>
+
+          <Section title="Activity" trail={comments.length ? `${comments.length}` : undefined}>
+            {comments.length > 0 && (
+              <div style={{ marginBottom: 12 }}>
+                {comments.map(c => (
+                  <div key={c.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 9, padding: '6px 0', fontSize: 12.5 }}>
+                    <span style={{ width: 22, height: 22, borderRadius: '50%', background: c.authorColor, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9.5, fontWeight: 700, color: '#fff' }}>
+                      {c.authorInitials}
+                    </span>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <span style={{ fontWeight: 500, color: 'var(--fg)' }}>{c.authorName}</span>
+                      <span className="mono" style={{ marginLeft: 8, fontSize: 10.5, color: 'var(--fg-3)' }}>
+                        {new Date(c.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                      <div style={{ marginTop: 3, color: 'var(--fg-1)', lineHeight: 1.5 }}>{c.body}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, background: 'var(--bg-1)', border: '1px solid var(--border)', borderRadius: 6, padding: '8px 10px' }}>
+              <select
+                value={commentAuthor}
+                onChange={e => setCommentAuthor(e.target.value)}
+                style={{ fontSize: 11, background: 'transparent', border: 'none', color: 'var(--fg-2)', padding: 0, flexShrink: 0, marginTop: 1 }}
+              >
+                {users.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
+              </select>
+              <textarea
+                value={commentBody}
+                onChange={e => setCommentBody(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                    e.preventDefault()
+                    if (commentBody.trim()) {
+                      addComment.mutate({ authorId: commentAuthor, body: commentBody.trim() })
+                      setCommentBody('')
+                    }
+                  }
+                }}
+                placeholder="Leave a comment…"
+                rows={2}
+                style={{ flex: 1, fontSize: 12.5, color: 'var(--fg)', background: 'transparent', border: 'none', outline: 'none', resize: 'none', lineHeight: 1.5 }}
+              />
+              <button
+                type="button"
+                disabled={!commentBody.trim() || addComment.isPending}
+                onClick={() => {
+                  if (!commentBody.trim()) return
+                  addComment.mutate({ authorId: commentAuthor, body: commentBody.trim() })
+                  setCommentBody('')
+                }}
+                style={{ color: commentBody.trim() ? 'var(--accent)' : 'var(--fg-4)', padding: 4, flexShrink: 0 }}
+              >
+                <Send size={13} />
+              </button>
+            </div>
+          </Section>
         </div>
 
         <aside style={{ overflow: 'auto', padding: '14px 14px 24px' }}>
@@ -293,10 +359,22 @@ function StoryDrawerBody({ storyId, onClose }: { storyId: string; onClose: () =>
           </Prop>
 
           <Prop label="Assignee">
-            <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <AssigneeAvatar assigneeId={story.assigneeId} />
-              <span style={{ fontSize: 12.5, color: 'var(--fg-3)' }}>Unassigned</span>
-            </span>
+            <select
+              value={story.assigneeId ?? ''}
+              onChange={e => save({ assigneeId: e.target.value || null })}
+              style={selectStyle}
+            >
+              <option value="">Unassigned</option>
+              {users.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
+            </select>
+            {story.assigneeId && story.assigneeName && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 5 }}>
+                <span style={{ width: 18, height: 18, borderRadius: '50%', background: story.assigneeColor ?? '#7c5cff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 700, color: '#fff', flexShrink: 0 }}>
+                  {story.assigneeInitials}
+                </span>
+                <span style={{ fontSize: 12, color: 'var(--fg-2)' }}>{story.assigneeName}</span>
+              </div>
+            )}
           </Prop>
         </aside>
       </div>
