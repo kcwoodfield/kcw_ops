@@ -24,7 +24,7 @@ export function useCreateEpic() {
 export function useUpdateEpic(projectId: string) {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: ({ id, ...body }: { id: string; title?: string; color?: string }) =>
+    mutationFn: ({ id, ...body }: { id: string; title?: string; color?: string; startDate?: string | null; endDate?: string | null; clearStartDate?: boolean; clearEndDate?: boolean }) =>
       patch<EpicDto>(`/epics/${id}`, body),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['epics', projectId] }),
   })

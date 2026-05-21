@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ChevronRight, Inbox, Eye, Star, GitBranch, CalendarDays, Map, Zap, Settings, Sun, Moon, Pencil, Trash2 } from 'lucide-react'
+import { ChevronRight, Inbox, Eye, Star, GitBranch, CalendarDays, Map, Zap, Sun, Moon, Pencil, Trash2 } from 'lucide-react'
 import { useDeleteProject, useProjects } from '../../api/projects'
 import { useUiStore } from '../../store/ui'
 import { useAppNavigate } from '../../hooks/useAppNavigate'
@@ -56,7 +56,7 @@ export function Sidebar() {
 
             <SectionHeader label="Views" style={{ padding: '20px 8px 6px 8px' }} />
             <NavRow icon={<Zap size={14} />} label="Sprint planning" onClick={() => goToView('planning')} />
-            <NavRow icon={<Map size={14} />} label="Roadmap" />
+            <NavRow icon={<Map size={14} />} label="Roadmap" onClick={() => goToView('roadmap')} />
             <NavRow icon={<CalendarDays size={14} />} label="Releases" onClick={() => goToView('calendar')} />
           </div>
 
@@ -243,21 +243,9 @@ function UserFooter() {
     <div style={{
       padding: '8px 10px',
       borderTop: '1px solid var(--border)',
-      display: 'flex', alignItems: 'center', gap: 8,
+      display: 'flex', alignItems: 'center',
       flexShrink: 0,
     }}>
-      <div style={{
-        width: 22, height: 22, borderRadius: '50%',
-        background: 'var(--accent-bg)',
-        border: '1px solid var(--accent-line)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontFamily: 'var(--font-mono)', fontSize: 9.5, fontWeight: 600,
-        color: 'var(--accent-fg)', textTransform: 'uppercase',
-      }}>me</div>
-      <div style={{ flex: 1, minWidth: 0, lineHeight: 1.15 }}>
-        <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--fg)' }}>You</div>
-        <div className="mono" style={{ fontSize: 10, color: 'var(--fg-3)' }}>staff PM</div>
-      </div>
       <button
         type="button"
         title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
@@ -266,13 +254,6 @@ function UserFooter() {
         onMouseOver={e => (e.currentTarget.style.background = 'var(--hover)')}
         onMouseOut={e => (e.currentTarget.style.background = 'transparent')}>
         {theme === 'dark' ? <Sun size={13} /> : <Moon size={13} />}
-      </button>
-      <button
-        type="button"
-        style={{ color: 'var(--fg-3)', padding: 4, borderRadius: 3, display: 'flex' }}
-        onMouseOver={e => (e.currentTarget.style.background = 'var(--hover)')}
-        onMouseOut={e => (e.currentTarget.style.background = 'transparent')}>
-        <Settings size={13} />
       </button>
     </div>
   )

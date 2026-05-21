@@ -87,6 +87,8 @@ export interface EpicDto {
   color: string
   totalPoints: number
   donePoints: number
+  startDate: string | null
+  endDate: string | null
 }
 
 export interface UpdateStoryPayload {

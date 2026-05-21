@@ -35,7 +35,7 @@ export function ListView() {
           <thead>
             <tr style={{ borderBottom: '1px solid var(--border)' }}>
               <Th style={{ paddingLeft: 16, width: 28 }} />
-              <Th>Story</Th>
+              <Th>Title</Th>
               <Th style={{ width: 90 }}>Status</Th>
               <Th style={{ width: 90 }}>Priority</Th>
               <Th style={{ width: 70 }}>Points</Th>

@@ -15,7 +15,9 @@ public class GetEpicsHandler(AppDbContext db) : IRequestHandler<GetEpicsQuery, L
                 e.Title,
                 e.Color,
                 e.Stories.Sum(s => s.Points),
-                e.Stories.Where(s => s.Status == StoryStatus.Done).Sum(s => s.Points)
+                e.Stories.Where(s => s.Status == StoryStatus.Done).Sum(s => s.Points),
+                e.StartDate,
+                e.EndDate
             ))
             .ToListAsync(ct);
 }

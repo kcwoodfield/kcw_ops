@@ -24,6 +24,6 @@ public class CreateEpicHandler(AppDbContext db) : IRequestHandler<CreateEpicComm
         db.Epics.Add(epic);
         await db.SaveChangesAsync(ct);
 
-        return new EpicDto(epic.Id, epic.Title, epic.Color, 0, 0);
+        return new EpicDto(epic.Id, epic.Title, epic.Color, 0, 0, null, null);
     }
 }

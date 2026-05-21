@@ -14,8 +14,12 @@ public class UpdateEpicHandler(AppDbContext db) : IRequestHandler<UpdateEpicComm
 
         if (cmd.Title is not null) epic.Title = cmd.Title.Trim();
         if (cmd.Color is not null) epic.Color = cmd.Color;
+        if (cmd.ClearStartDate) epic.StartDate = null;
+        else if (cmd.StartDate is not null) epic.StartDate = cmd.StartDate;
+        if (cmd.ClearEndDate) epic.EndDate = null;
+        else if (cmd.EndDate is not null) epic.EndDate = cmd.EndDate;
 
         await db.SaveChangesAsync(ct);
-        return new EpicDto(epic.Id, epic.Title, epic.Color, 0, 0);
+        return new EpicDto(epic.Id, epic.Title, epic.Color, 0, 0, epic.StartDate, epic.EndDate);
     }
 }

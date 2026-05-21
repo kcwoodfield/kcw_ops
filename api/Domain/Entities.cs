@@ -16,6 +16,8 @@ public class Epic
     public Guid ProjectId { get; set; }
     public string Title { get; set; } = "";
     public string Color { get; set; } = "#7c5cff";
+    public DateOnly? StartDate { get; set; }
+    public DateOnly? EndDate { get; set; }
     public Project Project { get; set; } = null!;
     public ICollection<Story> Stories { get; set; } = [];
 }

@@ -8,6 +8,7 @@ import { Kanban } from './components/kanban/Kanban'
 import { SprintPlanning } from './components/planning/SprintPlanning'
 import { ListView } from './components/list/ListView'
 import { StoryDrawer } from './components/story/StoryDrawer'
+import { RoadmapView } from './components/roadmap/RoadmapView'
 import { ViewPlaceholder } from './components/shared/ViewPlaceholder'
 import { LAST_PROJECT_KEY } from './lib/routes'
 
@@ -28,6 +29,7 @@ export default function App() {
           <Route path="planning" element={<SprintPlanning />} />
           <Route path="list" element={<ListView />} />
           <Route path="calendar" element={<CalendarView />} />
+          <Route path="roadmap" element={<RoadmapView />} />
           <Route path="activity" element={<ActivityLog />} />
         </Route>
         <Route path="*" element={<RootRedirect />} />

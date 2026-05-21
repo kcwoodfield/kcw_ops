@@ -21,7 +21,7 @@ public class EpicsController(IMediator mediator) : ControllerBase
 
     [HttpPatch("{id:guid}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateEpicRequest body, CancellationToken ct) =>
-        Ok(await mediator.Send(new UpdateEpicCommand(id, body.Title, body.Color), ct));
+        Ok(await mediator.Send(new UpdateEpicCommand(id, body.Title, body.Color, body.StartDate, body.EndDate, body.ClearStartDate, body.ClearEndDate), ct));
 
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
