@@ -50,13 +50,15 @@ export function StoryDrawer() {
         <Dialog.Content
           style={{
             position: 'fixed',
-            top: 0,
-            right: 0,
-            bottom: 0,
-            width: 'min(860px, 100vw)',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: 'min(1020px, 95vw)',
+            maxHeight: '90vh',
             zIndex: 50,
             background: 'var(--panel)',
-            borderLeft: '1px solid var(--border)',
+            border: '1px solid var(--border)',
+            borderRadius: 8,
             display: 'flex',
             flexDirection: 'column',
             overflow: 'hidden',
@@ -138,7 +140,6 @@ function StoryDrawerBody({ storyId, onClose }: { storyId: string; onClose: () =>
         <button type="button" onClick={onClose} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11.5, color: 'var(--fg-2)', padding: '4px 6px' }}>
           <X size={14} />
           Close
-          <span className="kbd" style={{ marginLeft: 2 }}>Esc</span>
         </button>
       </header>
 

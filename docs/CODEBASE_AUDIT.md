@@ -1,8 +1,21 @@
 # kcw / ops — Principal Engineer Codebase Audit
 
-**Date:** 2026-05-20  
+**Date:** 2026-05-20 (Phase 1 baseline) — **updated 2026-05-21**
 **Scope:** Full stack (`api/`, `web/`, `docs/`, infra)  
 **Auditor lens:** Domain-driven design (strategic), **vertical slice architecture**, CQRS, and pragmatic “modern modular monolith” engineering
+
+## Resolved since this audit (Phases 2–4)
+
+| Finding | Resolution |
+|---------|-----------|
+| P3 — Delete story missing | ✅ `DeleteStory` slice added |
+| P3 — Sprint lifecycle missing | ✅ `StartSprint`, `CompleteSprint`, `DeleteSprint` added |
+| P3 — Activity / comments / users missing | ✅ Phase 4 complete — `User`, `Comment`, `ActivityEvent` entities; full API + UI |
+| P3 — No error boundaries | ✅ `ErrorBoundary` wraps `<Outlet />` in `AppShell` |
+| P3 — Kanban “Loading sprint…” forever | ✅ Empty-sprints state added |
+| Audit note — “re-run after Phase 2” | Codebase is now at Phase 4 complete; re-run recommended before Phase 5 (auth) |
+
+Remaining open items from this audit (P0–P2) are still valid: FluentValidation pipeline, `ProblemDetails` middleware, unique indexes, `VITE_API_URL` env var.
 
 ---
 

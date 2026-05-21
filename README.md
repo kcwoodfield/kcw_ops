@@ -6,31 +6,35 @@ Personal project-management tool. Linear × Jira — built for a PM/engineer who
 
 | Layer | Tech |
 |-------|------|
-| Frontend | React 19 + TypeScript + Shadcn UI (Radix + Tailwind) |
+| Frontend | React 19 + TypeScript + Vite, TanStack Query, Zustand, @dnd-kit, Radix UI |
 | Backend | .NET 10 / C# — MediatR, vertical slice architecture, CQRS |
 | Database | PostgreSQL 16 (Docker) |
-| State | TanStack Query (server) + Zustand (UI) |
+| Styling | CSS custom properties (dark-default design system) |
 
 ## Data model
 
 ```
-Project → Epic → Sprint → Story
+Project
+├── Epics     — structural categories ("what kind of work")
+├── Sprints   — time-boxed iterations ("when")
+└── Stories   — individual work items, optionally assigned to an epic and/or sprint
 ```
 
-Stories not assigned to a sprint live in the **Backlog** (first-class, not an afterthought).
+Stories with no sprint assignment live in the **Backlog** (first-class, not an afterthought).
+Epic and Sprint are orthogonal — a story belongs to an epic for categorization and a sprint for scheduling.
 
 ## Views
 
-| # | Surface |
-|---|---------|
-| 01 | App shell + Kanban board |
-| 02 | Sprint planning (split pane + capacity meter) |
-| 03 | Backlog table |
-| 04 | List view (grouped by Epic) |
-| 05 | Calendar / Gantt |
-| 06 | Story detail drawer |
-| 07 | Activity log |
-| 08 | Sign in |
+| # | Surface | Status |
+|---|---------|--------|
+| 01 | App shell + Kanban board | ✅ |
+| 02 | Sprint planning (split pane + capacity meter) | ✅ |
+| 03 | Backlog table | ✅ |
+| 04 | List view (grouped by Epic) | ✅ |
+| 05 | Calendar / Gantt | ✅ |
+| 06 | Story detail drawer | ✅ |
+| 07 | Activity log + comments | ✅ |
+| 08 | Sign in | ⬜ Phase 5 |
 
 ## Running locally
 
@@ -57,31 +61,52 @@ cd web && npm install && npm run dev
 
 ```
 ops/
-├── api/              .NET backend
-│   ├── Controllers/
-│   ├── Domain/
-│   ├── Features/     vertical slices (Commands + Queries)
-│   └── Infrastructure/
-├── web/              React frontend
-│   └── src/
-│       ├── api/      TanStack Query hooks
-│       ├── components/
-│       ├── store/    Zustand
-│       └── types/
+├── api/
+│   ├── Controllers/          thin HTTP edge — delegates to MediatR
+│   ├── Domain/               entity POCOs
+│   ├── Features/             vertical slices — one folder per use case
+│   │   ├── Stories/
+│   │   ├── Sprints/
+│   │   ├── Epics/
+│   │   ├── Activity/
+│   │   └── Users/
+│   └── Infrastructure/Persistence/
+├── web/src/
+│   ├── api/                  TanStack Query hooks (per-domain files)
+│   ├── components/           React components by domain
+│   ├── store/                Zustand (activeProjectId, activeSprintId)
+│   ├── hooks/                useAppNavigate, etc.
+│   ├── lib/                  route helpers
+│   └── types/                shared TS interfaces mirroring API DTOs
 └── docs/
-    ├── BUILD_PLAN.md  phased roadmap
-    └── design/        HTML prototype — open docs/design/index.html
+    ├── BUILD_PLAN.md          phased roadmap
+    ├── CODEBASE_AUDIT.md      architecture audit (Phase 1 baseline)
+    └── design/                HTML prototype — open docs/design/index.html
 ```
 
-## Build plan
+## URL structure
 
-Phased roadmap from the current read-only Kanban to full app: [`docs/BUILD_PLAN.md`](docs/BUILD_PLAN.md).
+```
+/p/:projectKey/board?sprint=<uuid>&story=<uuid>
+/p/:projectKey/backlog
+/p/:projectKey/planning
+/p/:projectKey/list
+/p/:projectKey/calendar
+/p/:projectKey/activity
+/login                         (Phase 5)
+```
 
 ## Design reference
 
-The `docs/design/index.html` file is a living prototype of all 8 surfaces. Open it with a local server to see the full design canvas with light/dark mode and accent color controls:
+`docs/design/index.html` is a living prototype of all 8 surfaces with light/dark mode and accent color controls:
 
 ```bash
 cd docs/design && python3 -m http.server 8080
 # → http://localhost:8080
 ```
+
+## Build plan
+
+Phased roadmap: [`docs/BUILD_PLAN.md`](docs/BUILD_PLAN.md).
+
+**Current phase:** 5 — Auth (`/login`, route guards, env-based API URL).

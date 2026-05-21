@@ -2,7 +2,7 @@
 
 Living roadmap from prototype → production app. Design reference: [`docs/design/index.html`](design/index.html). Agent context: [`CLAUDE.md`](../CLAUDE.md).
 
-**Last updated:** 2026-05-20 (Phase 3 complete)
+**Last updated:** 2026-05-21 (Phase 4 complete)
 
 ---
 
@@ -12,14 +12,16 @@ Living roadmap from prototype → production app. Design reference: [`docs/desig
 |-----------|--------|
 | Infra + seed data | ✅ |
 | Read API (programs → stories) | ✅ |
-| Story CRUD API (GET/PATCH/POST) | ✅ |
+| Story CRUD API (GET/PATCH/POST/DELETE) | ✅ |
 | App shell + live Kanban | ✅ |
 | Story drawer + inline edits | ✅ |
 | **URL routing (`react-router-dom`)** | ✅ |
 | Kanban drag-and-drop | ✅ `@dnd-kit/core` |
 | ⌘K command palette | ✅ |
 | Backlog / planning / list views | ✅ |
-| Auth | ⬜ |
+| Calendar / Gantt | ✅ |
+| Activity log + comments + assignees | ✅ |
+| Auth | ⬜ Phase 5 |
 
 ---
 
@@ -29,24 +31,24 @@ Living roadmap from prototype → production app. Design reference: [`docs/desig
 |-------|--------|
 | Postgres (Docker `:5435`) | Done — `docker compose up -d` |
 | .NET API (`:5050`) | Done — dev migrate + seed on startup |
-| Read API | Done — programs, sprints, epics, stories (incl. `backlogOnly`) |
-| Write API | Partial — `CreateStory`, `UpdateStory` (no delete, batch, or sprint transitions) |
-| React app (`:5175`) | Partial — shell, routed views, Kanban, story drawer |
+| Read API | Done — projects, sprints, epics, stories, users, activity |
+| Write API | Done — full CRUD for stories; sprint lifecycle; comments; assignees |
+| React app (`:5175`) | Done — all 7 implemented surfaces routed and functional |
 | Client routing | Done — `react-router-dom` v7 |
 | Design prototype | Done — 8 surfaces in `docs/design/` |
-| Auth | Not started |
+| Auth | Not started — Phase 5 |
 
 ### Surface checklist (design → app)
 
 | # | Surface | Design | Frontend | API |
 |---|---------|--------|----------|-----|
-| 01 | App shell + Kanban | ✅ | 🟡 board + drawer + DnD | 🟡 GET/PATCH stories |
+| 01 | App shell + Kanban | ✅ | ✅ board + drawer + DnD | ✅ GET/PATCH/DELETE stories |
 | 02 | Sprint planning | ✅ | ✅ DnD, capacity meter, start/complete/delete sprint | ✅ GET/PATCH/DELETE sprints |
 | 03 | Backlog table | ✅ | ✅ table, filters, checkboxes, move-to-sprint | ✅ GET `backlogOnly` |
 | 04 | List (by Epic) | ✅ | ✅ epic groups, progress bars, inline edit/delete | ✅ GET epics + stories |
 | 05 | Calendar / Gantt | ✅ | ✅ sprint timeline gantt, today line, nav | 🟡 GET sprints (no date-range filter yet) |
-| 06 | Story detail drawer | ✅ | 🟡 drawer + edits; `?story=` deep link | 🟡 GET/PATCH story |
-| 07 | Activity log | ✅ | ⬜ `/activity` not in router yet | ⬜ Activity entity + feed |
+| 06 | Story detail drawer | ✅ | ✅ drawer + edits + comments + assignee | ✅ GET/PATCH story + comments |
+| 07 | Activity log | ✅ | ✅ day-grouped feed, sparkline, `/activity` route | ✅ Activity entity + GET feed |
 | 08 | Sign in | ✅ | ⬜ | ⬜ auth |
 
 Legend: ✅ done · 🟡 partial · ⬜ not started
@@ -113,14 +115,14 @@ Legend: ✅ done · 🟡 partial · ⬜ not started
 
 Sidebar: project rows → `goToProject`; Inbox → `backlog`; Sprint planning → `planning`; Releases → `calendar`.
 
-### Routing checklist ✅ (2026-05-20)
+### Routing checklist ✅ (2026-05-21)
 
 - [x] `BrowserRouter` in `main.tsx`
 - [x] Route table in `App.tsx`
 - [x] `AppShell` + URL ↔ Zustand sync
 - [x] TopBar + Sidebar use `navigate` / `useAppNavigate`
-- [x] Story drawer deep-linked
-- [ ] `/activity` route + sidebar link
+- [x] Story drawer deep-linked (`?story=<uuid>`)
+- [x] `/p/:projectKey/activity` route + `ActivityLog` component
 - [ ] `/login` route (Phase 5)
 
 ---
@@ -225,29 +227,37 @@ Goal: replace placeholders at `/backlog`, `/planning`, `/list` with real surface
 
 ---
 
-## Phase 4 — Activity & collaboration
+## Phase 4 — Activity & collaboration ✅ (2026-05-21)
 
 ### 4.1 Activity log (surface 07)
 
-- [ ] `ActivityEvent` domain + `GET /api/activity`
-- [ ] `ActivityLog.tsx` + `/activity` route
+- [x] `ActivityEvent` domain entity
+- [x] `GET /api/activity?projectId=` — last 100 events, enriched with actor/story/sprint names
+- [x] Activity events emitted on: status change, points change, sprint assignment, assignee change, sprint start/complete, comment added
+- [x] `ActivityLog.tsx` — day-grouped feed, sparkline, relative timestamps, 30s polling
+- [x] `/p/:projectKey/activity` route
 
 ### 4.2 Comments (drawer)
 
-- [ ] `Comment` entity + POST endpoint
-- [ ] Thread in drawer
+- [x] `Comment` entity + `POST /api/stories/{id}/comments`
+- [x] `GET /api/stories/{id}/comments` with author enrichment
+- [x] Comment thread in story drawer with author avatars
 
 ### 4.3 Real assignees
 
-- [ ] `User` entity + seed personas (fictional names only)
+- [x] `User` entity + seed personas (fictional names only — `kcw`, `jt`, `mr`, `np`, `lc`)
+- [x] `GET /api/users`
+- [x] Assignee picker in story drawer with avatar preview
+- [x] `assigneeId` on `UpdateStory` + `StoryDetailDto`
 
 ---
 
 ## Phase 5 — Auth (surface 08)
 
 - [ ] `LoginPage` at `/login`
-- [ ] API auth + route guards
-- [ ] Env-based API URL for production
+- [ ] API auth scheme + `[Authorize]` on controllers
+- [ ] Route guards in React (redirect unauthenticated → `/login`)
+- [ ] `VITE_API_URL` env var replacing hardcoded `localhost:5050`
 
 ---
 
@@ -265,14 +275,14 @@ Goal: replace placeholders at `/backlog`, `/planning`, `/list` with real surface
 ## Suggested build order
 
 ```
-2.1 Backlog                        ← current focus
-2.2 Sprint planning
-2.3 List view
-3.1 Calendar
-3.2 activity route + shell polish
-4.x Activity + comments
-5 Auth
-6 CI / E2E
+2.1 Backlog                        ✅
+2.2 Sprint planning                ✅
+2.3 List view                      ✅
+3.1 Calendar                       ✅
+3.2 Shell polish + error boundary  ✅
+4.x Activity + comments + users    ✅
+5   Auth                           ← current focus
+6   CI / E2E
 ```
 
 ---
