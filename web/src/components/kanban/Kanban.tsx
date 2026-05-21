@@ -22,6 +22,7 @@ import { CSS } from '@dnd-kit/utilities'
 import { Settings, Plus } from 'lucide-react'
 import { useReorderStories, useSprints, useStories, useUpdateStory } from '../../api/stories'
 import { useAppNavigate } from '../../hooks/useAppNavigate'
+import { useIsCompact } from '../../hooks/useMediaQuery'
 import { useUiStore } from '../../store/ui'
 import { EpicFilterPopover } from '../shared/EpicFilterPopover'
 import type { StoryDto, StoryStatus } from '../../types'
@@ -80,6 +81,7 @@ export function Kanban() {
   )
   const updateStory = useUpdateStory()
   const reorderStories = useReorderStories()
+  const compact = useIsCompact()
   const [epicFilter, setEpicFilter] = useState('')
   const [activeId, setActiveId] = useState<string | null>(null)
   const [items, setItems] = useState<ColumnItems>(() => buildColumnItems([]))
@@ -272,8 +274,9 @@ export function Kanban() {
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
-            overflow: 'hidden',
+            gridTemplateColumns: compact ? 'repeat(4, 240px)' : 'repeat(4, minmax(0, 1fr))',
+            overflowX: compact ? 'auto' : 'hidden',
+            overflowY: 'hidden',
             height: '100%',
           }}
         >

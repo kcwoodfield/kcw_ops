@@ -87,7 +87,7 @@ flowchart TB
   end
 
   subgraph data [Postgres 16 Docker]
-    PG[(kcw_operations)]
+    PG[(kcw_ops)]
   end
 
   TQ -->|HTTP :5050/api| CTRL
