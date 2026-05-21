@@ -20,7 +20,7 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { Settings, Plus } from 'lucide-react'
-import { useReorderStories, useStories, useUpdateStory } from '../../api/stories'
+import { useReorderStories, useSprints, useStories, useUpdateStory } from '../../api/stories'
 import { useAppNavigate } from '../../hooks/useAppNavigate'
 import { useUiStore } from '../../store/ui'
 import type { StoryDto, StoryStatus } from '../../types'
@@ -72,6 +72,7 @@ export function Kanban() {
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
   )
+  const { data: sprints = [], isLoading: sprintsLoading } = useSprints(activeProjectId ?? '')
   const { data: stories = [], isLoading, isError } = useStories(
     activeProjectId ?? '',
     activeSprintId ?? undefined,
@@ -195,7 +196,12 @@ export function Kanban() {
   }
 
   if (!activeSprintId) {
-    return <EmptyState message="Loading sprint…" />
+    if (!sprintsLoading && sprints.length === 0) {
+      return (
+        <EmptyState message="No sprints yet — create one in Sprint Planning to get started." />
+      )
+    }
+    return <EmptyState message="Loading board…" />
   }
 
   if (isLoading) {
