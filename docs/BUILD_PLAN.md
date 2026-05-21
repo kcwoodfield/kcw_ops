@@ -254,9 +254,17 @@ Goal: replace placeholders at `/backlog`, `/planning`, `/list` with real surface
 
 ## Phase 5 — Auth (surface 08)
 
-- [ ] `LoginPage` at `/login`
-- [ ] API auth scheme + `[Authorize]` on controllers
-- [ ] Route guards in React (redirect unauthenticated → `/login`)
+> Research complete — see [`docs/AUTH_PLAN.md`](AUTH_PLAN.md) for full design (JWT + TOTP 2FA, env-var credentials, no recurring cost beyond hosting).
+
+- [ ] `POST /auth/setup` — bcrypt hash generator + TOTP QR enrollment (dev-only)
+- [ ] `POST /auth/login` — username/password → temp token
+- [ ] `POST /auth/verify` — TOTP code → JWT access token + httpOnly refresh cookie
+- [ ] `POST /auth/refresh` / `POST /auth/logout`
+- [ ] Rate limiting on `/auth/*` (5 req / 15 min per IP)
+- [ ] `[Authorize]` on all existing controllers
+- [ ] CORS locked to `VITE_ORIGIN` env var
+- [ ] `LoginPage` at `/login` — two-step form (password → TOTP)
+- [ ] Route guard: redirect unauthenticated → `/login`; handle 401 responses
 - [ ] `VITE_API_URL` env var replacing hardcoded `localhost:5050`
 
 ---
