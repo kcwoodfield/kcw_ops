@@ -212,24 +212,29 @@ function StoryDrawerBody({ storyId, onClose }: { storyId: string; onClose: () =>
                 minHeight: 120,
               }}
             />
-            {description !== (story.description ?? '') && (
-              <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-                <button
-                  type="button"
-                  onClick={() => save({ description })}
-                  style={{ height: 28, padding: '0 14px', background: 'var(--accent)', color: 'var(--accent-ink)', borderRadius: 4, fontSize: 12, fontWeight: 600 }}
-                >
-                  Save
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setDescription(story.description ?? '')}
-                  style={{ height: 28, padding: '0 12px', background: 'transparent', border: '1px solid var(--border-1)', borderRadius: 4, fontSize: 12, color: 'var(--fg-2)' }}
-                >
-                  Cancel
-                </button>
-              </div>
-            )}
+            <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+              <button
+                type="button"
+                disabled={description === (story.description ?? '')}
+                onClick={() => save({ description })}
+                style={{
+                  height: 28, padding: '0 14px', borderRadius: 4, fontSize: 12, fontWeight: 600,
+                  background: description !== (story.description ?? '') ? 'var(--accent)' : 'var(--bg-2)',
+                  color: description !== (story.description ?? '') ? 'var(--accent-ink)' : 'var(--fg-3)',
+                  border: '1px solid transparent',
+                  cursor: description !== (story.description ?? '') ? 'pointer' : 'default',
+                }}
+              >
+                Save
+              </button>
+              <button
+                type="button"
+                onClick={() => setDescription(story.description ?? '')}
+                style={{ height: 28, padding: '0 12px', background: 'transparent', border: '1px solid var(--border-1)', borderRadius: 4, fontSize: 12, color: 'var(--fg-2)' }}
+              >
+                Cancel
+              </button>
+            </div>
           </Section>
 
           <Section title="Activity" trail={comments.length ? `${comments.length}` : undefined}>
