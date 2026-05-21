@@ -148,32 +148,35 @@ export function Kanban() {
 
     if (!over || !activeProjectId) return
 
-    const activeColumn = findColumn(String(active.id), items)
-    const overColumn =
-      findColumn(String(over.id), items) ??
-      (COLUMN_IDS.has(String(over.id)) ? (String(over.id) as StoryStatus) : null)
-
-    if (!activeColumn || !overColumn) return
-
     const story = storyMap[String(active.id)]
     if (!story) return
 
-    if (activeColumn !== overColumn) {
+    // Source column is the story's status before the drag. It can't be
+    // derived from `items` — handleDragOver already moved the card into the
+    // destination column, so findColumn(active.id, items) returns the dest.
+    const sourceColumn = story.status
+    const destColumn =
+      findColumn(String(over.id), items) ??
+      (COLUMN_IDS.has(String(over.id)) ? (String(over.id) as StoryStatus) : null)
+
+    if (!destColumn) return
+
+    if (sourceColumn !== destColumn) {
       updateStory.mutate(
-        { id: story.id, status: overColumn },
+        { id: story.id, status: destColumn },
         {
           onSuccess: () => {
             reorderStories.mutate({
               projectId: activeProjectId,
               sprintId: activeSprintId ?? undefined,
-              status: activeColumn,
-              orderedStoryIds: items[activeColumn],
+              status: sourceColumn,
+              orderedStoryIds: items[sourceColumn],
             })
             reorderStories.mutate({
               projectId: activeProjectId,
               sprintId: activeSprintId ?? undefined,
-              status: overColumn,
-              orderedStoryIds: items[overColumn],
+              status: destColumn,
+              orderedStoryIds: items[destColumn],
             })
           },
         },
@@ -182,8 +185,8 @@ export function Kanban() {
       reorderStories.mutate({
         projectId: activeProjectId,
         sprintId: activeSprintId ?? undefined,
-        status: activeColumn,
-        orderedStoryIds: items[activeColumn],
+        status: sourceColumn,
+        orderedStoryIds: items[sourceColumn],
       })
     }
   }
