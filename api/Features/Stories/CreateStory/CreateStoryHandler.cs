@@ -61,6 +61,7 @@ public class CreateStoryHandler(AppDbContext db) : IRequestHandler<CreateStoryCo
         await db.Entry(story).Reference(s => s.Sprint).LoadAsync(ct);
         story.Project = project;
 
-        return StoryMapper.ToDetailDto(story);
+        var assignee = story.AssigneeId is null ? null : await db.Users.FindAsync([story.AssigneeId], ct);
+        return StoryMapper.ToDetailDto(story, assignee);
     }
 }

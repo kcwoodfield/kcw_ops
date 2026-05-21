@@ -1,5 +1,7 @@
+using KcwOps.Api.Features.Stories.AddComment;
 using KcwOps.Api.Features.Stories.CreateStory;
 using KcwOps.Api.Features.Stories.DeleteStory;
+using KcwOps.Api.Features.Stories.GetComments;
 using KcwOps.Api.Features.Stories.GetStories;
 using KcwOps.Api.Features.Stories.GetStory;
 using KcwOps.Api.Features.Stories.ReorderStories;
@@ -86,7 +88,8 @@ public class StoriesController(IMediator mediator) : ControllerBase
                 body.SprintId,
                 body.ClearSprint ?? false,
                 body.DueDate,
-                body.Labels
+                body.Labels,
+                body.AssigneeId
             ), ct);
             return story is null ? NotFound() : Ok(story);
         }
@@ -101,5 +104,23 @@ public class StoriesController(IMediator mediator) : ControllerBase
     {
         await mediator.Send(new DeleteStoryCommand(id), ct);
         return NoContent();
+    }
+
+    [HttpGet("{id:guid}/comments")]
+    public async Task<IActionResult> GetComments(Guid id, CancellationToken ct) =>
+        Ok(await mediator.Send(new GetCommentsQuery(id), ct));
+
+    [HttpPost("{id:guid}/comments")]
+    public async Task<IActionResult> AddComment(Guid id, [FromBody] AddCommentRequest body, CancellationToken ct)
+    {
+        try
+        {
+            var comment = await mediator.Send(new AddCommentCommand(id, body.AuthorId, body.Body), ct);
+            return Created("", comment);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
     }
 }

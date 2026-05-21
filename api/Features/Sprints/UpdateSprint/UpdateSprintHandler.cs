@@ -17,6 +17,8 @@ public class UpdateSprintHandler(AppDbContext db) : IRequestHandler<UpdateSprint
         if (cmd.Goal is not null) sprint.Goal = cmd.Goal.Trim();
         if (cmd.StartDate is not null) sprint.StartDate = cmd.StartDate.Value;
         if (cmd.EndDate is not null) sprint.EndDate = cmd.EndDate.Value;
+        var prevState = sprint.State;
+
         if (cmd.State is not null)
         {
             sprint.State = cmd.State switch
@@ -26,6 +28,26 @@ public class UpdateSprintHandler(AppDbContext db) : IRequestHandler<UpdateSprint
                 "planned"   => SprintState.Planned,
                 _ => sprint.State,
             };
+        }
+
+        if (sprint.State != prevState)
+        {
+            var eventType = sprint.State switch
+            {
+                SprintState.Active    => "sprint_started",
+                SprintState.Completed => "sprint_completed",
+                _                     => "sprint_updated",
+            };
+            db.ActivityEvents.Add(new ActivityEvent
+            {
+                Id = Guid.NewGuid(),
+                ProjectId = sprint.ProjectId,
+                SprintId = sprint.Id,
+                ActorId = "kcw",
+                Type = eventType,
+                Detail = sprint.Name,
+                CreatedAt = DateTime.UtcNow,
+            });
         }
 
         await db.SaveChangesAsync(ct);

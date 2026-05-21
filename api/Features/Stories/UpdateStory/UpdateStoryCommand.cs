@@ -14,7 +14,8 @@ public record UpdateStoryCommand(
     Guid? SprintId,
     bool ClearSprint,
     string? DueDate,
-    string[]? Labels
+    string[]? Labels,
+    string? AssigneeId
 ) : IRequest<StoryDetailDto?>;
 
 public record UpdateStoryRequest(
@@ -28,5 +29,6 @@ public record UpdateStoryRequest(
     Guid? SprintId,
     bool? ClearSprint,
     string? DueDate,
-    string[]? Labels
+    string[]? Labels,
+    string? AssigneeId
 );
