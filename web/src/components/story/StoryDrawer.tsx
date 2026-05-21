@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import * as Dialog from '@radix-ui/react-dialog'
 import { X } from 'lucide-react'
-import { useStory, useUpdateStory } from '../../api/stories'
+import { useStory, useUpdateStory, useSprints } from '../../api/stories'
+import { useEpics } from '../../api/epics'
 import { useAppNavigate } from '../../hooks/useAppNavigate'
 import {
   FIBONACCI_POINTS,
@@ -70,6 +71,8 @@ export function StoryDrawer() {
 function StoryDrawerBody({ storyId, onClose }: { storyId: string; onClose: () => void }) {
   const { data: story, isLoading, isError } = useStory(storyId)
   const update = useUpdateStory()
+  const { data: epics = [] } = useEpics(story?.projectId ?? '')
+  const { data: sprints = [] } = useSprints(story?.projectId ?? '')
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
 
@@ -196,15 +199,6 @@ function StoryDrawerBody({ storyId, onClose }: { storyId: string; onClose: () =>
             <StatusSelect value={story.status} onChange={s => save({ status: s })} />
           </Prop>
 
-          <Prop label="Assignee">
-            <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <AssigneeAvatar assigneeId={story.assigneeId} />
-              <span style={{ fontSize: 12.5, color: 'var(--fg-2)' }}>
-                {story.assigneeId ? 'Assigned' : 'Unassigned'}
-              </span>
-            </span>
-          </Prop>
-
           <Prop label="Priority">
             <PrioritySelect value={story.priority} onChange={p => save({ priority: p })} />
           </Prop>
@@ -217,55 +211,53 @@ function StoryDrawerBody({ storyId, onClose }: { storyId: string; onClose: () =>
                   type="button"
                   onClick={() => save({ points: n })}
                   style={{
-                    width: 26,
-                    height: 24,
-                    borderRadius: 4,
+                    width: 26, height: 24, borderRadius: 4,
                     background: n === story.points ? 'var(--accent)' : 'var(--bg-2)',
                     color: n === story.points ? 'var(--accent-ink)' : 'var(--fg-1)',
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: 11.5,
-                    fontWeight: 600,
+                    fontFamily: 'var(--font-mono)', fontSize: 11.5, fontWeight: 600,
                     border: '1px solid',
                     borderColor: n === story.points ? 'transparent' : 'var(--border-1)',
                   }}
-                >
-                  {n}
-                </button>
+                >{n}</button>
               ))}
             </div>
           </Prop>
 
-          <Prop label="Sprint">
-            {story.sprintName ? (
-              <span
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 5,
-                  padding: '2px 8px',
-                  background: 'var(--accent-bg)',
-                  border: '1px solid var(--accent-line)',
-                  borderRadius: 3,
-                  fontSize: 11.5,
-                  color: 'var(--accent-fg)',
-                }}
-              >
-                <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--accent)' }} />
-                <span className="mono">{story.sprintName}</span>
-                {story.sprintState && (
-                  <span style={{ color: 'var(--fg-3)' }}>· {story.sprintState}</span>
-                )}
-              </span>
-            ) : (
-              <span style={{ fontSize: 12.5, color: 'var(--fg-3)' }}>Backlog</span>
-            )}
+          <Prop label="Epic">
+            <select
+              value={story.epicId}
+              onChange={e => save({ epicId: e.target.value })}
+              style={selectStyle}
+            >
+              {epics.map(ep => (
+                <option key={ep.id} value={ep.id}>{ep.title}</option>
+              ))}
+            </select>
           </Prop>
 
-          <Prop label="Epic">
-            <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ width: 6, height: 6, borderRadius: 1, background: story.epicColor }} />
-              <span style={{ fontSize: 12.5 }}>{story.epicTitle}</span>
-            </span>
+          <Prop label="Sprint">
+            <select
+              value={story.sprintId ?? ''}
+              onChange={e => {
+                const v = e.target.value
+                save(v ? { sprintId: v, clearSprint: false } : { clearSprint: true })
+              }}
+              style={selectStyle}
+            >
+              <option value="">Backlog</option>
+              {sprints.map(sp => (
+                <option key={sp.id} value={sp.id}>{sp.name}</option>
+              ))}
+            </select>
+          </Prop>
+
+          <Prop label="Due date">
+            <input
+              type="date"
+              value={story.dueDate ?? ''}
+              onChange={e => save({ dueDate: e.target.value || null })}
+              style={{ ...selectStyle, colorScheme: 'dark' }}
+            />
           </Prop>
 
           <Prop label="Blocked">
@@ -273,11 +265,9 @@ function StoryDrawerBody({ storyId, onClose }: { storyId: string; onClose: () =>
               type="button"
               onClick={() => save({ blocked: !story.blocked })}
               style={{
-                fontSize: 12,
-                padding: '4px 10px',
-                borderRadius: 4,
+                fontSize: 12, padding: '4px 10px', borderRadius: 4,
                 border: '1px solid var(--border-1)',
-                background: story.blocked ? 'rgba(248,113,113,0.12)' : 'var(--bg-2)',
+                background: story.blocked ? 'rgba(200,74,64,0.12)' : 'var(--bg-2)',
                 color: story.blocked ? 'var(--blocked)' : 'var(--fg-2)',
               }}
             >
@@ -285,21 +275,16 @@ function StoryDrawerBody({ storyId, onClose }: { storyId: string; onClose: () =>
             </button>
           </Prop>
 
-          {story.labels.length > 0 && (
-            <Prop label="Labels">
-              <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-                {story.labels.map(l => (
-                  <Label key={l} name={l} />
-                ))}
-              </div>
-            </Prop>
-          )}
+          <Prop label="Labels">
+            <LabelsEditor labels={story.labels} onChange={labels => save({ labels })} />
+          </Prop>
 
-          {story.dueDate && (
-            <Prop label="Due date">
-              <span style={{ fontSize: 12.5 }}>{story.dueDate}</span>
-            </Prop>
-          )}
+          <Prop label="Assignee">
+            <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <AssigneeAvatar assigneeId={story.assigneeId} />
+              <span style={{ fontSize: 12.5, color: 'var(--fg-3)' }}>Unassigned</span>
+            </span>
+          </Prop>
         </aside>
       </div>
     </>
@@ -409,6 +394,61 @@ function PrioritySelect({ value, onChange }: { value: StoryPriority; onChange: (
           <option key={p} value={p}>{PRIORITY_LABELS[p]}</option>
         ))}
       </select>
+    </div>
+  )
+}
+
+const selectStyle: React.CSSProperties = {
+  width: '100%', fontSize: 12.5, padding: '6px 8px',
+  background: 'var(--bg-1)', border: '1px solid var(--border)',
+  borderRadius: 4, color: 'var(--fg)',
+}
+
+function LabelsEditor({ labels, onChange }: { labels: string[]; onChange: (l: string[]) => void }) {
+  const [input, setInput] = useState('')
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  const add = () => {
+    const v = input.trim().toLowerCase()
+    if (!v || labels.includes(v)) { setInput(''); return }
+    onChange([...labels, v])
+    setInput('')
+  }
+
+  const remove = (label: string) => onChange(labels.filter(l => l !== label))
+
+  return (
+    <div>
+      <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: labels.length ? 6 : 0 }}>
+        {labels.map(l => (
+          <button
+            key={l}
+            type="button"
+            onClick={() => remove(l)}
+            title="Click to remove"
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 4,
+              padding: '2px 7px', borderRadius: 3,
+              background: 'var(--bg-3)', border: '1px solid var(--border-1)',
+              fontSize: 11, color: 'var(--fg-2)', cursor: 'pointer',
+            }}
+          >
+            {l} <span style={{ opacity: 0.5 }}>×</span>
+          </button>
+        ))}
+      </div>
+      <input
+        ref={inputRef}
+        value={input}
+        onChange={e => setInput(e.target.value)}
+        onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); add() } }}
+        onBlur={add}
+        placeholder="Add label…"
+        style={{
+          ...selectStyle,
+          padding: '5px 8px',
+        }}
+      />
     </div>
   )
 }

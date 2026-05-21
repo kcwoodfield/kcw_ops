@@ -1,8 +1,11 @@
+import { useState } from 'react'
 import { Search, Filter, Bell, Plus, LayoutDashboard, List, CalendarDays } from 'lucide-react'
 import { useEpics } from '../../api/epics'
 import { useCreateStory, useSprints } from '../../api/stories'
 import { useAppNavigate } from '../../hooks/useAppNavigate'
 import { useUiStore } from '../../store/ui'
+import { CreateEpicModal } from '../CreateEpicModal'
+import { CreateSprintModal } from '../CreateSprintModal'
 import type { AppView } from '../../lib/routes'
 
 interface TopBarProps {
@@ -18,6 +21,8 @@ const TOP_VIEWS: { id: AppView; icon: React.ReactNode; label: string }[] = [
 export function TopBar({ breadcrumb }: TopBarProps) {
   const { view, sprintId, goToView, setSprint, openStory } = useAppNavigate()
   const { activeProjectId, setCmdPaletteOpen } = useUiStore()
+  const [epicModalOpen, setEpicModalOpen] = useState(false)
+  const [sprintModalOpen, setSprintModalOpen] = useState(false)
   const { data: sprints = [] } = useSprints(activeProjectId ?? '')
   const { data: epics = [] } = useEpics(activeProjectId ?? '')
   const createStory = useCreateStory()
@@ -110,6 +115,25 @@ export function TopBar({ breadcrumb }: TopBarProps) {
       <IconBtn icon={<Filter size={14} />} />
       <IconBtn icon={<Bell size={14} />} />
 
+      {activeProjectId && (
+        <>
+          <button
+            type="button"
+            onClick={() => setEpicModalOpen(true)}
+            style={secondaryBtnStyle}
+          >
+            <Plus size={12} /> Epic
+          </button>
+          <button
+            type="button"
+            onClick={() => setSprintModalOpen(true)}
+            style={secondaryBtnStyle}
+          >
+            <Plus size={12} /> Sprint
+          </button>
+        </>
+      )}
+
       <button
         type="button"
         disabled={!activeProjectId || epics.length === 0 || createStory.isPending}
@@ -128,6 +152,13 @@ export function TopBar({ breadcrumb }: TopBarProps) {
         New issue
         <span className="kbd" style={{ marginLeft: 2, background: 'rgba(0,0,0,0.15)', borderColor: 'rgba(0,0,0,0.2)', color: 'var(--accent-ink)' }}>C</span>
       </button>
+
+      {activeProjectId && (
+        <>
+          <CreateEpicModal projectId={activeProjectId} open={epicModalOpen} onClose={() => setEpicModalOpen(false)} />
+          <CreateSprintModal projectId={activeProjectId} open={sprintModalOpen} onClose={() => setSprintModalOpen(false)} />
+        </>
+      )}
     </header>
   )
 }
@@ -163,6 +194,14 @@ function ViewSwitcher({ view, onChange }: { view: AppView; onChange: (v: AppView
       ))}
     </div>
   )
+}
+
+const secondaryBtnStyle: React.CSSProperties = {
+  display: 'inline-flex', alignItems: 'center', gap: 5,
+  height: 26, padding: '0 10px',
+  background: 'var(--bg-2)', border: '1px solid var(--border-1)',
+  borderRadius: 'var(--r-sm)', fontSize: 12, fontWeight: 500,
+  color: 'var(--fg-1)', flexShrink: 0,
 }
 
 function IconBtn({ icon }: { icon: React.ReactNode }) {

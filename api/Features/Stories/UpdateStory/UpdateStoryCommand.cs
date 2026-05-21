@@ -13,7 +13,8 @@ public record UpdateStoryCommand(
     Guid? EpicId,
     Guid? SprintId,
     bool ClearSprint,
-    string? DueDate
+    string? DueDate,
+    string[]? Labels
 ) : IRequest<StoryDetailDto?>;
 
 public record UpdateStoryRequest(
@@ -26,5 +27,6 @@ public record UpdateStoryRequest(
     Guid? EpicId,
     Guid? SprintId,
     bool? ClearSprint,
-    string? DueDate
+    string? DueDate,
+    string[]? Labels
 );

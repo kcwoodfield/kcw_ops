@@ -3,6 +3,8 @@ import { AppShell } from './components/layout/AppShell'
 import { Backlog } from './components/backlog/Backlog'
 import { CommandPalette } from './components/CommandPalette'
 import { Kanban } from './components/kanban/Kanban'
+import { SprintPlanning } from './components/planning/SprintPlanning'
+import { ListView } from './components/list/ListView'
 import { StoryDrawer } from './components/story/StoryDrawer'
 import { ViewPlaceholder } from './components/shared/ViewPlaceholder'
 import { LAST_PROJECT_KEY } from './lib/routes'
@@ -21,8 +23,8 @@ export default function App() {
           <Route index element={<Navigate to="board" replace />} />
           <Route path="board" element={<Kanban />} />
           <Route path="backlog" element={<Backlog />} />
-          <Route path="planning" element={<ViewPlaceholder name="Sprint planning" />} />
-          <Route path="list" element={<ViewPlaceholder name="List view" />} />
+          <Route path="planning" element={<SprintPlanning />} />
+          <Route path="list" element={<ListView />} />
           <Route path="calendar" element={<ViewPlaceholder name="Calendar" />} />
           <Route path="activity" element={<ViewPlaceholder name="Activity log" />} />
         </Route>

@@ -14,7 +14,7 @@ export function AppShell() {
   const [searchParams, setSearchParams] = useSearchParams()
   const navigate = useNavigate()
   const { data: projects = [] } = useProjects()
-  const { activeProjectId, activeSprintId, setActiveProject, setActiveSprint } = useUiStore()
+  const { activeProjectId, activeSprintId, setActiveProject, setActiveSprint, sidebarCollapsed } = useUiStore()
   const { data: sprints = [] } = useSprints(activeProjectId ?? '')
 
   const project = projects.find(p => p.key === projectKey?.toUpperCase())
@@ -68,7 +68,7 @@ export function AppShell() {
       width: '100%',
       height: '100vh',
       display: 'grid',
-      gridTemplateColumns: '232px 1fr',
+      gridTemplateColumns: sidebarCollapsed ? '52px 1fr' : '232px 1fr',
       gridTemplateRows: '80px 1fr',
       background: 'var(--bg)',
       color: 'var(--fg)',

@@ -64,6 +64,7 @@ export interface UpdateStoryPayload {
   sprintId?: string
   clearSprint?: boolean
   dueDate?: string | null
+  labels?: string[]
 }
 
 export interface CreateStoryPayload {

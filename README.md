@@ -14,7 +14,7 @@ Personal project-management tool. Linear × Jira — built for a PM/engineer who
 ## Data model
 
 ```
-Program → Project → Epic → Sprint → Story
+Project → Epic → Sprint → Story
 ```
 
 Stories not assigned to a sprint live in the **Backlog** (first-class, not an afterthought).
@@ -56,7 +56,7 @@ cd web && npm install && npm run dev
 ## Project structure
 
 ```
-kcw_operations/
+ops/
 ├── api/              .NET backend
 │   ├── Controllers/
 │   ├── Domain/

@@ -14,7 +14,7 @@ Personal project-management tool. Think Linear × Jira, built for a PM/engineer 
 - **CQRS** — Commands mutate; Queries read; never mix in a single handler
 
 ### Database
-- **PostgreSQL** in a local Docker container named `kcw_operations`
+- **PostgreSQL** in a local Docker container named `kcw_ops`
 - All DB access goes through the API — frontend never touches Postgres directly
 
 ### Frontend — React / TypeScript
@@ -28,7 +28,7 @@ Personal project-management tool. Think Linear × Jira, built for a PM/engineer 
 ## Data model
 
 ```
-Program ─┬─ Project ─┬─ Epic ─┬─ Sprint ─┬─ Story / Task
+Project → Epic → Sprint → Story
 ```
 
 - **Backlog** = stories with no sprint assignment (first-class, not an afterthought)
@@ -42,7 +42,7 @@ Program ─┬─ Project ─┬─ Epic ─┬─ Sprint ─┬─ Story / Task
 ## Project structure
 
 ```
-kcw_operations/
+ops/
 ├── api/              .NET backend
 │   ├── Controllers/
 │   ├── Domain/

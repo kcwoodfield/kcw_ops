@@ -3,11 +3,12 @@ import { ChevronRight, Inbox, Eye, Star, GitBranch, CalendarDays, Map, Zap, Sett
 import { useProjects } from '../../api/projects'
 import { useUiStore } from '../../store/ui'
 import { useAppNavigate } from '../../hooks/useAppNavigate'
+import { Shield } from '../Shield'
 import type { ProjectDto } from '../../types'
 
 export function Sidebar() {
   const { data: projects = [] } = useProjects()
-  const { activeProjectId } = useUiStore()
+  const { activeProjectId, sidebarCollapsed } = useUiStore()
   const { goToProject, goToView } = useAppNavigate()
 
   return (
@@ -17,73 +18,89 @@ export function Sidebar() {
       borderRight: '1px solid var(--border)',
       display: 'flex',
       flexDirection: 'column',
-      width: 232,
+      width: sidebarCollapsed ? 52 : 232,
       minWidth: 0,
       overflow: 'hidden',
+      transition: 'width 0.18s ease',
     }}>
       <WorkspaceHeader />
 
-      <nav style={{ padding: '8px 6px 4px', display: 'flex', flexDirection: 'column', gap: 1 }}>
-        <NavRow icon={<Inbox size={14} />} label="Inbox" trail="3" onClick={() => goToView('backlog')} />
-        <NavRow icon={<Eye size={14} />} label="My issues" trail="14" />
-        <NavRow icon={<Star size={14} />} label="Starred" />
-        <NavRow icon={<GitBranch size={14} />} label="Drafts" />
-      </nav>
+      {!sidebarCollapsed && (
+        <>
+          <nav style={{ padding: '8px 6px 4px', display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <NavRow icon={<Inbox size={14} />} label="Inbox" trail="3" onClick={() => goToView('backlog')} />
+            <NavRow icon={<Eye size={14} />} label="My issues" trail="14" />
+            <NavRow icon={<Star size={14} />} label="Starred" />
+            <NavRow icon={<GitBranch size={14} />} label="Drafts" />
+          </nav>
 
-      <SectionHeader label="Projects" action={<PlusIcon />} />
+          <SectionHeader label="Projects" action={<PlusIcon />} />
 
-      <div style={{ flex: 1, overflowY: 'auto', padding: '0 6px 12px' }}>
-        {projects.map(p => (
-          <ProjectRow
-            key={p.id}
-            project={p}
-            active={p.id === activeProjectId}
-            onClick={() => goToProject(p.key, 'board')}
-          />
-        ))}
+          <div style={{ flex: 1, overflowY: 'auto', padding: '0 6px 12px' }}>
+            {projects.map(p => (
+              <ProjectRow
+                key={p.id}
+                project={p}
+                active={p.id === activeProjectId}
+                onClick={() => goToProject(p.key, 'board')}
+              />
+            ))}
 
-        <SectionHeader label="Views" style={{ padding: '20px 8px 6px 8px' }} />
-        <NavRow icon={<Zap size={14} />} label="Sprint planning" onClick={() => goToView('planning')} />
-        <NavRow icon={<Map size={14} />} label="Roadmap" />
-        <NavRow icon={<CalendarDays size={14} />} label="Releases" onClick={() => goToView('calendar')} />
-      </div>
+            <SectionHeader label="Views" style={{ padding: '20px 8px 6px 8px' }} />
+            <NavRow icon={<Zap size={14} />} label="Sprint planning" onClick={() => goToView('planning')} />
+            <NavRow icon={<Map size={14} />} label="Roadmap" />
+            <NavRow icon={<CalendarDays size={14} />} label="Releases" onClick={() => goToView('calendar')} />
+          </div>
 
-      <UserFooter />
+          <UserFooter />
+        </>
+      )}
     </aside>
   )
 }
 
 function WorkspaceHeader() {
+  const { theme, sidebarCollapsed, toggleSidebar } = useUiStore()
   return (
     <div style={{
       height: 80,
-      padding: '0 12px',
+      padding: sidebarCollapsed ? '0' : '0 12px',
       display: 'flex',
       alignItems: 'center',
-      gap: 8,
+      justifyContent: sidebarCollapsed ? 'center' : undefined,
+      gap: 10,
       borderBottom: '1px solid var(--border)',
       flexShrink: 0,
     }}>
-      <div style={{
-        width: 22, height: 22,
-        borderRadius: 5,
-        background: 'linear-gradient(135deg, var(--accent), oklch(0.55 0.14 20))',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 700,
-        color: 'var(--accent-ink)', letterSpacing: '-0.02em',
-        flexShrink: 0,
-      }}>k</div>
-      <div style={{ flex: 1, minWidth: 0, lineHeight: 1.15 }}>
-        <div style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--fg)' }}>kcw / ops</div>
-        <div className="mono" style={{ fontSize: 10, color: 'var(--fg-3)' }}>personal workspace</div>
-      </div>
       <button
         type="button"
-        style={{ color: 'var(--fg-3)', padding: 4, borderRadius: 3, flexShrink: 0 }}
-        onMouseOver={e => (e.currentTarget.style.background = 'var(--hover)')}
-        onMouseOut={e => (e.currentTarget.style.background = 'transparent')}>
-        <ChevronRight size={12} />
+        onClick={sidebarCollapsed ? toggleSidebar : undefined}
+        style={{ display: 'flex', padding: 0, cursor: sidebarCollapsed ? 'pointer' : 'default', flexShrink: 0 }}
+      >
+        <Shield size={28} variant={theme === 'dark' ? 'dark' : 'light'} />
       </button>
+      {!sidebarCollapsed && (
+        <>
+          <div style={{ flex: 1, minWidth: 0, lineHeight: 1.2 }}>
+            <div style={{
+              fontFamily: 'var(--font-display)',
+              fontSize: 11, fontWeight: 600,
+              color: 'var(--fg)',
+              letterSpacing: '0.10em',
+              textTransform: 'uppercase',
+            }}>Ops</div>
+            <div className="mono" style={{ fontSize: 10, color: 'var(--fg-3)' }}>personal workspace</div>
+          </div>
+          <button
+            type="button"
+            onClick={toggleSidebar}
+            style={{ color: 'var(--fg-3)', padding: 4, borderRadius: 3, flexShrink: 0 }}
+            onMouseOver={e => (e.currentTarget.style.background = 'var(--hover)')}
+            onMouseOut={e => (e.currentTarget.style.background = 'transparent')}>
+            <ChevronRight size={12} />
+          </button>
+        </>
+      )}
     </div>
   )
 }

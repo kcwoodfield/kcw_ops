@@ -50,6 +50,8 @@ public class UpdateStoryHandler(AppDbContext db) : IRequestHandler<UpdateStoryCo
                 ? null
                 : DateOnly.Parse(cmd.DueDate);
 
+        if (cmd.Labels is not null) story.Labels = cmd.Labels;
+
         await db.SaveChangesAsync(ct);
 
         await db.Entry(story).Reference(s => s.Epic).LoadAsync(ct);

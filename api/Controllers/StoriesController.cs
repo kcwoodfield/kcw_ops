@@ -84,7 +84,8 @@ public class StoriesController(IMediator mediator) : ControllerBase
                 body.EpicId,
                 body.SprintId,
                 body.ClearSprint ?? false,
-                body.DueDate
+                body.DueDate,
+                body.Labels
             ), ct);
             return story is null ? NotFound() : Ok(story);
         }

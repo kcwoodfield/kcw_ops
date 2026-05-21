@@ -8,6 +8,29 @@ import type {
   UpdateStoryPayload,
 } from '../types'
 
+export function useCreateSprint() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (payload: { projectId: string; name: string; goal?: string; startDate: string; endDate: string }) =>
+      post<SprintDto>('/sprints', payload),
+    onSuccess: (_, { projectId }) => {
+      qc.invalidateQueries({ queryKey: ['sprints', projectId] })
+    },
+  })
+}
+
+export function useUpdateSprint() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, ...body }: { id: string; name?: string; goal?: string; startDate?: string; endDate?: string; state?: string }) =>
+      patch<SprintDto>(`/sprints/${id}`, body),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['sprints'] })
+      qc.invalidateQueries({ queryKey: ['stories'] })
+    },
+  })
+}
+
 export function useStories(projectId: string, sprintId?: string) {
   return useQuery({
     queryKey: ['stories', projectId, sprintId],
