@@ -212,29 +212,6 @@ function StoryDrawerBody({ storyId, onClose }: { storyId: string; onClose: () =>
                 minHeight: 120,
               }}
             />
-            <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-              <button
-                type="button"
-                disabled={description === (story.description ?? '')}
-                onClick={() => save({ description })}
-                style={{
-                  height: 28, padding: '0 14px', borderRadius: 4, fontSize: 12, fontWeight: 600,
-                  background: description !== (story.description ?? '') ? 'var(--accent)' : 'var(--bg-2)',
-                  color: description !== (story.description ?? '') ? 'var(--accent-ink)' : 'var(--fg-3)',
-                  border: '1px solid transparent',
-                  cursor: description !== (story.description ?? '') ? 'pointer' : 'default',
-                }}
-              >
-                Save
-              </button>
-              <button
-                type="button"
-                onClick={() => setDescription(story.description ?? '')}
-                style={{ height: 28, padding: '0 12px', background: 'transparent', border: '1px solid var(--border-1)', borderRadius: 4, fontSize: 12, color: 'var(--fg-2)' }}
-              >
-                Cancel
-              </button>
-            </div>
           </Section>
 
           <Section title="Activity" trail={comments.length ? `${comments.length}` : undefined}>
@@ -402,6 +379,35 @@ function StoryDrawerBody({ storyId, onClose }: { storyId: string; onClose: () =>
           </Prop>
         </aside>
       </div>
+
+      <footer style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8,
+        padding: '10px 16px',
+        borderTop: '1px solid var(--border)',
+        flexShrink: 0,
+      }}>
+        <button
+          type="button"
+          onClick={() => setDescription(story.description ?? '')}
+          style={{ height: 30, padding: '0 14px', background: 'transparent', border: '1px solid var(--border-1)', borderRadius: 4, fontSize: 12, color: 'var(--fg-2)' }}
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          disabled={description === (story.description ?? '')}
+          onClick={() => save({ description })}
+          style={{
+            height: 30, padding: '0 16px', borderRadius: 4, fontSize: 12, fontWeight: 600,
+            background: description !== (story.description ?? '') ? 'var(--accent)' : 'var(--bg-2)',
+            color: description !== (story.description ?? '') ? 'var(--accent-ink)' : 'var(--fg-3)',
+            border: '1px solid transparent',
+          }}
+        >
+          Save
+        </button>
+      </footer>
+
       <ConfirmModal
         open={confirmDelete}
         title="Delete story"
