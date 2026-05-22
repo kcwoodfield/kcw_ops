@@ -56,11 +56,11 @@ export default function App() {
               </Route>
               <Route path="*" element={<RootRedirect />} />
             </Routes>
+            <StoryDrawer />
+            <CommandPalette />
           </AuthGuard>
         } />
       </Routes>
-      <StoryDrawer />
-      <CommandPalette />
     </>
   )
 }

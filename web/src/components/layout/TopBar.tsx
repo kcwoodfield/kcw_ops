@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Bell, Filter, Menu, Moon, Plus, Search, Sun, UserCircle } from 'lucide-react'
+import { Bell, Menu, Moon, Plus, Search, Sun, UserCircle } from 'lucide-react'
 import { useCreateStory, useInboxStories } from '../../api/stories'
 import { useAppNavigate } from '../../hooks/useAppNavigate'
 import { useUiStore } from '../../store/ui'
@@ -142,7 +142,6 @@ export function TopBar() {
           )}
         </div>
 
-        <IconBtn icon={<Filter size={14} />} />
         <IconBtn icon={<Bell size={14} />} badge={inbox.length > 0 ? inbox.length : undefined} onClick={() => navigate('/inbox')} />
 
         {/* Profile dropdown */}

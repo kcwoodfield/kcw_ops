@@ -32,7 +32,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   login: (token: string) => {
     setAccessToken(token)
-    set({ authed: true })
+    set({ authed: true, ready: true })
   },
 
   logout: async () => {

@@ -12,8 +12,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener('auth:logout', handler)
   }, [logout])
 
-  if (authed) return <>{children}</>  // logged in — skip loading gate
-  if (!ready) return null              // still bootstrapping
+  if (!ready) return null
 
   if (!authed) return <Navigate to="/login" replace />
 
