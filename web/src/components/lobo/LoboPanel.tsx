@@ -1,16 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
-import { X, Send, ChevronDown, AlertCircle, RefreshCw } from 'lucide-react'
-import { useUiStore, type LoboModel } from '../../store/ui'
+import { X, Send, ChevronDown, AlertCircle, RefreshCw, Trash2 } from 'lucide-react'
+import { useUiStore, type LoboModel, type LoboMessage } from '../../store/ui'
 import { useAuthStore } from '../../store/auth'
 import { getAccessToken } from '../../api/client'
 
 const API = import.meta.env.VITE_API_URL ?? 'http://localhost:5050'
 
-interface Message {
-  role: 'user' | 'assistant'
-  content: string
-  error?: boolean
-}
+type Message = LoboMessage
 
 interface OfflineState {
   show: boolean
@@ -24,8 +20,7 @@ const MODEL_LABELS: Record<LoboModel, string> = {
 }
 
 export function LoboPanel() {
-  const { loboPanelOpen, loboModel, activeProjectId, toggleLoboPanel, setLoboModel } = useUiStore()
-  const [messages, setMessages] = useState<Message[]>([])
+  const { loboPanelOpen, loboModel, activeProjectId, toggleLoboPanel, setLoboModel, loboMessages: messages, setLoboMessages: setMessages, clearLoboMessages } = useUiStore()
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [modelPickerOpen, setModelPickerOpen] = useState(false)
@@ -287,6 +282,18 @@ export function LoboPanel() {
             )}
           </div>
 
+          {messages.length > 0 && (
+            <button
+              type="button"
+              onClick={clearLoboMessages}
+              title="Clear history"
+              style={{ color: 'var(--fg-3)', padding: 4, borderRadius: 3, display: 'flex' }}
+              onMouseOver={e => (e.currentTarget.style.background = 'var(--hover)')}
+              onMouseOut={e => (e.currentTarget.style.background = 'transparent')}
+            >
+              <Trash2 size={13} />
+            </button>
+          )}
           <button
             type="button"
             onClick={toggleLoboPanel}

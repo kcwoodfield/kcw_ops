@@ -1,5 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using KcwOps.Api.Domain;
+using KcwOps.Api.Features.Stories;
 using KcwOps.Api.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -19,6 +21,8 @@ public class ToolExecutor(AppDbContext db)
             "list_sprints"   => await ListSprintsAsync(input, ct),
             "get_story"      => await GetStoryAsync(input, ct),
             "list_users"     => await ListUsersAsync(ct),
+            "create_story"   => await CreateStoryAsync(input, ct),
+            "update_story"   => await UpdateStoryAsync(input, ct),
             _                => $"{{\"error\":\"Unknown tool: {tool}\"}}",
         };
     }
@@ -158,6 +162,119 @@ public class ToolExecutor(AppDbContext db)
             .Select(u => new { u.Id, u.Name, u.Initials, u.Color })
             .ToListAsync(ct);
         return JsonSerializer.Serialize(users, Json);
+    }
+
+    private async Task<string> CreateStoryAsync(JsonObject input, CancellationToken ct)
+    {
+        if (!TryGetGuid(input, "projectId", out var projectId))
+            return "{\"error\":\"projectId is required\"}";
+
+        var title = input["title"]?.GetValue<string>();
+        if (string.IsNullOrWhiteSpace(title))
+            return "{\"error\":\"title is required\"}";
+
+        var project = await db.Projects.FirstOrDefaultAsync(p => p.Id == projectId, ct);
+        if (project is null) return "{\"error\":\"Project not found\"}";
+
+        Guid? epicId = TryGetGuid(input, "epicId", out var eid) ? eid : null;
+        if (!epicId.HasValue)
+            epicId = await db.Epics.Where(e => e.ProjectId == projectId).Select(e => (Guid?)e.Id).FirstOrDefaultAsync(ct);
+
+        Guid? sprintId = TryGetGuid(input, "sprintId", out var sid) ? sid : null;
+        if (sprintId.HasValue)
+        {
+            var ok = await db.Sprints.AnyAsync(s => s.Id == sprintId && s.ProjectId == projectId, ct);
+            if (!ok) return "{\"error\":\"Sprint does not belong to this project\"}";
+        }
+
+        var statusStr = input["status"]?.GetValue<string>();
+        var status = StoryEnums.TryParseStatus(statusStr ?? "todo", out var ps) ? ps : StoryStatus.Todo;
+
+        var priorityStr = input["priority"]?.GetValue<string>();
+        var priority = StoryEnums.TryParsePriority(priorityStr ?? "med", out var pp) ? pp : Priority.Med;
+
+        var points = input["points"]?.GetValue<int>() ?? 1;
+        if (!StoryEnums.FibonacciPoints.Contains(points)) points = 1;
+
+        var maxNumber = await db.Stories.Where(s => s.ProjectId == projectId).MaxAsync(s => (int?)s.Number, ct) ?? 0;
+        var maxSort   = await db.Stories.Where(s => s.ProjectId == projectId && s.SprintId == sprintId && s.Status == status).MaxAsync(s => (int?)s.SortOrder, ct) ?? 0;
+
+        var story = new Story
+        {
+            Id          = Guid.NewGuid(),
+            ProjectId   = projectId,
+            EpicId      = epicId ?? Guid.Empty,
+            SprintId    = sprintId,
+            Number      = maxNumber + 1,
+            SortOrder   = maxSort + 1000,
+            Title       = title.Trim(),
+            Description = input["description"]?.GetValue<string>(),
+            Status      = status,
+            Priority    = priority,
+            Points      = points,
+            AssigneeId  = input["assigneeId"]?.GetValue<string>() is { Length: > 0 } a ? a : null,
+            Labels      = [],
+        };
+
+        db.Stories.Add(story);
+        await db.SaveChangesAsync(ct);
+
+        return JsonSerializer.Serialize(new
+        {
+            id      = story.Id,
+            storyId = $"{project.Key}-{story.Number}",
+            story.Title,
+            story.Status,
+            story.Priority,
+            story.Points,
+            story.SprintId,
+        }, Json);
+    }
+
+    private async Task<string> UpdateStoryAsync(JsonObject input, CancellationToken ct)
+    {
+        if (!TryGetGuid(input, "storyId", out var storyId))
+            return "{\"error\":\"storyId is required\"}";
+
+        var story = await db.Stories
+            .Include(s => s.Project)
+            .FirstOrDefaultAsync(s => s.Id == storyId, ct);
+        if (story is null) return "{\"error\":\"Story not found\"}";
+
+        if (input["title"]?.GetValue<string>() is { } t) story.Title = t.Trim();
+        if (input["description"]?.GetValue<string>() is { } d)
+            story.Description = string.IsNullOrWhiteSpace(d) ? null : d;
+        if (input["status"]?.GetValue<string>() is { } st && StoryEnums.TryParseStatus(st, out var parsedStatus))
+            story.Status = parsedStatus;
+        if (input["priority"]?.GetValue<string>() is { } pr && StoryEnums.TryParsePriority(pr, out var parsedPriority))
+            story.Priority = parsedPriority;
+        if (input["points"]?.GetValue<int>() is { } pts && StoryEnums.FibonacciPoints.Contains(pts))
+            story.Points = pts;
+        if (input["blocked"]?.GetValue<bool>() is { } bl)
+            story.Blocked = bl;
+        if (input["clearSprint"]?.GetValue<bool>() == true)
+            story.SprintId = null;
+        else if (TryGetGuid(input, "sprintId", out var newSprint))
+            story.SprintId = newSprint;
+        if (input["assigneeId"]?.GetValue<string>() is { } ai)
+            story.AssigneeId = string.IsNullOrWhiteSpace(ai) ? null : ai;
+        if (input["dueDate"]?.GetValue<string>() is { } dd)
+            story.DueDate = string.IsNullOrWhiteSpace(dd) ? null : DateOnly.Parse(dd);
+
+        await db.SaveChangesAsync(ct);
+
+        return JsonSerializer.Serialize(new
+        {
+            id      = story.Id,
+            storyId = $"{story.Project.Key}-{story.Number}",
+            story.Title,
+            story.Status,
+            story.Priority,
+            story.Points,
+            story.Blocked,
+            story.SprintId,
+            story.AssigneeId,
+        }, Json);
     }
 
     private static bool TryGetGuid(JsonObject input, string key, out Guid result)
