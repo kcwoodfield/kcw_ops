@@ -1,6 +1,8 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using FluentValidation;
+using KcwOps.Api.Features.Ai;
+using KcwOps.Api.Features.Ai.Chat;
 using KcwOps.Api.Features.Auth;
 using KcwOps.Api.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -58,6 +60,12 @@ builder.Services.AddCors(opts =>
         .AllowAnyHeader()
         .AllowAnyMethod()
         .AllowCredentials()));
+
+// ── Lobo AI ───────────────────────────────────────────────────────────────────
+builder.Services.Configure<AiSettings>(builder.Configuration.GetSection("Lobo"));
+builder.Services.AddHttpClient();
+builder.Services.AddScoped<ToolExecutor>();
+builder.Services.AddScoped<IChatService, ClaudeChatService>();
 
 // ── App services ──────────────────────────────────────────────────────────────
 builder.Services.AddControllers();

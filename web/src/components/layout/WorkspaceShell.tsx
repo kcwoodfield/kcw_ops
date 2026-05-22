@@ -4,6 +4,7 @@ import { Sidebar } from './Sidebar'
 import { TopBar } from './TopBar'
 import { useUiStore } from '../../store/ui'
 import { useIsCompact } from '../../hooks/useMediaQuery'
+import { LoboPanel } from '../lobo/LoboPanel'
 
 export function WorkspaceShell({ title }: { title: string }) {
   const { sidebarCollapsed, mobileSidebarOpen, setMobileSidebarOpen } = useUiStore()
@@ -42,6 +43,7 @@ export function WorkspaceShell({ title }: { title: string }) {
           style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 19 }}
         />
       )}
+      <LoboPanel />
     </div>
   )
 }

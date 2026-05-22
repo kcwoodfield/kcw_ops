@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Bell, Menu, Moon, Plus, Search, Sun, UserCircle } from 'lucide-react'
+import { Bell, Bot, Menu, Moon, Plus, Search, Sun, UserCircle } from 'lucide-react'
 import { useCreateStory, useInboxStories } from '../../api/stories'
 import { useAppNavigate } from '../../hooks/useAppNavigate'
 import { useUiStore } from '../../store/ui'
@@ -12,7 +12,7 @@ import { CreateSprintModal } from '../CreateSprintModal'
 
 export function TopBar() {
   const { sprintId, openStory } = useAppNavigate()
-  const { activeProjectId, setCmdPaletteOpen, setMobileSidebarOpen, theme, toggleTheme } = useUiStore()
+  const { activeProjectId, setCmdPaletteOpen, setMobileSidebarOpen, theme, toggleTheme, toggleLoboPanel } = useUiStore()
   const { logout } = useAuthStore()
   const { crossFade } = useAuthFade()
   const compact = useIsCompact()
@@ -144,6 +144,7 @@ export function TopBar() {
           )}
         </div>
 
+        <IconBtn icon={<Bot size={14} />} onClick={toggleLoboPanel} title="Lobo AI (⌘L)" />
         <IconBtn icon={<Bell size={14} />} badge={inbox.length > 0 ? inbox.length : undefined} onClick={() => navigate('/inbox')} />
 
         {/* Profile dropdown */}
@@ -219,11 +220,12 @@ function MenuItem({ children, onClick }: { children: React.ReactNode; onClick: (
   )
 }
 
-function IconBtn({ icon, badge, onClick }: { icon: React.ReactNode; badge?: number; onClick?: () => void }) {
+function IconBtn({ icon, badge, onClick, title }: { icon: React.ReactNode; badge?: number; onClick?: () => void; title?: string }) {
   return (
     <button
       type="button"
       onClick={onClick}
+      title={title}
       style={{ color: 'var(--fg-2)', padding: 5, borderRadius: 4, display: 'flex', position: 'relative' }}
       onMouseOver={e => (e.currentTarget.style.background = 'var(--hover)')}
       onMouseOut={e => (e.currentTarget.style.background = 'transparent')}

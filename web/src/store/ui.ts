@@ -12,6 +12,8 @@ function applyTheme(theme: Theme) {
   localStorage.setItem('kcw_theme', theme)
 }
 
+export type LoboModel = 'claude-sonnet' | 'claude-haiku' | 'ollama'
+
 interface UiState {
   activeProjectId: string | null
   activeSprintId: string | null
@@ -19,16 +21,22 @@ interface UiState {
   theme: Theme
   sidebarCollapsed: boolean
   mobileSidebarOpen: boolean
+  loboPanelOpen: boolean
+  loboModel: LoboModel
   setActiveProject: (projectId: string) => void
   setActiveSprint: (sprintId: string) => void
   setCmdPaletteOpen: (open: boolean) => void
   toggleTheme: () => void
   toggleSidebar: () => void
   setMobileSidebarOpen: (open: boolean) => void
+  toggleLoboPanel: () => void
+  setLoboModel: (model: LoboModel) => void
 }
 
 const initialTheme = getInitialTheme()
 applyTheme(initialTheme)
+
+const storedLoboModel = (localStorage.getItem('kcw_lobo_model') ?? 'claude-sonnet') as LoboModel
 
 export const useUiStore = create<UiState>((set) => ({
   activeProjectId: null,
@@ -37,6 +45,8 @@ export const useUiStore = create<UiState>((set) => ({
   theme: initialTheme,
   sidebarCollapsed: false,
   mobileSidebarOpen: false,
+  loboPanelOpen: false,
+  loboModel: storedLoboModel,
   setActiveProject: (projectId) => set({ activeProjectId: projectId }),
   setActiveSprint: (sprintId) => set({ activeSprintId: sprintId }),
   setCmdPaletteOpen: (open) => set({ cmdPaletteOpen: open }),
@@ -47,4 +57,9 @@ export const useUiStore = create<UiState>((set) => ({
   }),
   toggleSidebar: () => set(s => ({ sidebarCollapsed: !s.sidebarCollapsed })),
   setMobileSidebarOpen: (open) => set({ mobileSidebarOpen: open }),
+  toggleLoboPanel: () => set(s => ({ loboPanelOpen: !s.loboPanelOpen })),
+  setLoboModel: (model) => {
+    localStorage.setItem('kcw_lobo_model', model)
+    set({ loboModel: model })
+  },
 }))
