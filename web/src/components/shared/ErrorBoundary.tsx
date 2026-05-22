@@ -18,14 +18,14 @@ export class ErrorBoundary extends Component<Props, State> {
           height: '100%', display: 'flex', flexDirection: 'column',
           alignItems: 'center', justifyContent: 'center', gap: 10,
         }}>
-          <span style={{ fontSize: 13, color: 'var(--fg)' }}>Something went wrong</span>
-          <span className="mono" style={{ fontSize: 11, color: 'var(--fg-3)', maxWidth: 400, textAlign: 'center' }}>
+          <span style={{ fontSize: 15, color: 'var(--fg)' }}>Something went wrong</span>
+          <span className="mono" style={{ fontSize: 13, color: 'var(--fg-3)', maxWidth: 400, textAlign: 'center' }}>
             {error.message}
           </span>
           <button
             type="button"
             onClick={() => this.setState({ error: null })}
-            style={{ marginTop: 4, fontSize: 12, color: 'var(--accent)', padding: '4px 8px' }}
+            style={{ marginTop: 4, fontSize: 14, color: 'var(--accent)', padding: '4px 8px' }}
           >
             Try again
           </button>

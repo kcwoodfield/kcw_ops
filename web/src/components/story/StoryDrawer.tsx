@@ -149,7 +149,7 @@ function StoryDrawerBody({ storyId, onClose }: { storyId: string; onClose: () =>
       >
         <StoryId id={story.storyId} />
         <span style={{ color: 'var(--fg-4)' }}>·</span>
-        <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11.5, color: 'var(--fg-2)' }}>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13.5, color: 'var(--fg-2)' }}>
           <span style={{ width: 6, height: 6, borderRadius: 1, background: story.epicColor }} />
           {story.epicTitle}
         </span>
@@ -164,7 +164,7 @@ function StoryDrawerBody({ storyId, onClose }: { storyId: string; onClose: () =>
         >
           <Trash2 size={14} />
         </button>
-        <button type="button" onClick={onClose} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11.5, color: 'var(--fg-2)', padding: '4px 6px' }}>
+        <button type="button" onClick={onClose} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13.5, color: 'var(--fg-2)', padding: '4px 6px' }}>
           <X size={14} />
           Close
         </button>
@@ -183,7 +183,7 @@ function StoryDrawerBody({ storyId, onClose }: { storyId: string; onClose: () =>
               onBlur={() => title !== story.title && save({ title })}
               style={{
                 flex: 1,
-                fontSize: 22,
+                fontSize: 24,
                 fontWeight: 600,
                 lineHeight: 1.18,
                 letterSpacing: '-0.015em',
@@ -208,7 +208,7 @@ function StoryDrawerBody({ storyId, onClose }: { storyId: string; onClose: () =>
                   background: 'rgba(248,113,113,0.10)',
                   border: '1px solid rgba(248,113,113,0.3)',
                   borderRadius: 4,
-                  fontSize: 11.5,
+                  fontSize: 13.5,
                   fontWeight: 600,
                   color: 'var(--blocked)',
                   textTransform: 'uppercase',
@@ -235,7 +235,7 @@ function StoryDrawerBody({ storyId, onClose }: { storyId: string; onClose: () =>
               rows={6}
               style={{
                 width: '100%',
-                fontSize: 13,
+                fontSize: 15,
                 color: 'var(--fg-1)',
                 lineHeight: 1.55,
                 background: 'var(--bg-1)',
@@ -252,13 +252,13 @@ function StoryDrawerBody({ storyId, onClose }: { storyId: string; onClose: () =>
             {comments.length > 0 && (
               <div style={{ marginBottom: 12 }}>
                 {comments.map(c => (
-                  <div key={c.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 9, padding: '6px 0', fontSize: 12.5 }}>
-                    <span style={{ width: 22, height: 22, borderRadius: '50%', background: c.authorColor, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9.5, fontWeight: 700, color: '#fff' }}>
+                  <div key={c.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 9, padding: '6px 0', fontSize: 14.5 }}>
+                    <span style={{ width: 22, height: 22, borderRadius: '50%', background: c.authorColor, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11.5, fontWeight: 700, color: '#fff' }}>
                       {c.authorInitials}
                     </span>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <span style={{ fontWeight: 500, color: 'var(--fg)' }}>{c.authorName}</span>
-                      <span className="mono" style={{ marginLeft: 8, fontSize: 10.5, color: 'var(--fg-3)' }}>
+                      <span className="mono" style={{ marginLeft: 8, fontSize: 12.5, color: 'var(--fg-3)' }}>
                         {new Date(c.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </span>
                       <div style={{ marginTop: 3, color: 'var(--fg-1)', lineHeight: 1.5 }}>{c.body}</div>
@@ -272,7 +272,7 @@ function StoryDrawerBody({ storyId, onClose }: { storyId: string; onClose: () =>
               <select
                 value={commentAuthor}
                 onChange={e => setCommentAuthor(e.target.value)}
-                style={{ fontSize: 11, background: 'transparent', border: 'none', color: 'var(--fg-2)', padding: 0, flexShrink: 0, marginTop: 1 }}
+                style={{ fontSize: 13, background: 'transparent', border: 'none', color: 'var(--fg-2)', padding: 0, flexShrink: 0, marginTop: 1 }}
               >
                 {users.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
               </select>
@@ -290,7 +290,7 @@ function StoryDrawerBody({ storyId, onClose }: { storyId: string; onClose: () =>
                 }}
                 placeholder="Leave a comment…"
                 rows={2}
-                style={{ flex: 1, fontSize: 12.5, color: 'var(--fg)', background: 'transparent', border: 'none', outline: 'none', resize: 'none', lineHeight: 1.5 }}
+                style={{ flex: 1, fontSize: 14.5, color: 'var(--fg)', background: 'transparent', border: 'none', outline: 'none', resize: 'none', lineHeight: 1.5 }}
               />
               <button
                 type="button"
@@ -328,7 +328,7 @@ function StoryDrawerBody({ storyId, onClose }: { storyId: string; onClose: () =>
                     width: 26, height: 24, borderRadius: 4,
                     background: n === story.points ? 'var(--accent)' : 'var(--bg-2)',
                     color: n === story.points ? 'var(--accent-ink)' : 'var(--fg-1)',
-                    fontFamily: 'var(--font-mono)', fontSize: 11.5, fontWeight: 600,
+                    fontFamily: 'var(--font-mono)', fontSize: 13.5, fontWeight: 600,
                     border: '1px solid',
                     borderColor: n === story.points ? 'transparent' : 'var(--border-1)',
                   }}
@@ -379,7 +379,7 @@ function StoryDrawerBody({ storyId, onClose }: { storyId: string; onClose: () =>
               type="button"
               onClick={() => save({ blocked: !story.blocked })}
               style={{
-                fontSize: 12, padding: '4px 10px', borderRadius: 4,
+                fontSize: 14, padding: '4px 10px', borderRadius: 4,
                 border: '1px solid var(--border-1)',
                 background: story.blocked ? 'rgba(200,74,64,0.12)' : 'var(--bg-2)',
                 color: story.blocked ? 'var(--blocked)' : 'var(--fg-2)',
@@ -394,7 +394,7 @@ function StoryDrawerBody({ storyId, onClose }: { storyId: string; onClose: () =>
               type="button"
               onClick={() => save({ starred: !story.starred })}
               style={{
-                fontSize: 12, padding: '4px 10px', borderRadius: 4,
+                fontSize: 14, padding: '4px 10px', borderRadius: 4,
                 border: '1px solid var(--border-1)',
                 background: story.starred ? 'rgba(196,149,58,0.12)' : 'var(--bg-2)',
                 color: story.starred ? 'var(--review)' : 'var(--fg-2)',
@@ -419,10 +419,10 @@ function StoryDrawerBody({ storyId, onClose }: { storyId: string; onClose: () =>
             </select>
             {story.assigneeId && story.assigneeName && (
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 5 }}>
-                <span style={{ width: 18, height: 18, borderRadius: '50%', background: story.assigneeColor ?? '#7c5cff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 700, color: '#fff', flexShrink: 0 }}>
+                <span style={{ width: 18, height: 18, borderRadius: '50%', background: story.assigneeColor ?? '#7c5cff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: '#fff', flexShrink: 0 }}>
                   {story.assigneeInitials}
                 </span>
-                <span style={{ fontSize: 12, color: 'var(--fg-2)' }}>{story.assigneeName}</span>
+                <span style={{ fontSize: 14, color: 'var(--fg-2)' }}>{story.assigneeName}</span>
               </div>
             )}
           </Prop>
@@ -442,7 +442,7 @@ function StoryDrawerBody({ storyId, onClose }: { storyId: string; onClose: () =>
             setDescription(story.description ?? '')
             onClose()
           }}
-          style={{ height: 30, padding: '0 14px', background: 'transparent', border: '1px solid var(--border-1)', borderRadius: 4, fontSize: 12, color: 'var(--fg-2)' }}
+          style={{ height: 30, padding: '0 14px', background: 'transparent', border: '1px solid var(--border-1)', borderRadius: 4, fontSize: 14, color: 'var(--fg-2)' }}
         >
           Cancel
         </button>
@@ -450,7 +450,7 @@ function StoryDrawerBody({ storyId, onClose }: { storyId: string; onClose: () =>
           type="button"
           onClick={() => { save({ title, description }); onClose() }}
           style={{
-            height: 30, padding: '0 16px', borderRadius: 4, fontSize: 12, fontWeight: 600,
+            height: 30, padding: '0 16px', borderRadius: 4, fontSize: 14, fontWeight: 600,
             background: 'var(--accent)', color: 'var(--accent-ink)',
             border: '1px solid transparent',
           }}
@@ -474,7 +474,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   return (
     <section style={{ marginTop: 24 }}>
       <header style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-        <span style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--fg-3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+        <span style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--fg-3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
           {title}
         </span>
         <span style={{ flex: 1, height: 1, background: 'var(--border)' }} />
@@ -487,7 +487,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 function Prop({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div style={{ marginBottom: 14 }}>
-      <div style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--fg-3)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 5 }}>
+      <div style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--fg-3)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 5 }}>
         {label}
       </div>
       {children}
@@ -519,7 +519,7 @@ function StatusPill({ status, onChange }: { status: StoryStatus; onChange: (s: S
         background: c.bg,
         border: `1px solid ${c.border}`,
         borderRadius: 4,
-        fontSize: 11.5,
+        fontSize: 13.5,
         fontWeight: 500,
         color: c.fg,
       }}
@@ -537,7 +537,7 @@ function StatusSelect({ value, onChange }: { value: StoryStatus; onChange: (s: S
       onChange={e => onChange(e.target.value as StoryStatus)}
       style={{
         width: '100%',
-        fontSize: 12.5,
+        fontSize: 14.5,
         padding: '6px 8px',
         background: 'var(--bg-1)',
         border: '1px solid var(--border)',
@@ -561,7 +561,7 @@ function PrioritySelect({ value, onChange }: { value: StoryPriority; onChange: (
         onChange={e => onChange(e.target.value as StoryPriority)}
         style={{
           flex: 1,
-          fontSize: 12.5,
+          fontSize: 14.5,
           padding: '6px 8px',
           background: 'var(--bg-1)',
           border: '1px solid var(--border)',
@@ -578,7 +578,7 @@ function PrioritySelect({ value, onChange }: { value: StoryPriority; onChange: (
 }
 
 const selectStyle: React.CSSProperties = {
-  width: '100%', fontSize: 12.5, padding: '6px 8px',
+  width: '100%', fontSize: 14.5, padding: '6px 8px',
   background: 'var(--bg-1)', border: '1px solid var(--border)',
   borderRadius: 4, color: 'var(--fg)',
 }
@@ -609,7 +609,7 @@ function LabelsEditor({ labels, onChange }: { labels: string[]; onChange: (l: st
               display: 'inline-flex', alignItems: 'center', gap: 4,
               padding: '2px 7px', borderRadius: 3,
               background: 'var(--bg-3)', border: '1px solid var(--border-1)',
-              fontSize: 11, color: 'var(--fg-2)', cursor: 'pointer',
+              fontSize: 13, color: 'var(--fg-2)', cursor: 'pointer',
             }}
           >
             {l} <span style={{ opacity: 0.5 }}>×</span>
@@ -634,6 +634,6 @@ function LabelsEditor({ labels, onChange }: { labels: string[]; onChange: (l: st
 
 function DrawerMessage({ children }: { children: React.ReactNode }) {
   return (
-    <div style={{ padding: 24, color: 'var(--fg-2)', fontSize: 13 }}>{children}</div>
+    <div style={{ padding: 24, color: 'var(--fg-2)', fontSize: 15 }}>{children}</div>
   )
 }

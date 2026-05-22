@@ -7,7 +7,7 @@ export function ViewPlaceholder({ name }: { name: string }) {
         alignItems: 'center',
         justifyContent: 'center',
         color: 'var(--fg-2)',
-        fontSize: 13,
+        fontSize: 15,
       }}
     >
       {name} — coming soon

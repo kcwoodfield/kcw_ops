@@ -71,9 +71,9 @@ export function CalendarView() {
 
       {/* ── Toolbar ───────────────────────────────────────────── */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '0 16px', borderBottom: '1px solid var(--border)' }}>
-        <span style={{ fontSize: 14, fontWeight: 600 }}>Timeline</span>
+        <span style={{ fontSize: 16, fontWeight: 600 }}>Timeline</span>
         <span style={{ flex: 1 }} />
-        <span className="mono" style={{ fontSize: 11, color: 'var(--fg-3)' }}>{rangeLabel}</span>
+        <span className="mono" style={{ fontSize: 13, color: 'var(--fg-3)' }}>{rangeLabel}</span>
         <button type="button" onClick={() => setWeekOffset(0)} style={navBtn}>Today</button>
         <button type="button" onClick={() => setWeekOffset(o => o - 1)} style={navBtn}><ChevronLeft size={13} /></button>
         <button type="button" onClick={() => setWeekOffset(o => o + 1)} style={navBtn}><ChevronRight size={13} /></button>
@@ -84,8 +84,8 @@ export function CalendarView() {
 
         {/* top-left corner */}
         <div style={{ ...stickyTop, borderRight: '1px solid var(--border)', padding: '8px 12px', display: 'flex', alignItems: 'center' }}>
-          <span style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--fg-3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Sprints</span>
-          <span className="mono" style={{ fontSize: 10, color: 'var(--fg-4)', marginLeft: 'auto' }}>{sprints.length}</span>
+          <span style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--fg-3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Sprints</span>
+          <span className="mono" style={{ fontSize: 12, color: 'var(--fg-4)', marginLeft: 'auto' }}>{sprints.length}</span>
         </div>
 
         {/* week header */}
@@ -97,10 +97,10 @@ export function CalendarView() {
               borderBottom: '1px solid var(--border)',
               background: w.isCurrent ? 'var(--hover)' : 'var(--bg)',
             }}>
-              <div style={{ fontSize: 10.5, fontWeight: w.isCurrent ? 600 : 400, color: w.isCurrent ? 'var(--fg-1)' : 'var(--fg-3)' }}>
+              <div style={{ fontSize: 12.5, fontWeight: w.isCurrent ? 600 : 400, color: w.isCurrent ? 'var(--fg-1)' : 'var(--fg-3)' }}>
                 {w.label}
               </div>
-              <div className="mono" style={{ fontSize: 9.5, color: 'var(--fg-4)' }}>W{w.weekNum}</div>
+              <div className="mono" style={{ fontSize: 11.5, color: 'var(--fg-4)' }}>W{w.weekNum}</div>
             </div>
           ))}
         </div>
@@ -109,7 +109,7 @@ export function CalendarView() {
         {sprints.length === 0 ? (
           <>
             <div style={labelCell}>
-              <span style={{ fontSize: 12, color: 'var(--fg-3)', fontStyle: 'italic' }}>No sprints yet</span>
+              <span style={{ fontSize: 14, color: 'var(--fg-3)', fontStyle: 'italic' }}>No sprints yet</span>
             </div>
             <BarsCell weeks={weeks} todayOffset={todayOffset} isLast />
           </>
@@ -123,13 +123,13 @@ export function CalendarView() {
                   )}
                   <div style={{ minWidth: 0, flex: 1 }}>
                     <div style={{
-                      fontSize: 12.5, fontWeight: sprint.state === 'active' ? 600 : 500,
+                      fontSize: 14.5, fontWeight: sprint.state === 'active' ? 600 : 500,
                       color: sprint.state === 'completed' ? 'var(--fg-3)' : 'var(--fg)',
                       overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                     }}>
                       {sprint.name}
                     </div>
-                    <div className="mono" style={{ fontSize: 10, color: 'var(--fg-3)' }}>
+                    <div className="mono" style={{ fontSize: 12, color: 'var(--fg-3)' }}>
                       {sprint.state} · {sprint.completedPoints}/{sprint.committedPoints} pts
                     </div>
                   </div>
@@ -180,13 +180,13 @@ function SprintBar({ sprint, windowStart, dayPct }: {
         <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--accent)', flexShrink: 0 }} />
       )}
       <span style={{
-        fontSize: 11.5, fontWeight: isActive ? 600 : 500,
+        fontSize: 13.5, fontWeight: isActive ? 600 : 500,
         color: isActive ? 'var(--accent-fg)' : isCompleted ? 'var(--fg-2)' : 'var(--fg-3)',
         whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
       }}>
         {sprint.name}
       </span>
-      <span className="mono" style={{ fontSize: 10, color: 'var(--fg-3)', marginLeft: 'auto', flexShrink: 0 }}>
+      <span className="mono" style={{ fontSize: 12, color: 'var(--fg-3)', marginLeft: 'auto', flexShrink: 0 }}>
         {sprint.committedPoints}pt
       </span>
     </div>
@@ -228,7 +228,7 @@ function BarsCell({ children, weeks, todayOffset, isLast }: {
 
 function Centered({ children }: { children: React.ReactNode }) {
   return (
-    <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--fg-2)', fontSize: 13 }}>
+    <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--fg-2)', fontSize: 15 }}>
       {children}
     </div>
   )
@@ -238,7 +238,7 @@ const navBtn: React.CSSProperties = {
   display: 'inline-flex', alignItems: 'center', gap: 4,
   height: 26, padding: '0 8px',
   background: 'var(--bg-1)', border: '1px solid var(--border)',
-  borderRadius: 'var(--r-sm)', fontSize: 12, color: 'var(--fg-2)',
+  borderRadius: 'var(--r-sm)', fontSize: 14, color: 'var(--fg-2)',
 }
 
 const stickyTop: React.CSSProperties = {

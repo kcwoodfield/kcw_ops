@@ -267,14 +267,14 @@ export function Kanban() {
     <div style={{ width: '100%', height: '100%', display: 'grid', gridTemplateRows: '36px 1fr', background: 'var(--bg)' }}>
 
       {/* ── Toolbar ── */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '0 14px', borderBottom: '1px solid var(--border)', fontSize: 12, color: 'var(--fg-2)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '0 14px', borderBottom: '1px solid var(--border)', fontSize: 14, color: 'var(--fg-2)' }}>
         {compact ? (
           <>
             {activeProjectId && (
               <EpicFilterPopover projectId={activeProjectId} value={epicFilter} onChange={setEpicFilter} />
             )}
             <span style={{ flex: 1 }} />
-            <span className="mono" style={{ fontSize: 11, color: 'var(--fg-3)' }}>
+            <span className="mono" style={{ fontSize: 13, color: 'var(--fg-3)' }}>
               {stories.length} issues · {totalPts} pts
             </span>
           </>
@@ -286,11 +286,11 @@ export function Kanban() {
             )}
             <FilterChip label="Assignee" value="All" />
             <span style={{ flex: 1 }} />
-            <span className="mono" style={{ fontSize: 11, color: 'var(--fg-3)' }}>
+            <span className="mono" style={{ fontSize: 13, color: 'var(--fg-3)' }}>
               {stories.length} issues · {totalPts} pts
             </span>
             <span style={{ width: 1, height: 14, background: 'var(--border)' }} />
-            <button type="button" style={{ padding: '3px 6px', fontSize: 11.5, color: 'var(--fg-2)' }}>
+            <button type="button" style={{ padding: '3px 6px', fontSize: 13.5, color: 'var(--fg-2)' }}>
               <Settings size={12} />
             </button>
           </>
@@ -311,13 +311,13 @@ export function Kanban() {
                 <TabsTrigger
                   key={col.id}
                   value={col.id}
-                  style={{ flex: 1, gap: 5, fontSize: 11.5, padding: '0 4px', minWidth: 0 }}
+                  style={{ flex: 1, gap: 5, fontSize: 13.5, padding: '0 4px', minWidth: 0 }}
                 >
                   <StatusDot status={col.id} size={7} />
                   <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {col.label}
                   </span>
-                  <span style={{ fontSize: 10, opacity: 0.55 }}>{count}</span>
+                  <span style={{ fontSize: 12, opacity: 0.55 }}>{count}</span>
                 </TabsTrigger>
               )
             })}
@@ -343,7 +343,7 @@ export function Kanban() {
                     <button
                       type="button"
                       onClick={() => void handleAddIssue(col.id)}
-                      style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 8px', fontSize: 11.5, color: 'var(--fg-3)', borderRadius: 4, border: '1px dashed transparent', marginTop: 2 }}
+                      style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 8px', fontSize: 13.5, color: 'var(--fg-3)', borderRadius: 4, border: '1px dashed transparent', marginTop: 2 }}
                       onMouseOver={e => { e.currentTarget.style.borderColor = 'var(--border-1)' }}
                       onMouseOut={e => { e.currentTarget.style.borderColor = 'transparent' }}
                     >
@@ -403,13 +403,13 @@ function FilterChip({
         border: '1px dashed var(--border-1)',
         borderRadius: 4,
         color: 'var(--fg-2)',
-        fontSize: 11.5,
+        fontSize: 13.5,
       }}
     >
       <span style={{ color: 'var(--fg-3)' }}>{label}</span>
       <span style={{ color: 'var(--fg)' }}>{value}</span>
       {badge && (
-        <span className="mono" style={{ fontSize: 10, color: 'var(--fg-3)' }}>
+        <span className="mono" style={{ fontSize: 12, color: 'var(--fg-3)' }}>
           · {badge}
         </span>
       )}
@@ -469,7 +469,7 @@ function Column({
         <StatusDot status={col.id} size={9} />
         <span
           style={{
-            fontSize: 12.5,
+            fontSize: 14.5,
             fontWeight: 600,
             color: 'var(--fg)',
             letterSpacing: '-0.005em',
@@ -477,11 +477,11 @@ function Column({
         >
           {col.label}
         </span>
-        <span className="mono" style={{ fontSize: 11, color: 'var(--fg-3)' }}>
+        <span className="mono" style={{ fontSize: 13, color: 'var(--fg-3)' }}>
           {count}
         </span>
         <span style={{ flex: 1 }} />
-        <span className="mono" style={{ fontSize: 10.5, color: 'var(--fg-3)' }}>
+        <span className="mono" style={{ fontSize: 12.5, color: 'var(--fg-3)' }}>
           {pts} pts
         </span>
         <button type="button" onClick={onAddIssue} style={{ padding: 3, color: 'var(--fg-3)', borderRadius: 3 }}
@@ -519,7 +519,7 @@ function Column({
               alignItems: 'center',
               gap: 6,
               padding: '6px 8px',
-              fontSize: 11.5,
+              fontSize: 13.5,
               color: 'var(--fg-3)',
               borderRadius: 4,
               border: '1px dashed transparent',
@@ -630,7 +630,7 @@ function KanbanCard({
         {story.blocked && (
           <span
             style={{
-              fontSize: 9,
+              fontSize: 11,
               fontWeight: 600,
               padding: '1px 4px',
               background: 'rgba(248,113,113,0.13)',
@@ -653,7 +653,7 @@ function KanbanCard({
           display: 'flex',
           gap: 6,
           alignItems: 'flex-start',
-          fontSize: 13,
+          fontSize: 15,
           color: 'var(--fg)',
           fontWeight: 450,
           lineHeight: 1.32,
@@ -687,7 +687,7 @@ function KanbanCard({
           alignItems: 'center',
           gap: 8,
           color: 'var(--fg-3)',
-          fontSize: 11,
+          fontSize: 13,
         }}
       >
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
@@ -700,12 +700,12 @@ function KanbanCard({
               opacity: 0.85,
             }}
           />
-          <span className="mono" style={{ fontSize: 10.5 }}>
+          <span className="mono" style={{ fontSize: 12.5 }}>
             {story.epicTitle}
           </span>
         </span>
         <span style={{ flex: 1 }} />
-        {story.dueDate && <span style={{ fontSize: 10.5 }}>{fmtDate(story.dueDate)}</span>}
+        {story.dueDate && <span style={{ fontSize: 12.5 }}>{fmtDate(story.dueDate)}</span>}
         <AssigneeAvatar assigneeId={story.assigneeId} />
       </div>
     </article>
@@ -721,7 +721,7 @@ function EmptyState({ message }: { message: string }) {
         alignItems: 'center',
         justifyContent: 'center',
         color: 'var(--fg-2)',
-        fontSize: 13,
+        fontSize: 15,
       }}
     >
       {message}

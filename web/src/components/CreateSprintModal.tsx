@@ -48,7 +48,7 @@ export function CreateSprintModal({ projectId, open, onClose }: Props) {
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', marginBottom: 16 }}>
-            <Dialog.Title style={{ fontSize: 14, fontWeight: 600, color: 'var(--fg)', flex: 1 }}>
+            <Dialog.Title style={{ fontSize: 16, fontWeight: 600, color: 'var(--fg)', flex: 1 }}>
               New sprint
             </Dialog.Title>
             <button type="button" onClick={onClose} style={{ color: 'var(--fg-3)', display: 'flex' }}>
@@ -86,7 +86,7 @@ export function CreateSprintModal({ projectId, open, onClose }: Props) {
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
-            <button type="button" onClick={onClose} style={{ fontSize: 12.5, padding: '6px 12px', borderRadius: 4, color: 'var(--fg-2)', border: '1px solid var(--border-1)' }}>
+            <button type="button" onClick={onClose} style={{ fontSize: 14.5, padding: '6px 12px', borderRadius: 4, color: 'var(--fg-2)', border: '1px solid var(--border-1)' }}>
               Cancel
             </button>
             <button
@@ -94,7 +94,7 @@ export function CreateSprintModal({ projectId, open, onClose }: Props) {
               onClick={submit}
               disabled={!name.trim() || createSprint.isPending}
               style={{
-                fontSize: 12.5, padding: '6px 14px', borderRadius: 4,
+                fontSize: 14.5, padding: '6px 14px', borderRadius: 4,
                 background: 'var(--accent)', color: 'var(--accent-ink)', fontWeight: 600,
                 opacity: !name.trim() ? 0.5 : 1,
               }}
@@ -111,7 +111,7 @@ export function CreateSprintModal({ projectId, open, onClose }: Props) {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div style={{ marginBottom: 12 }}>
-      <div style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--fg-3)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 5 }}>
+      <div style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--fg-3)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 5 }}>
         {label}
       </div>
       {children}
@@ -120,7 +120,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 }
 
 const inputStyle: React.CSSProperties = {
-  width: '100%', fontSize: 13, padding: '7px 10px',
+  width: '100%', fontSize: 15, padding: '7px 10px',
   background: 'var(--bg-1)', border: '1px solid var(--border)',
   borderRadius: 5, color: 'var(--fg)',
 }

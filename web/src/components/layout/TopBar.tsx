@@ -89,7 +89,7 @@ export function TopBar() {
           }}
         >
           <Search size={13} />
-          <span style={{ fontSize: 12, flex: 1 }}>Search issues, epics…</span>
+          <span style={{ fontSize: 14, flex: 1 }}>Search issues, epics…</span>
           <span className="kbd">⌘K</span>
         </button>
       )}
@@ -104,7 +104,7 @@ export function TopBar() {
             display: 'inline-flex', alignItems: 'center', gap: 5,
             height: 28, padding: '0 12px',
             background: 'var(--accent)', color: 'var(--accent-ink)',
-            borderRadius: 'var(--r-sm)', fontSize: 12, fontWeight: 600,
+            borderRadius: 'var(--r-sm)', fontSize: 14, fontWeight: 600,
             opacity: !activeProjectId ? 0.5 : 1,
           }}
         >
@@ -150,7 +150,7 @@ function MenuItem({ children, onClick }: { children: React.ReactNode; onClick: (
       onClick={onClick}
       style={{
         display: 'block', width: '100%', textAlign: 'left',
-        padding: '7px 14px', fontSize: 12.5, color: 'var(--fg-1)',
+        padding: '7px 14px', fontSize: 14.5, color: 'var(--fg-1)',
         background: 'transparent',
       }}
       onMouseOver={e => (e.currentTarget.style.background = 'var(--hover)')}
@@ -177,7 +177,7 @@ function IconBtn({ icon, badge, onClick, title }: { icon: React.ReactNode; badge
           position: 'absolute', top: 1, right: 1,
           minWidth: 14, height: 14, borderRadius: 7,
           background: 'var(--accent)', color: 'var(--accent-ink)',
-          fontSize: 9, fontWeight: 700, lineHeight: '14px',
+          fontSize: 11, fontWeight: 700, lineHeight: '14px',
           textAlign: 'center', padding: '0 3px',
         }}>
           {badge > 99 ? '99+' : badge}

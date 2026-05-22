@@ -33,7 +33,7 @@ export function Footer() {
           background: 'var(--accent)',
           border: 'none',
           borderRadius: 'var(--r-sm)',
-          fontSize: 12, fontWeight: 600,
+          fontSize: 14, fontWeight: 600,
           color: 'var(--accent-ink)',
           letterSpacing: '0.01em',
           transition: 'opacity 0.15s',

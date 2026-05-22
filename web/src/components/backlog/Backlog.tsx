@@ -102,15 +102,15 @@ export function Backlog() {
         display: 'flex', alignItems: 'center', gap: 10,
         padding: '0 16px', borderBottom: '1px solid var(--border)', flexShrink: 0,
       }}>
-        <span style={{ fontSize: 14, fontWeight: 600 }}>Backlog</span>
-        <span className="mono" style={{ fontSize: 11.5, color: 'var(--fg-3)' }}>
+        <span style={{ fontSize: 16, fontWeight: 600 }}>Backlog</span>
+        <span className="mono" style={{ fontSize: 13.5, color: 'var(--fg-3)' }}>
           {visible.length} {visible.length === 1 ? 'story' : 'stories'} · {totalPts} pts
         </span>
         <span style={{ flex: 1 }} />
 
         {someSelected && (
           <>
-            <span className="mono" style={{ fontSize: 11.5, color: 'var(--fg-2)' }}>
+            <span className="mono" style={{ fontSize: 13.5, color: 'var(--fg-2)' }}>
               {selected.size} selected
             </span>
             <select
@@ -119,7 +119,7 @@ export function Backlog() {
               style={{
                 height: 26, padding: '0 6px',
                 background: 'var(--bg-2)', border: '1px solid var(--border-1)',
-                borderRadius: 4, fontSize: 12, color: 'var(--fg)',
+                borderRadius: 4, fontSize: 14, color: 'var(--fg)',
               }}
             >
               <option value="">Pick sprint…</option>
@@ -135,7 +135,7 @@ export function Backlog() {
                 display: 'inline-flex', alignItems: 'center', gap: 5,
                 height: 26, padding: '0 10px',
                 background: 'var(--accent-bg)', border: '1px solid var(--accent-line)',
-                borderRadius: 'var(--r-sm)', fontSize: 12, fontWeight: 500,
+                borderRadius: 'var(--r-sm)', fontSize: 14, fontWeight: 500,
                 color: 'var(--accent-fg)', flexShrink: 0,
                 opacity: !targetSprint ? 0.5 : 1,
               }}
@@ -156,7 +156,7 @@ export function Backlog() {
             height: 26, padding: '0 10px',
             background: 'var(--accent)', color: 'var(--accent-ink)',
             borderRadius: 'var(--r-sm)',
-            fontSize: 12, fontWeight: 600,
+            fontSize: 14, fontWeight: 600,
           }}
         >
           <Plus size={12} />
@@ -181,11 +181,11 @@ export function Backlog() {
               background: tab === t ? 'var(--bg-2)' : 'transparent',
               boxShadow: tab === t ? '0 0 0 1px var(--border-1)' : 'none',
               color: tab === t ? 'var(--fg)' : 'var(--fg-2)',
-              fontSize: 12, fontWeight: tab === t ? 500 : 400, flexShrink: 0,
+              fontSize: 14, fontWeight: tab === t ? 500 : 400, flexShrink: 0,
             }}
           >
             {t === 'all' ? 'All open' : 'Urgent + High'}
-            <span className="mono" style={{ fontSize: 10.5, color: 'var(--fg-3)' }}>{counts[t]}</span>
+            <span className="mono" style={{ fontSize: 12.5, color: 'var(--fg-3)' }}>{counts[t]}</span>
           </button>
         ))}
 
@@ -196,7 +196,7 @@ export function Backlog() {
         )}
 
         <span style={{ flex: 1 }} />
-        <span className="mono" style={{ fontSize: 11, color: 'var(--fg-3)', flexShrink: 0 }}>
+        <span className="mono" style={{ fontSize: 13, color: 'var(--fg-3)', flexShrink: 0 }}>
           sorted by priority ↓
         </span>
       </div>
@@ -206,7 +206,7 @@ export function Backlog() {
         {visible.length === 0 ? (
           <div style={{
             padding: '48px 16px', textAlign: 'center',
-            color: 'var(--fg-3)', fontSize: 13,
+            color: 'var(--fg-3)', fontSize: 15,
           }}>
             {stories.length === 0 ? 'No backlog stories — all caught up!' : 'No stories match this filter.'}
           </div>
@@ -226,7 +226,7 @@ export function Backlog() {
               <tr style={{
                 background: 'var(--bg-1)',
                 position: 'sticky', top: 0, zIndex: 1,
-                color: 'var(--fg-3)', fontSize: 10.5,
+                color: 'var(--fg-3)', fontSize: 12.5,
                 textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600,
               }}>
                 <th style={{ padding: '6px 10px', borderBottom: '1px solid var(--border)' }}>
@@ -289,7 +289,7 @@ function BacklogRow({ story: s, checked, onToggle, onOpen }: {
           <span style={{
             flex: 1,
             overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-            color: 'var(--fg)', fontSize: 13,
+            color: 'var(--fg)', fontSize: 15,
           }}>
             {s.title}
           </span>
@@ -300,7 +300,7 @@ function BacklogRow({ story: s, checked, onToggle, onOpen }: {
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, maxWidth: '100%' }}>
           <span style={{ width: 6, height: 6, borderRadius: 1, background: s.epicColor, flexShrink: 0 }} />
           <span style={{
-            fontSize: 12, color: 'var(--fg-1)',
+            fontSize: 14, color: 'var(--fg-1)',
             overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
           }}>
             {s.epicTitle}
@@ -349,7 +349,7 @@ function Td({ children, align }: { children?: React.ReactNode; align?: 'left' | 
 function BlockedBadge() {
   return (
     <span style={{
-      flexShrink: 0, fontSize: 9, fontWeight: 600,
+      flexShrink: 0, fontSize: 11, fontWeight: 600,
       padding: '1px 4px', borderRadius: 2,
       background: 'rgba(248,113,113,0.13)',
       color: 'var(--blocked)',
@@ -365,7 +365,7 @@ function Shell({ children }: { children: React.ReactNode }) {
     <div style={{
       height: '100%', display: 'flex',
       alignItems: 'center', justifyContent: 'center',
-      color: 'var(--fg-2)', fontSize: 13,
+      color: 'var(--fg-2)', fontSize: 15,
     }}>
       {children}
     </div>

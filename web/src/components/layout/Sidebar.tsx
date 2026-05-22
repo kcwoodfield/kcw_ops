@@ -134,7 +134,7 @@ function SidebarFooter({ collapsed }: { collapsed: boolean }) {
             background: open ? 'var(--hover)' : 'transparent',
             border: '1px solid transparent',
             borderRadius: 8,
-            fontSize: 13, fontWeight: 500,
+            fontSize: 15, fontWeight: 500,
             color: 'var(--fg-2)',
             transition: 'background 0.15s, border-color 0.15s, color 0.15s',
           }}
@@ -174,7 +174,7 @@ function SidebarFooter({ collapsed }: { collapsed: boolean }) {
               style={{
                 display: 'flex', alignItems: 'center', gap: 8,
                 width: '100%', textAlign: 'left',
-                padding: '8px 14px', fontSize: 12.5, color: 'var(--fg-1)',
+                padding: '8px 14px', fontSize: 14.5, color: 'var(--fg-1)',
                 background: 'transparent',
               }}
               onMouseOver={e => (e.currentTarget.style.background = 'var(--hover)')}
@@ -190,7 +190,7 @@ function SidebarFooter({ collapsed }: { collapsed: boolean }) {
               style={{
                 display: 'flex', alignItems: 'center', gap: 8,
                 width: '100%', textAlign: 'left',
-                padding: '8px 14px', fontSize: 12.5, color: 'var(--fg-danger, #f87171)',
+                padding: '8px 14px', fontSize: 14.5, color: 'var(--fg-danger, #f87171)',
                 background: 'transparent',
               }}
               onMouseOver={e => (e.currentTarget.style.background = 'var(--hover)')}
@@ -230,12 +230,12 @@ function WorkspaceHeader({ collapsed, compact }: { collapsed: boolean; compact: 
           <div style={{ flex: 1, minWidth: 0, lineHeight: 1.2 }}>
             <div style={{
               fontFamily: 'var(--font-display)',
-              fontSize: 24, fontWeight: 600,
+              fontSize: 26, fontWeight: 600,
               color: 'var(--fg)',
               letterSpacing: '0.10em',
               textTransform: 'uppercase',
             }}>Ops</div>
-            <div className="mono" style={{ fontSize: 10, color: 'var(--fg-3)' }}>workspace</div>
+            <div className="mono" style={{ fontSize: 12, color: 'var(--fg-3)' }}>workspace</div>
           </div>
           <button
             type="button"
@@ -268,7 +268,7 @@ function NavRow({ icon, label, trail, active, onClick }: {
         display: 'flex', alignItems: 'center', gap: 8,
         padding: '4px 8px', borderRadius: 4,
         width: '100%', textAlign: 'left',
-        fontSize: 12.5,
+        fontSize: 14.5,
         color: active ? 'var(--fg)' : 'var(--fg-1)',
         fontWeight: active ? 500 : 400,
         background: active ? 'var(--active)' : hovered ? 'var(--hover)' : 'transparent',
@@ -277,7 +277,7 @@ function NavRow({ icon, label, trail, active, onClick }: {
       onMouseOut={() => setHovered(false)}>
       <span style={{ color: 'var(--fg-3)', display: 'flex' }}>{icon}</span>
       <span style={{ flex: 1 }}>{label}</span>
-      {trail && <span className="mono" style={{ fontSize: 10, color: 'var(--fg-3)' }}>{trail}</span>}
+      {trail && <span className="mono" style={{ fontSize: 12, color: 'var(--fg-3)' }}>{trail}</span>}
     </button>
   )
 }
@@ -293,7 +293,7 @@ function SectionHeader({ label, action, style }: {
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       ...style,
     }}>
-      <span style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--fg-3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+      <span style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--fg-3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
         {label}
       </span>
       {action}
@@ -357,7 +357,7 @@ function ProjectRow({ project, active, currentPath, onClick, onEdit }: {
             }}
           />
           <span style={{ width: 8, height: 8, borderRadius: 2, background: project.color, flexShrink: 0 }} />
-          <span style={{ flex: 1, textAlign: 'left', fontSize: 12.5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{project.name}</span>
+          <span style={{ flex: 1, textAlign: 'left', fontSize: 14.5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{project.name}</span>
         </button>
         {hovered && (
           <div style={{ display: 'flex', alignItems: 'center', paddingRight: 4, gap: 1 }}>
@@ -414,7 +414,7 @@ function SubNavRow({ icon, label, active, onClick }: {
         display: 'flex', alignItems: 'center', gap: 7,
         padding: '3px 8px 3px 26px',
         borderRadius: 4, width: '100%', textAlign: 'left',
-        fontSize: 12, fontWeight: active ? 500 : 400,
+        fontSize: 14, fontWeight: active ? 500 : 400,
         color: active ? 'var(--fg)' : 'var(--fg-2)',
         background: active ? 'var(--active)' : hovered ? 'var(--hover)' : 'transparent',
       }}

@@ -74,10 +74,10 @@ export function LoginPage() {
             <div>
               <div style={{
                 fontFamily: 'var(--font-display)',
-                fontSize: 28, fontWeight: 600,
+                fontSize: 30, fontWeight: 600,
                 color: 'var(--fg)', letterSpacing: '0.10em', textTransform: 'uppercase',
               }}>Ops</div>
-              <div className="mono" style={{ fontSize: 10, color: 'var(--fg-3)' }}>workspace</div>
+              <div className="mono" style={{ fontSize: 12, color: 'var(--fg-3)' }}>workspace</div>
             </div>
           </div>
 
@@ -92,8 +92,8 @@ export function LoginPage() {
             {step === 'password' ? (
               <>
                 <div>
-                  <div style={{ fontSize: 15, fontWeight: 600 }}>Sign in</div>
-                  <div style={{ fontSize: 12, color: 'var(--fg-3)', marginTop: 2 }}>
+                  <div style={{ fontSize: 17, fontWeight: 600 }}>Sign in</div>
+                  <div style={{ fontSize: 14, color: 'var(--fg-3)', marginTop: 2 }}>
                     Enter your username and password.
                   </div>
                 </div>
@@ -118,7 +118,7 @@ export function LoginPage() {
                       style={inputStyle}
                     />
                   </Field>
-                  {error && <p style={{ fontSize: 12, color: 'var(--blocked)', margin: 0 }}>{error}</p>}
+                  {error && <p style={{ fontSize: 14, color: 'var(--blocked)', margin: 0 }}>{error}</p>}
                   <button type="submit" disabled={loading} style={btnStyle}>
                     {loading ? 'Checking…' : 'Continue'}
                   </button>
@@ -127,8 +127,8 @@ export function LoginPage() {
             ) : (
               <>
                 <div>
-                  <div style={{ fontSize: 15, fontWeight: 600 }}>Two-factor auth</div>
-                  <div style={{ fontSize: 12, color: 'var(--fg-3)', marginTop: 2 }}>
+                  <div style={{ fontSize: 17, fontWeight: 600 }}>Two-factor auth</div>
+                  <div style={{ fontSize: 14, color: 'var(--fg-3)', marginTop: 2 }}>
                     Enter the 6-digit code from your authenticator app.
                   </div>
                 </div>
@@ -143,17 +143,17 @@ export function LoginPage() {
                       required
                       placeholder="000000"
                       className="mono"
-                      style={{ ...inputStyle, letterSpacing: '0.25em', fontSize: 20, textAlign: 'center' }}
+                      style={{ ...inputStyle, letterSpacing: '0.25em', fontSize: 22, textAlign: 'center' }}
                     />
                   </Field>
-                  {error && <p style={{ fontSize: 12, color: 'var(--blocked)', margin: 0 }}>{error}</p>}
+                  {error && <p style={{ fontSize: 14, color: 'var(--blocked)', margin: 0 }}>{error}</p>}
                   <button type="submit" disabled={loading || totp.length < 6} style={btnStyle}>
                     {loading ? 'Verifying…' : 'Sign in'}
                   </button>
                   <button
                     type="button"
                     onClick={() => { setStep('password'); setError(''); setTotp('') }}
-                    style={{ fontSize: 12, color: 'var(--fg-3)', background: 'none', padding: 0 }}
+                    style={{ fontSize: 14, color: 'var(--fg-3)', background: 'none', padding: 0 }}
                   >
                     ← Back
                   </button>
@@ -170,7 +170,7 @@ export function LoginPage() {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-      <label style={{ fontSize: 11.5, fontWeight: 500, color: 'var(--fg-2)' }}>{label}</label>
+      <label style={{ fontSize: 13.5, fontWeight: 500, color: 'var(--fg-2)' }}>{label}</label>
       {children}
     </div>
   )
@@ -182,7 +182,7 @@ const inputStyle: React.CSSProperties = {
   background: 'var(--bg-1)',
   border: '1px solid var(--border-1)',
   borderRadius: 5,
-  fontSize: 13,
+  fontSize: 15,
   color: 'var(--fg)',
   outline: 'none',
 }
@@ -193,7 +193,7 @@ const btnStyle: React.CSSProperties = {
   background: 'var(--accent)',
   color: 'var(--accent-ink)',
   borderRadius: 5,
-  fontSize: 13,
+  fontSize: 15,
   fontWeight: 600,
   marginTop: 4,
 }

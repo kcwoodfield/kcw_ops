@@ -117,8 +117,8 @@ function EpicGroup({ epic, projectId, stories, onStoryClick, onEdit }: {
         <td colSpan={5} style={{ padding: '7px 0' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <span style={{ width: 8, height: 8, borderRadius: 2, background: epic.color, flexShrink: 0 }} />
-            <span style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--fg)' }}>{epic.title}</span>
-            <span className="mono" style={{ fontSize: 10.5, color: 'var(--fg-3)' }}>
+            <span style={{ fontSize: 14.5, fontWeight: 600, color: 'var(--fg)' }}>{epic.title}</span>
+            <span className="mono" style={{ fontSize: 12.5, color: 'var(--fg-3)' }}>
               {done}/{total}
             </span>
             <div style={{ width: 80, height: 4, borderRadius: 2, background: 'var(--bg-3)', overflow: 'hidden' }}>
@@ -128,7 +128,7 @@ function EpicGroup({ epic, projectId, stories, onStoryClick, onEdit }: {
                 transition: 'width 0.3s ease',
               }} />
             </div>
-            <span className="mono" style={{ fontSize: 10.5, color: 'var(--fg-3)' }}>{pct}%</span>
+            <span className="mono" style={{ fontSize: 12.5, color: 'var(--fg-3)' }}>{pct}%</span>
             {hovered && (
               <div style={{ display: 'flex', gap: 2, marginLeft: 4 }} onClick={e => e.stopPropagation()}>
                 <EpicIconBtn title="Edit" onClick={() => onEdit(epic)}><Pencil size={11} /></EpicIconBtn>
@@ -138,7 +138,7 @@ function EpicGroup({ epic, projectId, stories, onStoryClick, onEdit }: {
           </div>
         </td>
         <td style={{ paddingRight: 16, textAlign: 'right' }}>
-          <span className="mono" style={{ fontSize: 10.5, color: 'var(--fg-3)' }}>
+          <span className="mono" style={{ fontSize: 12.5, color: 'var(--fg-3)' }}>
             {stories.reduce((s, st) => s + st.points, 0)} pts
           </span>
         </td>
@@ -151,7 +151,7 @@ function EpicGroup({ epic, projectId, stories, onStoryClick, onEdit }: {
       {!collapsed && stories.length === 0 && (
         <tr style={{ borderBottom: '1px solid var(--border)' }}>
           <td />
-          <td colSpan={6} style={{ padding: '8px 0 8px 24px', fontSize: 12, color: 'var(--fg-3)', fontStyle: 'italic' }}>
+          <td colSpan={6} style={{ padding: '8px 0 8px 24px', fontSize: 14, color: 'var(--fg-3)', fontStyle: 'italic' }}>
             No stories in this epic yet.
           </td>
         </tr>
@@ -185,7 +185,7 @@ function StoryRow({ story, onClick }: { story: StoryDto; onClick: () => void }) 
           <StatusDot status={story.status} size={7} />
           <StoryId id={story.storyId} />
           <span style={{
-            fontSize: 12.5, color: story.status === 'done' ? 'var(--fg-3)' : 'var(--fg-1)',
+            fontSize: 14.5, color: story.status === 'done' ? 'var(--fg-3)' : 'var(--fg-1)',
             textDecoration: story.status === 'done' ? 'line-through' : 'none',
             overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
             maxWidth: 380,
@@ -193,7 +193,7 @@ function StoryRow({ story, onClick }: { story: StoryDto; onClick: () => void }) 
             {story.title}
           </span>
           {story.blocked && (
-            <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--blocked)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+            <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--blocked)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
               blocked
             </span>
           )}
@@ -205,20 +205,20 @@ function StoryRow({ story, onClick }: { story: StoryDto; onClick: () => void }) 
       <td>
         <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
           <PriorityBars priority={story.priority} />
-          <span style={{ fontSize: 11.5, color: 'var(--fg-2)' }}>{story.priority}</span>
+          <span style={{ fontSize: 13.5, color: 'var(--fg-2)' }}>{story.priority}</span>
         </div>
       </td>
       <td><Pts n={story.points} /></td>
       <td>
         {story.sprintName ? (
-          <span className="mono" style={{ fontSize: 11, color: 'var(--fg-2)' }}>{story.sprintName}</span>
+          <span className="mono" style={{ fontSize: 13, color: 'var(--fg-2)' }}>{story.sprintName}</span>
         ) : (
-          <span style={{ fontSize: 11, color: 'var(--fg-3)' }}>Backlog</span>
+          <span style={{ fontSize: 13, color: 'var(--fg-3)' }}>Backlog</span>
         )}
       </td>
       <td style={{ paddingRight: 16 }}>
         {story.dueDate && (
-          <span className="mono" style={{ fontSize: 11, color: 'var(--fg-3)' }}>{fmtDate(story.dueDate)}</span>
+          <span className="mono" style={{ fontSize: 13, color: 'var(--fg-3)' }}>{fmtDate(story.dueDate)}</span>
         )}
       </td>
     </tr>
@@ -236,7 +236,7 @@ function StatusChip({ status }: { status: StoryDto['status'] }) {
   const labels = { todo: 'To do', progress: 'In progress', review: 'In review', done: 'Done' }
   return (
     <span style={{
-      fontSize: 11, padding: '2px 7px', borderRadius: 3,
+      fontSize: 13, padding: '2px 7px', borderRadius: 3,
       background: c.bg, border: `1px solid ${c.border}`, color: c.fg,
       fontWeight: 500, whiteSpace: 'nowrap',
     }}>
@@ -249,7 +249,7 @@ function Th({ children, style }: { children?: React.ReactNode; style?: React.CSS
   return (
     <th style={{
       textAlign: 'left', padding: '7px 8px',
-      fontSize: 10.5, fontWeight: 600, color: 'var(--fg-3)',
+      fontSize: 12.5, fontWeight: 600, color: 'var(--fg-3)',
       textTransform: 'uppercase', letterSpacing: '0.06em',
       ...style,
     }}>
@@ -275,7 +275,7 @@ function EpicIconBtn({ children, title, onClick }: { children: React.ReactNode; 
 
 function Centered({ children }: { children: React.ReactNode }) {
   return (
-    <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--fg-3)', fontSize: 13 }}>
+    <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--fg-3)', fontSize: 15 }}>
       {children}
     </div>
   )

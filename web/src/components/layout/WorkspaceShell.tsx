@@ -32,7 +32,7 @@ export function WorkspaceShell({ title }: { title: string }) {
         background: 'var(--panel)',
         borderBottom: '1px solid var(--border)',
       }}>
-        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--fg)' }}>{title}</span>
+        <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--fg)' }}>{title}</span>
       </div>
       <main style={{ background: 'var(--bg)', overflow: 'hidden', position: 'relative', paddingBottom: 52 }}>
         <Outlet />

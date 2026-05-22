@@ -85,8 +85,8 @@ export function ActivityLog() {
 
       {/* ── Header ───────────────────────────────────────────── */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0 16px', borderBottom: '1px solid var(--border)' }}>
-        <span style={{ fontSize: 14, fontWeight: 600 }}>Activity</span>
-        <span className="mono" style={{ fontSize: 11.5, color: 'var(--fg-3)' }}>
+        <span style={{ fontSize: 16, fontWeight: 600 }}>Activity</span>
+        <span className="mono" style={{ fontSize: 13.5, color: 'var(--fg-3)' }}>
           {events.length} events
         </span>
         <span style={{ width: 1, height: 18, background: 'var(--border)' }} />
@@ -95,7 +95,7 @@ export function ActivityLog() {
         {!compact && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             {Object.entries({ comment_added: 'comment', status_changed: 'status', points_changed: 'estimate', sprint_started: 'sprint', added_to_sprint: 'moved' }).map(([type, label]) => (
-              <span key={type} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'var(--fg-2)' }}>
+              <span key={type} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 13, color: 'var(--fg-2)' }}>
                 <span style={{ width: 7, height: 7, borderRadius: 1, background: TYPE_COLOR[type] }} />
                 {label}
               </span>
@@ -107,16 +107,16 @@ export function ActivityLog() {
       {/* ── Feed ─────────────────────────────────────────────── */}
       <div style={{ overflow: 'auto', padding: '4px 0 32px' }}>
         {events.length === 0 ? (
-          <div style={{ padding: '48px 16px', textAlign: 'center', color: 'var(--fg-3)', fontSize: 13 }}>
+          <div style={{ padding: '48px 16px', textAlign: 'center', color: 'var(--fg-3)', fontSize: 15 }}>
             No activity yet — create stories, update statuses, or leave comments.
           </div>
         ) : (
           groups.map(([day, dayEvents]) => (
             <section key={day} style={{ marginBottom: 8 }}>
               <header style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px 6px', position: 'sticky', top: 0, background: 'var(--bg)', zIndex: 1 }}>
-                <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--fg)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{day}</span>
+                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--fg)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{day}</span>
                 <span style={{ flex: 1, height: 1, background: 'var(--border)' }} />
-                <span className="mono" style={{ fontSize: 10.5, color: 'var(--fg-3)' }}>{dayEvents.length} events</span>
+                <span className="mono" style={{ fontSize: 12.5, color: 'var(--fg-3)' }}>{dayEvents.length} events</span>
               </header>
               <div style={{ padding: '0 16px' }}>
                 {dayEvents.map((e, i) => (
@@ -145,20 +145,20 @@ function EventRow({ event: e, isLast }: { event: ActivityEventDto; isLast: boole
       </div>
 
       {/* avatar */}
-      <span style={{ width: 22, height: 22, borderRadius: '50%', background: e.actorColor, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9.5, fontWeight: 700, color: '#fff', flexShrink: 0 }}>
+      <span style={{ width: 22, height: 22, borderRadius: '50%', background: e.actorColor, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11.5, fontWeight: 700, color: '#fff', flexShrink: 0 }}>
         {e.actorInitials}
       </span>
 
       {/* body */}
-      <div style={{ lineHeight: 1.45, fontSize: 12.5, color: 'var(--fg-1)', minWidth: 0 }}>
+      <div style={{ lineHeight: 1.45, fontSize: 14.5, color: 'var(--fg-1)', minWidth: 0 }}>
         <span style={{ color: 'var(--fg)', fontWeight: 500 }}>{e.actorName}</span>
         {' '}<span style={{ color: 'var(--fg-2)' }}>{verb}</span>
-        {target && <>{' '}<span className="mono" style={{ color: 'var(--fg)', fontSize: 11.5 }}>{target}</span></>}
-        {e.detail && <div style={{ color: 'var(--fg-2)', fontSize: 12, marginTop: 1 }}>{e.detail}</div>}
+        {target && <>{' '}<span className="mono" style={{ color: 'var(--fg)', fontSize: 13.5 }}>{target}</span></>}
+        {e.detail && <div style={{ color: 'var(--fg-2)', fontSize: 14, marginTop: 1 }}>{e.detail}</div>}
       </div>
 
       {/* time */}
-      <span className="mono" style={{ fontSize: 10.5, color: 'var(--fg-3)', textAlign: 'right', paddingTop: 2 }}>
+      <span className="mono" style={{ fontSize: 12.5, color: 'var(--fg-3)', textAlign: 'right', paddingTop: 2 }}>
         {relativeTime(e.createdAt)}
       </span>
     </div>
@@ -167,7 +167,7 @@ function EventRow({ event: e, isLast }: { event: ActivityEventDto; isLast: boole
 
 function Centered({ children }: { children: React.ReactNode }) {
   return (
-    <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--fg-2)', fontSize: 13 }}>
+    <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--fg-2)', fontSize: 15 }}>
       {children}
     </div>
   )

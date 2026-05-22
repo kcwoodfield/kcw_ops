@@ -240,8 +240,8 @@ function BacklogPanel({
       }}
     >
       <PanelHeader>
-        <span style={{ fontWeight: 600, fontSize: 13, color: 'var(--fg)' }}>Backlog</span>
-        <span className="mono" style={{ fontSize: 11, color: 'var(--fg-3)', marginLeft: 6 }}>
+        <span style={{ fontWeight: 600, fontSize: 15, color: 'var(--fg)' }}>Backlog</span>
+        <span className="mono" style={{ fontSize: 13, color: 'var(--fg-3)', marginLeft: 6 }}>
           {allIds.length} stories
         </span>
         <div style={{ flex: 1 }} />
@@ -316,12 +316,12 @@ function SprintPanel({
               const s = allSprints.find(sp => sp.id === e.target.value)
               if (s) onSelectSprint(s)
             }}
-            style={{ ...filterSelectStyle, fontWeight: 600, color: 'var(--fg)', fontSize: 13 }}
+            style={{ ...filterSelectStyle, fontWeight: 600, color: 'var(--fg)', fontSize: 15 }}
           >
             {allSprints.map(sp => <option key={sp.id} value={sp.id}>{sp.name}</option>)}
           </select>
         ) : (
-          <span style={{ fontSize: 13, color: 'var(--fg-3)' }}>No sprints yet</span>
+          <span style={{ fontSize: 15, color: 'var(--fg-3)' }}>No sprints yet</span>
         )}
 
         <button type="button" onClick={onNewSprint} style={iconBtnStyle} title="New sprint">
@@ -346,7 +346,7 @@ function SprintPanel({
       {sprint && (
         <div style={{ padding: '0 14px 10px', borderBottom: '1px solid var(--border)' }}>
           {sprint.goal && (
-            <div style={{ fontSize: 12, color: 'var(--fg-2)', marginBottom: 8, fontStyle: 'italic' }}>
+            <div style={{ fontSize: 14, color: 'var(--fg-2)', marginBottom: 8, fontStyle: 'italic' }}>
               "{sprint.goal}"
             </div>
           )}
@@ -358,7 +358,7 @@ function SprintPanel({
                 transition: 'width 0.2s ease',
               }} />
             </div>
-            <span className="mono" style={{ fontSize: 11, color: over ? 'var(--blocked)' : 'var(--fg-2)', flexShrink: 0 }}>
+            <span className="mono" style={{ fontSize: 13, color: over ? 'var(--blocked)' : 'var(--fg-2)', flexShrink: 0 }}>
               {sprintPoints} / {CAPACITY} pts
             </span>
           </div>
@@ -442,7 +442,7 @@ function PlanningRow({ story, action, onClick }: {
         onClick={e => { e.stopPropagation(); onClick() }}
         style={{
           flex: 1,
-          fontSize: 12.5,
+          fontSize: 14.5,
           color: 'var(--fg-1)',
           overflow: 'hidden',
           textOverflow: 'ellipsis',
@@ -484,7 +484,7 @@ function DragCard({ story }: { story: StoryDto }) {
       border: '1px solid var(--border-1)',
       borderRadius: 5,
       boxShadow: 'var(--shadow-2)',
-      fontSize: 12.5, color: 'var(--fg-1)',
+      fontSize: 14.5, color: 'var(--fg-1)',
       maxWidth: 400, cursor: 'grabbing',
     }}>
       <StatusDot status={story.status} size={8} />
@@ -519,7 +519,7 @@ function fmtDate(s: string) {
 
 function SprintMeta({ label, value, isDate }: { label: string; value: string; isDate?: boolean }) {
   return (
-    <span style={{ fontSize: 10.5, color: 'var(--fg-3)' }}>
+    <span style={{ fontSize: 12.5, color: 'var(--fg-3)' }}>
       <span style={{ fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{label}</span>
       {' '}<span className="mono" style={{ color: 'var(--fg-2)' }}>{isDate ? fmtDate(value) : value}</span>
     </span>
@@ -536,7 +536,7 @@ function ActionBtn({ icon, label, onClick, variant }: {
       style={{
         display: 'inline-flex', alignItems: 'center', gap: 5,
         height: 26, padding: '0 10px', borderRadius: 4,
-        fontSize: 12, fontWeight: 600,
+        fontSize: 14, fontWeight: 600,
         background: variant === 'accent' ? 'var(--accent)' : 'var(--bg-2)',
         color: variant === 'accent' ? 'var(--accent-ink)' : 'var(--fg-1)',
         border: variant === 'accent' ? 'none' : '1px solid var(--border-1)',
@@ -549,14 +549,14 @@ function ActionBtn({ icon, label, onClick, variant }: {
 
 function Empty({ children }: { children: React.ReactNode }) {
   return (
-    <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--fg-3)', fontSize: 12.5 }}>
+    <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--fg-3)', fontSize: 14.5 }}>
       {children}
     </div>
   )
 }
 
 const filterSelectStyle: React.CSSProperties = {
-  fontSize: 12, padding: '4px 8px',
+  fontSize: 14, padding: '4px 8px',
   background: 'var(--bg-1)', border: '1px solid var(--border)',
   borderRadius: 4, color: 'var(--fg-2)',
 }

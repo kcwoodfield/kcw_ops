@@ -170,11 +170,11 @@ export function LoboPanel() {
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <AlertCircle size={18} style={{ color: 'var(--blocked)', flexShrink: 0 }} />
-              <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--fg)' }}>
+              <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--fg)' }}>
                 {offline.model === 'ollama' ? 'Ollama isn\'t running' : 'Claude API unavailable'}
               </div>
             </div>
-            <p style={{ fontSize: 12.5, color: 'var(--fg-2)', margin: 0, lineHeight: 1.5 }}>
+            <p style={{ fontSize: 14.5, color: 'var(--fg-2)', margin: 0, lineHeight: 1.5 }}>
               {offline.model === 'ollama'
                 ? 'The local Ollama model isn\'t responding. Start it with:'
                 : 'ANTHROPIC_API_KEY is not set in appsettings.Development.json.'}
@@ -183,7 +183,7 @@ export function LoboPanel() {
               <code style={{
                 display: 'block', background: 'var(--bg-1)',
                 border: '1px solid var(--border)', borderRadius: 5,
-                padding: '8px 12px', fontSize: 12, color: 'var(--fg)',
+                padding: '8px 12px', fontSize: 14, color: 'var(--fg)',
                 fontFamily: 'monospace',
               }}>
                 ollama serve
@@ -230,7 +230,7 @@ export function LoboPanel() {
         }}>
           <span style={{
             fontFamily: 'var(--font-display)',
-            fontSize: 16, fontWeight: 600, letterSpacing: '0.08em',
+            fontSize: 18, fontWeight: 600, letterSpacing: '0.08em',
             textTransform: 'uppercase', color: 'var(--fg)', flex: 1,
           }}>
             Lobo
@@ -245,7 +245,7 @@ export function LoboPanel() {
                 display: 'flex', alignItems: 'center', gap: 4,
                 padding: '4px 8px', borderRadius: 4,
                 background: 'var(--bg-1)', border: '1px solid var(--border)',
-                fontSize: 11.5, color: 'var(--fg-2)',
+                fontSize: 13.5, color: 'var(--fg-2)',
               }}
               onMouseOver={e => (e.currentTarget.style.borderColor = 'var(--border-1)')}
               onMouseOut={e => (e.currentTarget.style.borderColor = 'var(--border)')}
@@ -267,7 +267,7 @@ export function LoboPanel() {
                     onClick={() => { setLoboModel(m); setModelPickerOpen(false) }}
                     style={{
                       display: 'block', width: '100%', textAlign: 'left',
-                      padding: '7px 14px', fontSize: 12.5,
+                      padding: '7px 14px', fontSize: 14.5,
                       color: m === loboModel ? 'var(--fg)' : 'var(--fg-1)',
                       fontWeight: m === loboModel ? 600 : 400,
                       background: 'transparent',
@@ -314,9 +314,9 @@ export function LoboPanel() {
               alignItems: 'center', justifyContent: 'center', gap: 8,
               color: 'var(--fg-3)', textAlign: 'center', padding: '0 24px',
             }}>
-              <span style={{ fontSize: 28 }}>🐺</span>
-              <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--fg-2)' }}>Lobo is ready.</div>
-              <div style={{ fontSize: 12, lineHeight: 1.5 }}>
+              <span style={{ fontSize: 30 }}>🐺</span>
+              <div style={{ fontSize: 15, fontWeight: 500, color: 'var(--fg-2)' }}>Lobo is ready.</div>
+              <div style={{ fontSize: 14, lineHeight: 1.5 }}>
                 Ask about your projects, sprints, or stories. Type to begin.
               </div>
             </div>
@@ -324,14 +324,14 @@ export function LoboPanel() {
           {messages.map((m, i) => (
             <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               <div style={{
-                fontSize: 10.5, fontWeight: 600, letterSpacing: '0.05em',
+                fontSize: 12.5, fontWeight: 600, letterSpacing: '0.05em',
                 textTransform: 'uppercase',
                 color: m.role === 'user' ? 'var(--accent)' : 'var(--fg-3)',
               }}>
                 {m.role === 'user' ? 'You' : 'Lobo'}
               </div>
               <div style={{
-                fontSize: 13, lineHeight: 1.6, color: m.error ? 'var(--blocked)' : 'var(--fg)',
+                fontSize: 15, lineHeight: 1.6, color: m.error ? 'var(--blocked)' : 'var(--fg)',
                 whiteSpace: 'pre-wrap',
               }}>
                 {m.content}
@@ -363,7 +363,7 @@ export function LoboPanel() {
               flex: 1, resize: 'none', overflow: 'hidden',
               background: 'var(--bg-1)', border: '1px solid var(--border-1)',
               borderRadius: 6, padding: '8px 10px',
-              fontSize: 13, color: 'var(--fg)', lineHeight: 1.5,
+              fontSize: 15, color: 'var(--fg)', lineHeight: 1.5,
               outline: 'none',
               opacity: loading ? 0.6 : 1,
             }}
@@ -404,7 +404,7 @@ function ModalBtn({ children, onClick, secondary }: {
       type="button"
       onClick={onClick}
       style={{
-        flex: 1, height: 34, borderRadius: 5, fontSize: 12.5, fontWeight: 600,
+        flex: 1, height: 34, borderRadius: 5, fontSize: 14.5, fontWeight: 600,
         background: secondary ? 'transparent' : 'var(--accent)',
         color: secondary ? 'var(--fg-2)' : 'var(--accent-ink)',
         border: secondary ? '1px solid var(--border)' : 'none',
