@@ -16,5 +16,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     protected override void OnModelCreating(ModelBuilder model)
     {
         model.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+
+        model.Entity<ActivityEvent>()
+            .HasOne<Project>()
+            .WithMany()
+            .HasForeignKey(e => e.ProjectId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }
