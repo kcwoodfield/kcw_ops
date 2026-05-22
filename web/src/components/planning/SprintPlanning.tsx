@@ -82,61 +82,49 @@ export function SprintPlanning() {
 
   const handleDragOver = (e: DragOverEvent) => {
     const { active, over } = e
-    if (!over) return
+    if (!over || active.id === over.id) return
 
     const activeContainer = findContainer(active.id as string)
     const overContainer = findContainer(over.id as string)
-
-    if (!activeContainer || !overContainer || activeContainer === overContainer) return
+    if (!activeContainer || !overContainer) return
 
     setItems(prev => {
-      const activeItems = prev[activeContainer]
-      const overItems = prev[overContainer]
-      const activeIndex = activeItems.indexOf(active.id as string)
-      const overIndex = overItems.indexOf(over.id as string)
-      const insertAt = overIndex >= 0 ? overIndex : overItems.length
+      const activeList = [...prev[activeContainer]]
+      const fromIndex = activeList.indexOf(active.id as string)
+      if (fromIndex === -1) return prev
 
-      return {
-        ...prev,
-        [activeContainer]: activeItems.filter(id => id !== active.id),
-        [overContainer]: [
-          ...overItems.slice(0, insertAt),
-          active.id as string,
-          ...overItems.slice(insertAt),
-        ],
+      if (activeContainer === overContainer) {
+        const toIndex = activeList.indexOf(over.id as string)
+        if (toIndex === -1 || fromIndex === toIndex) return prev
+        return { ...prev, [activeContainer]: arrayMove(activeList, fromIndex, toIndex) }
       }
+
+      // Cross-container: move item into destination list
+      const overList = [...prev[overContainer]]
+      const overIndex = overList.indexOf(over.id as string)
+      const insertAt = overIndex >= 0 ? overIndex : overList.length
+      activeList.splice(fromIndex, 1)
+      overList.splice(insertAt, 0, active.id as string)
+      return { ...prev, [activeContainer]: activeList, [overContainer]: overList }
     })
   }
 
   const handleDragEnd = (e: DragEndEvent) => {
-    const { active, over } = e
+    const { active } = e
     const origin = originContainer
     setActiveId(null)
     setOriginContainer(null)
 
-    if (!over || !origin) return
-
-    // After onDragOver, the item is already in its destination container.
-    // Use originContainer (captured at drag start) to detect cross-container drops.
+    if (!origin) return
     const currentContainer = findContainer(active.id as string)
+    if (!currentContainer || origin === currentContainer) return
 
-    if (origin !== currentContainer && currentContainer) {
-      // Cross-container: persist to server
-      const storyId = active.id as string
-      if (origin === 'backlog' && activeSprint) {
-        updateStory.mutate({ id: storyId, sprintId: activeSprint.id, clearSprint: false })
-      } else if (origin === 'sprint') {
-        updateStory.mutate({ id: storyId, clearSprint: true })
-      }
-    } else if (currentContainer) {
-      // Same-list reorder
-      setItems(prev => {
-        const list = prev[currentContainer]
-        const from = list.indexOf(active.id as string)
-        const to = list.indexOf(over.id as string)
-        if (from === -1 || to === -1 || from === to) return prev
-        return { ...prev, [currentContainer]: arrayMove(list, from, to) }
-      })
+    // Cross-container: persist to server (same-container reorder is local-only)
+    const storyId = active.id as string
+    if (origin === 'backlog' && activeSprint) {
+      updateStory.mutate({ id: storyId, sprintId: activeSprint.id, clearSprint: false })
+    } else if (origin === 'sprint') {
+      updateStory.mutate({ id: storyId, clearSprint: true })
     }
   }
 
