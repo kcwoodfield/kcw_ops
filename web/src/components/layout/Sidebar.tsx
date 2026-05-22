@@ -5,6 +5,8 @@ import { useDeleteProject, useProjects } from '../../api/projects'
 import { useInboxStories, useMyIssues, useStarredStories, useDraftStories, useCreateStory } from '../../api/stories'
 import { useUiStore } from '../../store/ui'
 import { useAppNavigate } from '../../hooks/useAppNavigate'
+import { projectPath } from '../../lib/routes'
+import type { AppView } from '../../lib/routes'
 import { Shield } from '../Shield'
 import { CreateProjectModal } from '../CreateProjectModal'
 import { ConfirmModal } from '../shared/ConfirmModal'
@@ -13,7 +15,7 @@ import type { ProjectDto } from '../../types'
 export function Sidebar({ compact = false }: { compact?: boolean }) {
   const { data: projects = [] } = useProjects()
   const { activeProjectId, sidebarCollapsed, mobileSidebarOpen } = useUiStore()
-  const { goToProject, goToView } = useAppNavigate()
+  const { goToProject } = useAppNavigate()
   const navigate = useNavigate()
   const { pathname } = useLocation()
   const [projectModalOpen, setProjectModalOpen] = useState(false)
@@ -72,15 +74,11 @@ export function Sidebar({ compact = false }: { compact?: boolean }) {
                 key={p.id}
                 project={p}
                 active={p.id === activeProjectId}
+                currentPath={pathname}
                 onClick={() => goToProject(p.key, 'board')}
                 onEdit={() => openEdit(p)}
               />
             ))}
-
-            <SectionHeader label="Views" style={{ padding: '20px 8px 6px 8px' }} />
-            <NavRow icon={<Zap size={14} />} label="Sprint planning" onClick={() => goToView('planning')} />
-            <NavRow icon={<Map size={14} />} label="Roadmap" onClick={() => goToView('roadmap')} />
-            <NavRow icon={<CalendarDays size={14} />} label="Releases" onClick={() => goToView('calendar')} />
           </div>
 
         </>
@@ -191,14 +189,21 @@ function SectionHeader({ label, action, style }: {
   )
 }
 
-function ProjectRow({ project, active, onClick, onEdit }: {
-  project: ProjectDto; active: boolean; onClick: () => void; onEdit: () => void
+const PROJECT_SUB_VIEWS: { view: AppView; label: string; icon: React.ReactNode }[] = [
+  { view: 'planning',  label: 'Sprint planning', icon: <Zap size={12} /> },
+  { view: 'roadmap',   label: 'Roadmap',         icon: <Map size={12} /> },
+  { view: 'calendar',  label: 'Releases',        icon: <CalendarDays size={12} /> },
+]
+
+function ProjectRow({ project, active, currentPath, onClick, onEdit }: {
+  project: ProjectDto; active: boolean; currentPath: string; onClick: () => void; onEdit: () => void
 }) {
   const [hovered, setHovered] = useState(false)
   const [confirming, setConfirming] = useState(false)
   const deleteProject = useDeleteProject()
   const createStory = useCreateStory()
   const { openStory } = useAppNavigate()
+  const navigate = useNavigate()
 
   const handleCreateTask = async (e: React.MouseEvent) => {
     e.stopPropagation()
@@ -206,13 +211,17 @@ function ProjectRow({ project, active, onClick, onEdit }: {
     openStory(story.id)
   }
 
+  const viewSegment = currentPath.match(/\/p\/[^/]+\/([^/?]+)/)?.[1]
+
   return (
     <>
       <div
         style={{
           display: 'flex', alignItems: 'center', gap: 0,
           borderRadius: 4, marginBottom: 1,
-          background: active ? 'var(--active)' : hovered ? 'var(--hover)' : 'transparent',
+          background: active && !PROJECT_SUB_VIEWS.some(sv => sv.view === viewSegment)
+            ? 'var(--active)'
+            : hovered ? 'var(--hover)' : 'transparent',
         }}
         onMouseOver={() => setHovered(true)}
         onMouseOut={() => setHovered(false)}
@@ -221,12 +230,20 @@ function ProjectRow({ project, active, onClick, onEdit }: {
           type="button"
           onClick={onClick}
           style={{
-            flex: 1, display: 'flex', alignItems: 'center', gap: 8,
+            flex: 1, display: 'flex', alignItems: 'center', gap: 7,
             padding: '4px 8px',
             color: active ? 'var(--fg)' : 'var(--fg-1)',
             minWidth: 0,
           }}
         >
+          <ChevronRight
+            size={10}
+            style={{
+              flexShrink: 0, color: 'var(--fg-3)',
+              transform: active ? 'rotate(90deg)' : 'none',
+              transition: 'transform 0.15s',
+            }}
+          />
           <span style={{ width: 8, height: 8, borderRadius: 2, background: project.color, flexShrink: 0 }} />
           <span style={{ flex: 1, textAlign: 'left', fontSize: 12.5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{project.name}</span>
         </button>
@@ -244,6 +261,24 @@ function ProjectRow({ project, active, onClick, onEdit }: {
           </div>
         )}
       </div>
+
+      {active && (
+        <div style={{ marginBottom: 2 }}>
+          {PROJECT_SUB_VIEWS.map(({ view, label, icon }) => {
+            const isActive = viewSegment === view
+            return (
+              <SubNavRow
+                key={view}
+                icon={icon}
+                label={label}
+                active={isActive}
+                onClick={() => navigate(projectPath(project.key, view))}
+              />
+            )
+          })}
+        </div>
+      )}
+
       <ConfirmModal
         open={confirming}
         title="Delete project"
@@ -252,6 +287,31 @@ function ProjectRow({ project, active, onClick, onEdit }: {
         onClose={() => setConfirming(false)}
       />
     </>
+  )
+}
+
+function SubNavRow({ icon, label, active, onClick }: {
+  icon: React.ReactNode; label: string; active: boolean; onClick: () => void
+}) {
+  const [hovered, setHovered] = useState(false)
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{
+        display: 'flex', alignItems: 'center', gap: 7,
+        padding: '3px 8px 3px 26px',
+        borderRadius: 4, width: '100%', textAlign: 'left',
+        fontSize: 12, fontWeight: active ? 500 : 400,
+        color: active ? 'var(--fg)' : 'var(--fg-2)',
+        background: active ? 'var(--active)' : hovered ? 'var(--hover)' : 'transparent',
+      }}
+      onMouseOver={() => setHovered(true)}
+      onMouseOut={() => setHovered(false)}
+    >
+      <span style={{ color: 'var(--fg-3)', display: 'flex' }}>{icon}</span>
+      {label}
+    </button>
   )
 }
 

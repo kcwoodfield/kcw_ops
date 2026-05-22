@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   DndContext, DragOverlay, useDroppable,
   PointerSensor, useSensor, useSensors,
@@ -41,18 +41,24 @@ export function SprintPlanning() {
   const [activeId, setActiveId] = useState<string | null>(null)
   const [originContainer, setOriginContainer] = useState<Container | null>(null)
   const [items, setItems] = useState<Items>({ backlog: [], sprint: [] })
+  const draggingRef = useRef(false)
 
   const activeSprint = allSprints.find(s => s.id === activeSprintId) ?? allSprints.find(s => s.state === 'active') ?? allSprints[0]
   const { data: sprintStoriesRaw = [] } = useSprintStories(projectId, activeSprint?.id)
 
-  // Sync from server when not dragging
+  // Sync from server only when server data changes and we're not mid-drag.
+  // Intentionally excludes draggingRef from deps — it's a ref, changes don't
+  // trigger the effect. activeId was previously a dep, but setting it to null
+  // in handleDragEnd caused an immediate re-sync that reset optimistic state
+  // before the drop animation finished, making the card fly back to backlog.
   useEffect(() => {
-    if (activeId !== null) return
+    if (draggingRef.current) return
     setItems({
       backlog: backlog.map(s => s.id),
       sprint: sprintStoriesRaw.map(s => s.id),
     })
-  }, [backlog, sprintStoriesRaw, activeId])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [backlog, sprintStoriesRaw])
 
   const allStories = [...backlog, ...sprintStoriesRaw]
   const storyMap = Object.fromEntries(allStories.map(s => [s.id, s])) as Record<string, StoryDto>
@@ -76,6 +82,7 @@ export function SprintPlanning() {
 
   const handleDragStart = (e: DragStartEvent) => {
     const id = e.active.id as string
+    draggingRef.current = true
     setActiveId(id)
     setOriginContainer(findContainer(id))
   }
@@ -114,6 +121,8 @@ export function SprintPlanning() {
     const origin = originContainer
     setActiveId(null)
     setOriginContainer(null)
+    // Clear after drop animation so the useEffect can re-sync from server
+    setTimeout(() => { draggingRef.current = false }, 200)
 
     if (!origin) return
     const currentContainer = findContainer(active.id as string)
