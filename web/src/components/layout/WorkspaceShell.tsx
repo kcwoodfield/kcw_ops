@@ -5,6 +5,7 @@ import { TopBar } from './TopBar'
 import { useUiStore } from '../../store/ui'
 import { useIsCompact } from '../../hooks/useMediaQuery'
 import { LoboPanel } from '../lobo/LoboPanel'
+import { Footer } from './Footer'
 
 export function WorkspaceShell({ title }: { title: string }) {
   const { sidebarCollapsed, mobileSidebarOpen, setMobileSidebarOpen } = useUiStore()
@@ -33,9 +34,11 @@ export function WorkspaceShell({ title }: { title: string }) {
       }}>
         <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--fg)' }}>{title}</span>
       </div>
-      <main style={{ background: 'var(--bg)', overflow: 'hidden', position: 'relative' }}>
+      <main style={{ background: 'var(--bg)', overflow: 'hidden', position: 'relative', paddingBottom: 40 }}>
         <Outlet />
       </main>
+
+      <Footer />
 
       {compact && mobileSidebarOpen && (
         <div

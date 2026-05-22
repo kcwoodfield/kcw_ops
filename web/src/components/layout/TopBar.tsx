@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Bell, Bot, Menu, Moon, Plus, Search, Sun, UserCircle } from 'lucide-react'
+import { Bell, Menu, Moon, Plus, Search, Sun, UserCircle } from 'lucide-react'
 import { useCreateStory, useInboxStories } from '../../api/stories'
 import { useAppNavigate } from '../../hooks/useAppNavigate'
 import { useUiStore } from '../../store/ui'
@@ -12,7 +12,7 @@ import { CreateSprintModal } from '../CreateSprintModal'
 
 export function TopBar() {
   const { sprintId, openStory } = useAppNavigate()
-  const { activeProjectId, setCmdPaletteOpen, setMobileSidebarOpen, theme, toggleTheme, toggleLoboPanel } = useUiStore()
+  const { activeProjectId, setCmdPaletteOpen, setMobileSidebarOpen, theme, toggleTheme } = useUiStore()
   const { logout } = useAuthStore()
   const { crossFade } = useAuthFade()
   const compact = useIsCompact()
@@ -144,7 +144,6 @@ export function TopBar() {
           )}
         </div>
 
-        <IconBtn icon={<Bot size={14} />} onClick={toggleLoboPanel} title="Lobo AI (⌘L)" />
         <IconBtn icon={<Bell size={14} />} badge={inbox.length > 0 ? inbox.length : undefined} onClick={() => navigate('/inbox')} />
 
         {/* Profile dropdown */}

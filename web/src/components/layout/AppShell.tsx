@@ -11,6 +11,7 @@ import { isAppView, LAST_PROJECT_KEY, parseSearchParams, projectPath } from '../
 import { useUiStore } from '../../store/ui'
 import { useIsCompact } from '../../hooks/useMediaQuery'
 import { LoboPanel } from '../lobo/LoboPanel'
+import { Footer } from './Footer'
 
 export function AppShell() {
   const { projectKey } = useParams()
@@ -96,11 +97,14 @@ export function AppShell() {
         background: 'var(--bg)',
         overflow: 'hidden',
         position: 'relative',
+        paddingBottom: 40,
       }}>
         <ErrorBoundary>
           <Outlet />
         </ErrorBoundary>
       </main>
+
+      <Footer />
 
       {compact && mobileSidebarOpen && (
         <div
