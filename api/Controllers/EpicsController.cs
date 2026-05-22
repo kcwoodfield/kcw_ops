@@ -3,10 +3,12 @@ using KcwOps.Api.Features.Epics.DeleteEpic;
 using KcwOps.Api.Features.Epics.GetEpics;
 using KcwOps.Api.Features.Epics.UpdateEpic;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace KcwOps.Api.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class EpicsController(IMediator mediator) : ControllerBase

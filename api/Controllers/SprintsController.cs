@@ -3,10 +3,12 @@ using KcwOps.Api.Features.Sprints.DeleteSprint;
 using KcwOps.Api.Features.Sprints.GetSprints;
 using KcwOps.Api.Features.Sprints.UpdateSprint;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace KcwOps.Api.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class SprintsController(IMediator mediator) : ControllerBase

@@ -3,10 +3,12 @@ using KcwOps.Api.Features.Projects.DeleteProject;
 using KcwOps.Api.Features.Projects.GetProjects;
 using KcwOps.Api.Features.Projects.UpdateProject;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace KcwOps.Api.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class ProjectsController(IMediator mediator) : ControllerBase

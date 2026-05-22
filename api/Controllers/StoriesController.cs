@@ -7,10 +7,12 @@ using KcwOps.Api.Features.Stories.GetStory;
 using KcwOps.Api.Features.Stories.ReorderStories;
 using KcwOps.Api.Features.Stories.UpdateStory;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace KcwOps.Api.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class StoriesController(IMediator mediator) : ControllerBase

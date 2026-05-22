@@ -13,6 +13,7 @@ web/dist/
 # Environment / secrets
 .env
 .env.local
+api/appsettings.Development.json
 
 # IDE
 .vscode/
