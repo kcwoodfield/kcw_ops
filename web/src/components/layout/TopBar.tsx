@@ -109,32 +109,29 @@ export function TopBar() {
         </button>
       )}
 
-      <div style={{ flex: 1 }} />
+      {/* Left: Create */}
+      <div ref={menuRef} style={{ position: 'relative', marginLeft: 8 }}>
+        <button
+          type="button"
+          disabled={!activeProjectId}
+          onClick={() => setMenuOpen(v => !v)}
+          style={{
+            display: 'inline-flex', alignItems: 'center', gap: 5,
+            height: 28, padding: '0 12px',
+            background: 'var(--accent)', color: 'var(--accent-ink)',
+            borderRadius: 'var(--r-sm)', fontSize: 12, fontWeight: 600,
+            opacity: !activeProjectId ? 0.5 : 1,
+          }}
+        >
+          <Plus size={12} /> Create
+        </button>
 
-      {/* Right: Create + icons */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-        <div ref={menuRef} style={{ position: 'relative', marginRight: 4 }}>
-          <button
-            type="button"
-            disabled={!activeProjectId}
-            onClick={() => setMenuOpen(v => !v)}
-            style={{
-              display: 'inline-flex', alignItems: 'center', gap: 5,
-              height: 28, padding: '0 12px',
-              background: 'var(--accent)', color: 'var(--accent-ink)',
-              borderRadius: 'var(--r-sm)', fontSize: 12, fontWeight: 600,
-              opacity: !activeProjectId ? 0.5 : 1,
-            }}
-          >
-            <Plus size={12} /> Create
-          </button>
-
-          {menuOpen && (
-            <div style={{
-              position: 'absolute', top: 'calc(100% + 4px)', right: 0,
-              background: 'var(--panel)', border: '1px solid var(--border)',
-              borderRadius: 6, padding: '4px 0', minWidth: 160, zIndex: 100,
-              boxShadow: '0 4px 16px rgba(0,0,0,0.35)',
+        {menuOpen && (
+          <div style={{
+            position: 'absolute', top: 'calc(100% + 4px)', left: 0,
+            background: 'var(--panel)', border: '1px solid var(--border)',
+            borderRadius: 6, padding: '4px 0', minWidth: 160, zIndex: 100,
+            boxShadow: '0 4px 16px rgba(0,0,0,0.35)',
             }}>
               <MenuItem onClick={() => void handleNewIssue()}>New issue</MenuItem>
               <div style={{ height: 1, background: 'var(--border)', margin: '4px 0' }} />
@@ -144,6 +141,10 @@ export function TopBar() {
           )}
         </div>
 
+      <div style={{ flex: 1 }} />
+
+      {/* Right: icons */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
         <IconBtn icon={<Bell size={14} />} badge={inbox.length > 0 ? inbox.length : undefined} onClick={() => navigate('/inbox')} />
 
         {/* Profile dropdown */}

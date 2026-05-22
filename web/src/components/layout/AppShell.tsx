@@ -97,7 +97,7 @@ export function AppShell() {
         background: 'var(--bg)',
         overflow: 'hidden',
         position: 'relative',
-        paddingBottom: 40,
+        paddingBottom: 52,
       }}>
         <ErrorBoundary>
           <Outlet />

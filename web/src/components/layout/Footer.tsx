@@ -14,7 +14,7 @@ export function Footer() {
       bottom: 0,
       left,
       right: 0,
-      height: 40,
+      height: 52,
       zIndex: 40,
       background: 'var(--panel)',
       borderTop: '1px solid var(--border)',
@@ -30,24 +30,16 @@ export function Footer() {
         style={{
           display: 'inline-flex', alignItems: 'center', gap: 8,
           height: 34, padding: '0 16px',
-          background: 'var(--bg-1)',
-          border: '1px solid var(--border)',
-          borderRadius: 8,
-          fontSize: 13, fontWeight: 500,
-          color: 'var(--fg-1)',
+          background: 'var(--accent)',
+          border: 'none',
+          borderRadius: 'var(--r-sm)',
+          fontSize: 12, fontWeight: 600,
+          color: 'var(--accent-ink)',
           letterSpacing: '0.01em',
-          transition: 'background 0.15s, border-color 0.15s, color 0.15s',
+          transition: 'opacity 0.15s',
         }}
-        onMouseOver={e => {
-          e.currentTarget.style.background = 'var(--hover)'
-          e.currentTarget.style.borderColor = 'var(--border-1)'
-          e.currentTarget.style.color = 'var(--fg)'
-        }}
-        onMouseOut={e => {
-          e.currentTarget.style.background = 'var(--bg-1)'
-          e.currentTarget.style.borderColor = 'var(--border)'
-          e.currentTarget.style.color = 'var(--fg-1)'
-        }}
+        onMouseOver={e => { e.currentTarget.style.opacity = '0.85' }}
+        onMouseOut={e => { e.currentTarget.style.opacity = '1' }}
       >
         <Bot size={15} />
         Lobo

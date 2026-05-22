@@ -34,7 +34,7 @@ export function WorkspaceShell({ title }: { title: string }) {
       }}>
         <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--fg)' }}>{title}</span>
       </div>
-      <main style={{ background: 'var(--bg)', overflow: 'hidden', position: 'relative', paddingBottom: 40 }}>
+      <main style={{ background: 'var(--bg)', overflow: 'hidden', position: 'relative', paddingBottom: 52 }}>
         <Outlet />
       </main>
 
