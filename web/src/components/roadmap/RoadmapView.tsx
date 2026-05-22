@@ -213,9 +213,6 @@ function EpicBar({ epic, rowIndex, gridStart, gridEnd, editing, onStartEdit, onS
   const [editStart, setEditStart] = useState('')
   const [editEnd, setEditEnd] = useState('')
 
-  const hasStart = !!epic.startDate
-  const hasEnd = !!epic.endDate
-
   const startD = epic.startDate ? clampDate(toDateOnly(epic.startDate), gridStart, gridEnd) : null
   const endD = epic.endDate ? clampDate(toDateOnly(epic.endDate), gridStart, gridEnd) : null
 

@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { X, Send, ChevronDown, AlertCircle, RefreshCw, Trash2 } from 'lucide-react'
 import { useUiStore, type LoboModel, type LoboMessage } from '../../store/ui'
-import { useAuthStore } from '../../store/auth'
 import { getAccessToken } from '../../api/client'
 
 const API = import.meta.env.VITE_API_URL ?? 'http://localhost:5050'

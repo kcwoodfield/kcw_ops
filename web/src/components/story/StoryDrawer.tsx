@@ -17,8 +17,6 @@ import {
   type UpdateStoryPayload,
 } from '../../types'
 import {
-  AssigneeAvatar,
-  Label,
   PriorityBars,
   StatusDot,
   StoryId,
