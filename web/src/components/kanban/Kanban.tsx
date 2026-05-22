@@ -20,7 +20,7 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { Settings, Plus } from 'lucide-react'
-import { useReorderStories, useSprints, useStories, useUpdateStory } from '../../api/stories'
+import { useCreateStory, useReorderStories, useSprints, useStories, useUpdateStory } from '../../api/stories'
 import { useAppNavigate } from '../../hooks/useAppNavigate'
 import { useIsCompact } from '../../hooks/useMediaQuery'
 import { useUiStore } from '../../store/ui'
@@ -87,6 +87,18 @@ export function Kanban() {
   )
   const updateStory = useUpdateStory()
   const reorderStories = useReorderStories()
+  const createStory = useCreateStory()
+
+  const handleAddIssue = async (status: StoryStatus) => {
+    if (!activeProjectId) return
+    const story = await createStory.mutateAsync({
+      projectId: activeProjectId,
+      title: 'New issue',
+      sprintId: activeSprintId ?? undefined,
+      status,
+    })
+    openStory(story.id)
+  }
   const compact = useIsCompact()
   const [epicFilter, setEpicFilter] = useState('')
   const [activeId, setActiveId] = useState<string | null>(null)
@@ -330,6 +342,7 @@ export function Kanban() {
                     })}
                     <button
                       type="button"
+                      onClick={() => void handleAddIssue(col.id)}
                       style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 8px', fontSize: 11.5, color: 'var(--fg-3)', borderRadius: 4, border: '1px dashed transparent', marginTop: 2 }}
                       onMouseOver={e => { e.currentTarget.style.borderColor = 'var(--border-1)' }}
                       onMouseOut={e => { e.currentTarget.style.borderColor = 'transparent' }}
@@ -359,6 +372,7 @@ export function Kanban() {
                 pts={pts}
                 isLast={i === COLUMNS.length - 1}
                 onOpenCard={handleCardOpen}
+                onAddIssue={() => void handleAddIssue(col.id)}
               />
             )
           })}
@@ -411,6 +425,7 @@ function Column({
   pts,
   isLast,
   onOpenCard,
+  onAddIssue,
 }: {
   col: (typeof COLUMNS)[number]
   itemIds: string[]
@@ -419,6 +434,7 @@ function Column({
   pts: number
   isLast: boolean
   onOpenCard: (id: string) => void
+  onAddIssue: () => void
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: col.id })
 
@@ -468,7 +484,10 @@ function Column({
         <span className="mono" style={{ fontSize: 10.5, color: 'var(--fg-3)' }}>
           {pts} pts
         </span>
-        <button type="button" style={{ padding: 3, color: 'var(--fg-3)' }}>
+        <button type="button" onClick={onAddIssue} style={{ padding: 3, color: 'var(--fg-3)', borderRadius: 3 }}
+          onMouseOver={e => (e.currentTarget.style.background = 'var(--hover)')}
+          onMouseOut={e => (e.currentTarget.style.background = 'transparent')}
+        >
           <Plus size={12} />
         </button>
       </div>
@@ -494,6 +513,7 @@ function Column({
           })}
           <button
             type="button"
+            onClick={onAddIssue}
             style={{
               display: 'flex',
               alignItems: 'center',
