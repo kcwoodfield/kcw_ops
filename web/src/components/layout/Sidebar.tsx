@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { ChevronRight, Inbox, Eye, Star, GitBranch, CalendarDays, Map, Zap, Sun, Moon, Pencil, Trash2, X } from 'lucide-react'
+import { ChevronRight, Inbox, Eye, Star, GitBranch, CalendarDays, Map, Zap, Pencil, Trash2, X } from 'lucide-react'
 import { useDeleteProject, useProjects } from '../../api/projects'
 import { useInboxStories, useMyIssues, useStarredStories, useDraftStories } from '../../api/stories'
 import { useUiStore } from '../../store/ui'
@@ -83,7 +83,6 @@ export function Sidebar({ compact = false }: { compact?: boolean }) {
             <NavRow icon={<CalendarDays size={14} />} label="Releases" onClick={() => goToView('calendar')} />
           </div>
 
-          <UserFooter />
         </>
       )}
 
@@ -261,27 +260,6 @@ function RowIconBtn({ children, title, onClick }: { children: React.ReactNode; t
   )
 }
 
-function UserFooter() {
-  const { theme, toggleTheme } = useUiStore()
-  return (
-    <div style={{
-      padding: '8px 10px',
-      borderTop: '1px solid var(--border)',
-      display: 'flex', alignItems: 'center',
-      flexShrink: 0,
-    }}>
-      <button
-        type="button"
-        title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
-        onClick={toggleTheme}
-        style={{ color: 'var(--fg-3)', padding: 4, borderRadius: 3, display: 'flex' }}
-        onMouseOver={e => (e.currentTarget.style.background = 'var(--hover)')}
-        onMouseOut={e => (e.currentTarget.style.background = 'transparent')}>
-        {theme === 'dark' ? <Sun size={13} /> : <Moon size={13} />}
-      </button>
-    </div>
-  )
-}
 
 function PlusIcon({ onClick }: { onClick?: () => void }) {
   return (
