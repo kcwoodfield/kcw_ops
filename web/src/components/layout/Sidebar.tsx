@@ -1,9 +1,11 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { ChevronRight, Inbox, Eye, Star, GitBranch, CalendarDays, Map, Zap, Pencil, Trash2, X, Plus } from 'lucide-react'
+import { ChevronRight, Inbox, Eye, Star, GitBranch, CalendarDays, Map, Zap, Pencil, Trash2, X, Plus, UserCircle, Moon, Sun } from 'lucide-react'
 import { useDeleteProject, useProjects } from '../../api/projects'
 import { useInboxStories, useMyIssues, useStarredStories, useDraftStories, useCreateStory } from '../../api/stories'
 import { useUiStore } from '../../store/ui'
+import { useAuthStore } from '../../store/auth'
+import { useAuthFade } from '../../context/auth-fade'
 import { useAppNavigate } from '../../hooks/useAppNavigate'
 import { projectPath } from '../../lib/routes'
 import type { AppView } from '../../lib/routes'
@@ -89,7 +91,117 @@ export function Sidebar({ compact = false }: { compact?: boolean }) {
         onClose={() => setProjectModalOpen(false)}
         project={editingProject}
       />
+
+      <SidebarFooter collapsed={collapsed} />
     </aside>
+  )
+}
+
+function SidebarFooter({ collapsed }: { collapsed: boolean }) {
+  const { theme, toggleTheme } = useUiStore()
+  const { logout } = useAuthStore()
+  const { crossFade } = useAuthFade()
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!open) return
+    const handler = (e: MouseEvent) => {
+      if (!ref.current?.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [open])
+
+  return (
+    <div style={{
+      borderTop: '1px solid var(--border)',
+      padding: collapsed ? '8px 0' : '8px 10px',
+      flexShrink: 0,
+      display: 'flex',
+      justifyContent: collapsed ? 'center' : undefined,
+    }}>
+      <div ref={ref} style={{ position: 'relative', width: collapsed ? 'auto' : '100%' }}>
+        <button
+          type="button"
+          onClick={() => setOpen(v => !v)}
+          title="Profile"
+          style={{
+            display: 'inline-flex', alignItems: 'center', gap: 8,
+            height: 34,
+            padding: collapsed ? '0 10px' : '0 14px',
+            width: collapsed ? 'auto' : '100%',
+            background: open ? 'var(--hover)' : 'transparent',
+            border: '1px solid transparent',
+            borderRadius: 8,
+            fontSize: 13, fontWeight: 500,
+            color: 'var(--fg-2)',
+            transition: 'background 0.15s, border-color 0.15s, color 0.15s',
+          }}
+          onMouseOver={e => {
+            e.currentTarget.style.background = 'var(--hover)'
+            e.currentTarget.style.borderColor = 'var(--border)'
+            e.currentTarget.style.color = 'var(--fg)'
+          }}
+          onMouseOut={e => {
+            if (!open) {
+              e.currentTarget.style.background = 'transparent'
+              e.currentTarget.style.borderColor = 'transparent'
+            }
+            e.currentTarget.style.color = open ? 'var(--fg)' : 'var(--fg-2)'
+          }}
+        >
+          <UserCircle size={16} />
+          {!collapsed && 'Profile'}
+        </button>
+
+        {open && (
+          <div style={{
+            position: 'absolute',
+            bottom: 'calc(100% + 6px)',
+            left: 0,
+            background: 'var(--panel)',
+            border: '1px solid var(--border)',
+            borderRadius: 8,
+            padding: '4px 0',
+            minWidth: 180,
+            zIndex: 200,
+            boxShadow: '0 -4px 20px rgba(0,0,0,0.35)',
+          }}>
+            <button
+              type="button"
+              onClick={() => { toggleTheme(); setOpen(false) }}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 8,
+                width: '100%', textAlign: 'left',
+                padding: '8px 14px', fontSize: 12.5, color: 'var(--fg-1)',
+                background: 'transparent',
+              }}
+              onMouseOver={e => (e.currentTarget.style.background = 'var(--hover)')}
+              onMouseOut={e => (e.currentTarget.style.background = 'transparent')}
+            >
+              {theme === 'dark' ? <Sun size={13} /> : <Moon size={13} />}
+              {theme === 'dark' ? 'Light mode' : 'Dark mode'}
+            </button>
+            <div style={{ height: 1, background: 'var(--border)', margin: '4px 0' }} />
+            <button
+              type="button"
+              onClick={() => { setOpen(false); void crossFade(() => void logout()) }}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 8,
+                width: '100%', textAlign: 'left',
+                padding: '8px 14px', fontSize: 12.5, color: 'var(--fg-danger, #f87171)',
+                background: 'transparent',
+              }}
+              onMouseOver={e => (e.currentTarget.style.background = 'var(--hover)')}
+              onMouseOut={e => (e.currentTarget.style.background = 'transparent')}
+            >
+              Log out
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
   )
 }
 

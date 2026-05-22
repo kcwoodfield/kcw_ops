@@ -91,6 +91,7 @@ function StoryDrawerBody({ storyId, onClose }: { storyId: string; onClose: () =>
   const [commentBody, setCommentBody] = useState('')
   const [commentAuthor, setCommentAuthor] = useState('kcw')
   const titleRef = useRef<HTMLInputElement>(null)
+  const pendingRef = useRef({ title: '', description: '' })
 
   useEffect(() => {
     if (story) {
@@ -102,10 +103,29 @@ function StoryDrawerBody({ storyId, onClose }: { storyId: string; onClose: () =>
     }
   }, [story?.id])
 
+  // Keep ref in sync so the ⌘+Enter handler always has fresh values
+  useEffect(() => { pendingRef.current = { title, description } }, [title, description])
+
   const save = (patch: UpdateStoryPayload) => {
     if (!story) return
     update.mutate({ id: story.id, ...patch })
   }
+
+  // Global ⌘+Enter saves and closes — works from any field in the drawer
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+        // Let the comment textarea handle its own ⌘+Enter (submit comment)
+        if ((e.target as HTMLElement).closest('[data-comment-input]')) return
+        e.preventDefault()
+        save(pendingRef.current)
+        onClose()
+      }
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [story?.id, onClose])
 
   if (isLoading) {
     return <DrawerMessage>Loading story…</DrawerMessage>
@@ -256,7 +276,7 @@ function StoryDrawerBody({ storyId, onClose }: { storyId: string; onClose: () =>
               >
                 {users.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
               </select>
-              <textarea
+              <textarea data-comment-input
                 value={commentBody}
                 onChange={e => setCommentBody(e.target.value)}
                 onKeyDown={e => {
