@@ -10,7 +10,6 @@ import type { AppView } from '../../lib/routes'
 import { isAppView, LAST_PROJECT_KEY, parseSearchParams, projectPath } from '../../lib/routes'
 import { useUiStore } from '../../store/ui'
 import { useIsCompact } from '../../hooks/useMediaQuery'
-import { PageTransition } from '../../lib/fade-transitions'
 
 export function AppShell() {
   const { projectKey } = useParams()
@@ -98,9 +97,7 @@ export function AppShell() {
         position: 'relative',
       }}>
         <ErrorBoundary>
-          <PageTransition transitionKey={pathname} style={{ height: '100%' }}>
-            <Outlet />
-          </PageTransition>
+          <Outlet />
         </ErrorBoundary>
       </main>
 

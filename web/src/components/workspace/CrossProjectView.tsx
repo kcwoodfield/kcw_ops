@@ -2,7 +2,6 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Star } from 'lucide-react'
 import { useUpdateStory } from '../../api/stories'
 import { StatusDot, StoryId, PriorityBars, Pts } from '../story/StoryPrimitives'
-import { FadeTransition } from '../../lib/fade-transitions'
 import type { StoryDto } from '../../types'
 
 export type GroupMode = 'project' | 'urgency'
@@ -72,8 +71,6 @@ export function CrossProjectView({ stories, isLoading, emptyText, groupBy = 'pro
     groups = Object.entries(byProject).map(([key, ss]) => ({ key, label: key, stories: ss }))
   }
 
-  let rowIdx = 0
-
   return (
     <div style={{ width: '100%', height: '100%', overflow: 'auto', padding: '0 0 32px' }}>
       {groups.map(g => (
@@ -94,14 +91,9 @@ export function CrossProjectView({ stories, isLoading, emptyText, groupBy = 'pro
             <span style={{ flex: 1, height: 1, background: 'var(--border)' }} />
             <span className="mono" style={{ fontSize: 10.5, color: 'var(--fg-3)' }}>{g.stories.length}</span>
           </header>
-          {g.stories.map(s => {
-            const delay = Math.min(rowIdx++, 12) * 60
-            return (
-              <FadeTransition key={s.id} show={true} subtle enterDuration={320 + delay}>
-                <StoryRow story={s} onOpen={() => openStory(s.id)} />
-              </FadeTransition>
-            )
-          })}
+          {g.stories.map(s => (
+            <StoryRow key={s.id} story={s} onOpen={() => openStory(s.id)} />
+          ))}
         </section>
       ))}
     </div>

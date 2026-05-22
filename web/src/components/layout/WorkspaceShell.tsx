@@ -4,7 +4,6 @@ import { Sidebar } from './Sidebar'
 import { TopBar } from './TopBar'
 import { useUiStore } from '../../store/ui'
 import { useIsCompact } from '../../hooks/useMediaQuery'
-import { PageTransition } from '../../lib/fade-transitions'
 
 export function WorkspaceShell({ title }: { title: string }) {
   const { sidebarCollapsed, mobileSidebarOpen, setMobileSidebarOpen } = useUiStore()
@@ -34,9 +33,7 @@ export function WorkspaceShell({ title }: { title: string }) {
         <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--fg)' }}>{title}</span>
       </div>
       <main style={{ background: 'var(--bg)', overflow: 'hidden', position: 'relative' }}>
-        <PageTransition transitionKey={pathname} style={{ height: '100%' }}>
-          <Outlet />
-        </PageTransition>
+        <Outlet />
       </main>
 
       {compact && mobileSidebarOpen && (
