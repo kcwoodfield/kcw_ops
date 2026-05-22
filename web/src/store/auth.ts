@@ -15,11 +15,16 @@ export const useAuthStore = create<AuthState>((set) => ({
   authed: false,
 
   bootstrap: async () => {
-    const data = await apiRefresh()
-    if (data?.accessToken) {
-      setAccessToken(data.accessToken)
-      set({ ready: true, authed: true })
-    } else {
+    try {
+      const data = await apiRefresh()
+      if (data?.accessToken) {
+        setAccessToken(data.accessToken)
+        set({ ready: true, authed: true })
+      } else {
+        setAccessToken(null)
+        set({ ready: true, authed: false })
+      }
+    } catch {
       setAccessToken(null)
       set({ ready: true, authed: false })
     }

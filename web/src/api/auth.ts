@@ -23,16 +23,22 @@ export async function apiVerify(tempToken: string, totpCode: string) {
 }
 
 export async function apiRefresh() {
-  const res = await fetch(`${BASE}/auth/refresh`, {
-    method: 'POST',
-    credentials: 'include',
-  })
-  if (!res.ok) return null
-  return res.json() as Promise<{ accessToken: string }>
+  try {
+    const res = await fetch(`${BASE}/auth/refresh`, {
+      method: 'POST',
+      credentials: 'include',
+    })
+    if (!res.ok) return null
+    return res.json() as Promise<{ accessToken: string }>
+  } catch {
+    return null
+  }
 }
 
 export async function apiLogout() {
-  await fetch(`${BASE}/auth/logout`, { method: 'POST', credentials: 'include' })
+  try {
+    await fetch(`${BASE}/auth/logout`, { method: 'POST', credentials: 'include' })
+  } catch { /* ignore network errors — local state is cleared regardless */ }
 }
 
 export async function apiSetup(password: string) {

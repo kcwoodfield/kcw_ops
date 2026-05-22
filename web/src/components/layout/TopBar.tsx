@@ -1,24 +1,28 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Bell, Filter, Menu, Plus, Search } from 'lucide-react'
+import { Bell, Filter, Menu, Moon, Plus, Search, Sun, UserCircle } from 'lucide-react'
 import { useCreateStory, useInboxStories } from '../../api/stories'
 import { useAppNavigate } from '../../hooks/useAppNavigate'
 import { useUiStore } from '../../store/ui'
+import { useAuthStore } from '../../store/auth'
 import { useIsCompact } from '../../hooks/useMediaQuery'
 import { CreateEpicModal } from '../CreateEpicModal'
 import { CreateSprintModal } from '../CreateSprintModal'
 
 export function TopBar() {
   const { sprintId, openStory } = useAppNavigate()
-  const { activeProjectId, setCmdPaletteOpen, setMobileSidebarOpen } = useUiStore()
+  const { activeProjectId, setCmdPaletteOpen, setMobileSidebarOpen, theme, toggleTheme } = useUiStore()
+  const { logout } = useAuthStore()
   const compact = useIsCompact()
   const createStory = useCreateStory()
   const navigate = useNavigate()
   const { data: inbox = [] } = useInboxStories()
   const [menuOpen, setMenuOpen] = useState(false)
+  const [profileOpen, setProfileOpen] = useState(false)
   const [epicModalOpen, setEpicModalOpen] = useState(false)
   const [sprintModalOpen, setSprintModalOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
+  const profileRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (!menuOpen) return
@@ -28,6 +32,15 @@ export function TopBar() {
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
   }, [menuOpen])
+
+  useEffect(() => {
+    if (!profileOpen) return
+    const handler = (e: MouseEvent) => {
+      if (!profileRef.current?.contains(e.target as Node)) setProfileOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [profileOpen])
 
   const handleNewIssue = async () => {
     setMenuOpen(false)
@@ -131,6 +144,50 @@ export function TopBar() {
 
         <IconBtn icon={<Filter size={14} />} />
         <IconBtn icon={<Bell size={14} />} badge={inbox.length > 0 ? inbox.length : undefined} onClick={() => navigate('/inbox')} />
+
+        {/* Profile dropdown */}
+        <div ref={profileRef} style={{ position: 'relative' }}>
+          <IconBtn icon={<UserCircle size={16} />} onClick={() => setProfileOpen(v => !v)} />
+          {profileOpen && (
+            <div style={{
+              position: 'absolute', top: 'calc(100% + 4px)', right: 0,
+              background: 'var(--panel)', border: '1px solid var(--border)',
+              borderRadius: 6, padding: '4px 0', minWidth: 160, zIndex: 200,
+              boxShadow: '0 4px 16px rgba(0,0,0,0.35)',
+            }}>
+              <button
+                type="button"
+                onClick={() => { toggleTheme(); setProfileOpen(false) }}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 8,
+                  width: '100%', textAlign: 'left',
+                  padding: '7px 14px', fontSize: 12.5, color: 'var(--fg-1)',
+                  background: 'transparent',
+                }}
+                onMouseOver={e => (e.currentTarget.style.background = 'var(--hover)')}
+                onMouseOut={e => (e.currentTarget.style.background = 'transparent')}
+              >
+                {theme === 'dark' ? <Sun size={13} /> : <Moon size={13} />}
+                {theme === 'dark' ? 'Light mode' : 'Dark mode'}
+              </button>
+              <div style={{ height: 1, background: 'var(--border)', margin: '4px 0' }} />
+              <button
+                type="button"
+                onClick={() => { void logout(); setProfileOpen(false) }}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 8,
+                  width: '100%', textAlign: 'left',
+                  padding: '7px 14px', fontSize: 12.5, color: 'var(--fg-danger, #f87171)',
+                  background: 'transparent',
+                }}
+                onMouseOver={e => (e.currentTarget.style.background = 'var(--hover)')}
+                onMouseOut={e => (e.currentTarget.style.background = 'transparent')}
+              >
+                Log out
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {activeProjectId && (
