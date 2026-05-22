@@ -195,7 +195,8 @@ public class ToolExecutor(AppDbContext db, IMediator mediator)
             // CreateStoryCommand cannot set description/assignee — apply via update if given.
             var description = input["description"]?.GetValue<string>();
             var assigneeId  = input["assigneeId"]?.GetValue<string>();
-            if (!string.IsNullOrWhiteSpace(description) || !string.IsNullOrWhiteSpace(assigneeId))
+            if (string.IsNullOrWhiteSpace(assigneeId)) assigneeId = null;
+            if (!string.IsNullOrWhiteSpace(description) || assigneeId is not null)
             {
                 var updated = await mediator.Send(new UpdateStoryCommand(
                     created.Id, null, description, null, null, null, null, null,
