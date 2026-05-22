@@ -7,7 +7,6 @@ public class CreateStoryValidator : AbstractValidator<CreateStoryCommand>
     public CreateStoryValidator()
     {
         RuleFor(x => x.ProjectId).NotEmpty();
-        RuleFor(x => x.EpicId).NotEmpty();
         RuleFor(x => x.Title).NotEmpty().MaximumLength(500);
 
         RuleFor(x => x.Status)
