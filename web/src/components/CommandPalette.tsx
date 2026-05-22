@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Command } from 'cmdk'
 import * as Dialog from '@radix-ui/react-dialog'
 import {
-  LayoutDashboard, List, CalendarDays, Inbox,
+  LayoutDashboard, List, Inbox,
   Zap, ArrowRight, Search, Plus,
 } from 'lucide-react'
 import { useProjects } from '../api/projects'
@@ -18,7 +18,6 @@ const VIEWS: { id: AppView; label: string; icon: React.ReactNode }[] = [
   { id: 'backlog',  label: 'Backlog',         icon: <Inbox size={13} /> },
   { id: 'planning', label: 'Sprint planning', icon: <Zap size={13} /> },
   { id: 'list',     label: 'List view',       icon: <List size={13} /> },
-  { id: 'calendar', label: 'Calendar',        icon: <CalendarDays size={13} /> },
 ]
 
 // Always show the create item regardless of search text

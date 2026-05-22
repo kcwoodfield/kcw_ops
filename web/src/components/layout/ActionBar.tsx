@@ -1,4 +1,4 @@
-import { CalendarDays, LayoutDashboard, List, Layers } from 'lucide-react'
+import { LayoutDashboard, List, Layers } from 'lucide-react'
 import { useSprints } from '../../api/stories'
 import { useAppNavigate } from '../../hooks/useAppNavigate'
 import { useIsCompact } from '../../hooks/useMediaQuery'
@@ -10,7 +10,6 @@ interface ActionBarProps {
 }
 
 const VIEWS: { id: AppView; icon: React.ReactNode; label: string }[] = [
-  { id: 'calendar', icon: <CalendarDays size={12} />,    label: 'Calendar' },
   { id: 'list',     icon: <List size={12} />,            label: 'List' },
   { id: 'board',    icon: <LayoutDashboard size={12} />, label: 'Board' },
   { id: 'backlog',  icon: <Layers size={12} />,          label: 'Backlog' },

@@ -4,7 +4,6 @@ import { AppShell } from './components/layout/AppShell'
 import { WorkspaceShell } from './components/layout/WorkspaceShell'
 import { Backlog } from './components/backlog/Backlog'
 import { ActivityLog } from './components/activity/ActivityLog'
-import { CalendarView } from './components/calendar/CalendarView'
 import { CommandPalette } from './components/CommandPalette'
 import { Kanban } from './components/kanban/Kanban'
 import { SprintPlanning } from './components/planning/SprintPlanning'
@@ -50,7 +49,6 @@ function ProtectedRoutes() {
           <Route path="backlog" element={<Backlog />} />
           <Route path="planning" element={<SprintPlanning />} />
           <Route path="list" element={<ListView />} />
-          <Route path="calendar" element={<CalendarView />} />
           <Route path="roadmap" element={<RoadmapView />} />
           <Route path="activity" element={<ActivityLog />} />
         </Route>

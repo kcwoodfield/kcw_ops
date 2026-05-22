@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { ChevronRight, Inbox, Eye, Star, GitBranch, CalendarDays, Map, Zap, Pencil, Trash2, X, Plus, Settings, Moon, Sun } from 'lucide-react'
+import { ChevronRight, Inbox, Eye, Star, GitBranch, Map, Zap, Pencil, Trash2, X, Plus, Settings, Moon, Sun } from 'lucide-react'
 import { useDeleteProject, useProjects } from '../../api/projects'
 import { useInboxStories, useMyIssues, useStarredStories, useDraftStories, useCreateStory } from '../../api/stories'
 import { useUiStore } from '../../store/ui'
@@ -304,7 +304,6 @@ function SectionHeader({ label, action, style }: {
 const PROJECT_SUB_VIEWS: { view: AppView; label: string; icon: React.ReactNode }[] = [
   { view: 'planning',  label: 'Sprint planning', icon: <Zap size={12} /> },
   { view: 'roadmap',   label: 'Roadmap',         icon: <Map size={12} /> },
-  { view: 'calendar',  label: 'Releases',        icon: <CalendarDays size={12} /> },
 ]
 
 function ProjectRow({ project, active, currentPath, onClick, onEdit }: {
