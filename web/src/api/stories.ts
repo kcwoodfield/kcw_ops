@@ -47,6 +47,34 @@ export function useBacklog(projectId: string) {
   })
 }
 
+export function useInboxStories() {
+  return useQuery({
+    queryKey: ['stories', 'inbox'],
+    queryFn: () => get<StoryDto[]>('/stories', { dueSoon: true }),
+  })
+}
+
+export function useMyIssues() {
+  return useQuery({
+    queryKey: ['stories', 'my-issues'],
+    queryFn: () => get<StoryDto[]>('/stories', { assigneeId: 'kcw' }),
+  })
+}
+
+export function useStarredStories() {
+  return useQuery({
+    queryKey: ['stories', 'starred'],
+    queryFn: () => get<StoryDto[]>('/stories', { starredOnly: true }),
+  })
+}
+
+export function useDraftStories() {
+  return useQuery({
+    queryKey: ['stories', 'drafts'],
+    queryFn: () => get<StoryDto[]>('/stories', { draftsOnly: true }),
+  })
+}
+
 export function useSprints(projectId: string) {
   return useQuery({
     queryKey: ['sprints', projectId],

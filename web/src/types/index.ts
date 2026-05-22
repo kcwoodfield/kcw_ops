@@ -22,11 +22,13 @@ export type StoryPriority = 'urgent' | 'high' | 'med' | 'low'
 export interface StoryDto {
   id: string
   storyId: string
+  projectKey: string
   title: string
   status: StoryStatus
   priority: StoryPriority
   points: number
   blocked: boolean
+  starred: boolean
   epicId: string
   epicTitle: string
   epicColor: string
@@ -40,7 +42,6 @@ export interface StoryDto {
 
 export interface StoryDetailDto extends StoryDto {
   projectId: string
-  projectKey: string
   description: string | null
   sprintState: string | null
   assigneeName: string | null
@@ -98,6 +99,7 @@ export interface UpdateStoryPayload {
   priority?: StoryPriority
   points?: number
   blocked?: boolean
+  starred?: boolean
   epicId?: string
   sprintId?: string
   clearSprint?: boolean

@@ -17,11 +17,15 @@ public class StoriesController(IMediator mediator) : ControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> Get(
-        [FromQuery] Guid projectId,
+        [FromQuery] Guid? projectId,
         [FromQuery] Guid? sprintId,
         [FromQuery] bool backlogOnly,
+        [FromQuery] string? assigneeId,
+        [FromQuery] bool dueSoon,
+        [FromQuery] bool starredOnly,
+        [FromQuery] bool draftsOnly,
         CancellationToken ct) =>
-        Ok(await mediator.Send(new GetStoriesQuery(projectId, sprintId, backlogOnly), ct));
+        Ok(await mediator.Send(new GetStoriesQuery(projectId, sprintId, backlogOnly, assigneeId, dueSoon, starredOnly, draftsOnly), ct));
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateStoryRequest body, CancellationToken ct)
@@ -84,6 +88,7 @@ public class StoriesController(IMediator mediator) : ControllerBase
                 body.Priority,
                 body.Points,
                 body.Blocked,
+                body.Starred,
                 body.EpicId,
                 body.SprintId,
                 body.ClearSprint ?? false,

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Bell, Filter, Menu, Plus, Search } from 'lucide-react'
-import { useCreateStory } from '../../api/stories'
+import { useCreateStory, useInboxStories } from '../../api/stories'
 import { useAppNavigate } from '../../hooks/useAppNavigate'
 import { useUiStore } from '../../store/ui'
 import { useIsCompact } from '../../hooks/useMediaQuery'
@@ -12,6 +13,8 @@ export function TopBar() {
   const { activeProjectId, setCmdPaletteOpen, setMobileSidebarOpen } = useUiStore()
   const compact = useIsCompact()
   const createStory = useCreateStory()
+  const navigate = useNavigate()
+  const { data: inbox = [] } = useInboxStories()
   const [menuOpen, setMenuOpen] = useState(false)
   const [epicModalOpen, setEpicModalOpen] = useState(false)
   const [sprintModalOpen, setSprintModalOpen] = useState(false)
@@ -127,7 +130,7 @@ export function TopBar() {
         </div>
 
         <IconBtn icon={<Filter size={14} />} />
-        <IconBtn icon={<Bell size={14} />} />
+        <IconBtn icon={<Bell size={14} />} badge={inbox.length > 0 ? inbox.length : undefined} onClick={() => navigate('/inbox')} />
       </div>
 
       {activeProjectId && (
@@ -158,12 +161,27 @@ function MenuItem({ children, onClick }: { children: React.ReactNode; onClick: (
   )
 }
 
-function IconBtn({ icon }: { icon: React.ReactNode }) {
+function IconBtn({ icon, badge, onClick }: { icon: React.ReactNode; badge?: number; onClick?: () => void }) {
   return (
-    <button type="button" style={{ color: 'var(--fg-2)', padding: 5, borderRadius: 4, display: 'flex' }}
+    <button
+      type="button"
+      onClick={onClick}
+      style={{ color: 'var(--fg-2)', padding: 5, borderRadius: 4, display: 'flex', position: 'relative' }}
       onMouseOver={e => (e.currentTarget.style.background = 'var(--hover)')}
-      onMouseOut={e => (e.currentTarget.style.background = 'transparent')}>
+      onMouseOut={e => (e.currentTarget.style.background = 'transparent')}
+    >
       {icon}
+      {badge !== undefined && (
+        <span style={{
+          position: 'absolute', top: 1, right: 1,
+          minWidth: 14, height: 14, borderRadius: 7,
+          background: 'var(--accent)', color: 'var(--accent-ink)',
+          fontSize: 9, fontWeight: 700, lineHeight: '14px',
+          textAlign: 'center', padding: '0 3px',
+        }}>
+          {badge > 99 ? '99+' : badge}
+        </span>
+      )}
     </button>
   )
 }

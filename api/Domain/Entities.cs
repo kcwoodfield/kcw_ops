@@ -51,6 +51,7 @@ public class Story
     public Priority Priority { get; set; } = Priority.Med;
     public int Points { get; set; } = 1;      // Fibonacci: 1 2 3 5 8 13 21
     public bool Blocked { get; set; }
+    public bool Starred { get; set; }
     public DateOnly? DueDate { get; set; }
     public string? AssigneeId { get; set; }
     public string[] Labels { get; set; } = [];

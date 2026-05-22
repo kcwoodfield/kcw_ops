@@ -32,6 +32,7 @@ public class UpdateStoryHandler(AppDbContext db) : IRequestHandler<UpdateStoryCo
 
         if (cmd.Points.HasValue) story.Points = cmd.Points.Value;
         if (cmd.Blocked.HasValue) story.Blocked = cmd.Blocked.Value;
+        if (cmd.Starred.HasValue) story.Starred = cmd.Starred.Value;
 
         if (cmd.EpicId.HasValue)
         {

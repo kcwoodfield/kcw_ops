@@ -364,6 +364,21 @@ function StoryDrawerBody({ storyId, onClose }: { storyId: string; onClose: () =>
             </button>
           </Prop>
 
+          <Prop label="Starred">
+            <button
+              type="button"
+              onClick={() => save({ starred: !story.starred })}
+              style={{
+                fontSize: 12, padding: '4px 10px', borderRadius: 4,
+                border: '1px solid var(--border-1)',
+                background: story.starred ? 'rgba(196,149,58,0.12)' : 'var(--bg-2)',
+                color: story.starred ? 'var(--review)' : 'var(--fg-2)',
+              }}
+            >
+              {story.starred ? 'Starred — click to remove' : 'Not starred'}
+            </button>
+          </Prop>
+
           <Prop label="Labels">
             <LabelsEditor labels={story.labels} onChange={labels => save({ labels })} />
           </Prop>

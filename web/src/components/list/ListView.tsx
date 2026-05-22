@@ -10,6 +10,11 @@ import { ConfirmModal } from '../shared/ConfirmModal'
 import { StatusDot, StoryId, PriorityBars, Pts } from '../story/StoryPrimitives'
 import type { EpicDto, StoryDto } from '../../types'
 
+function fmtDate(iso: string) {
+  const [y, m, d] = iso.split('-').map(Number)
+  return new Date(y, m - 1, d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+}
+
 export function ListView() {
   const { activeProjectId } = useUiStore()
   const { openStory } = useAppNavigate()
@@ -213,7 +218,7 @@ function StoryRow({ story, onClick }: { story: StoryDto; onClick: () => void }) 
       </td>
       <td style={{ paddingRight: 16 }}>
         {story.dueDate && (
-          <span className="mono" style={{ fontSize: 11, color: 'var(--fg-3)' }}>{story.dueDate}</span>
+          <span className="mono" style={{ fontSize: 11, color: 'var(--fg-3)' }}>{fmtDate(story.dueDate)}</span>
         )}
       </td>
     </tr>

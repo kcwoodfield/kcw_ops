@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { AppShell } from './components/layout/AppShell'
+import { WorkspaceShell } from './components/layout/WorkspaceShell'
 import { Backlog } from './components/backlog/Backlog'
 import { ActivityLog } from './components/activity/ActivityLog'
 import { CalendarView } from './components/calendar/CalendarView'
@@ -9,7 +10,10 @@ import { SprintPlanning } from './components/planning/SprintPlanning'
 import { ListView } from './components/list/ListView'
 import { StoryDrawer } from './components/story/StoryDrawer'
 import { RoadmapView } from './components/roadmap/RoadmapView'
-import { ViewPlaceholder } from './components/shared/ViewPlaceholder'
+import { InboxView } from './components/workspace/InboxView'
+import { MyIssuesView } from './components/workspace/MyIssuesView'
+import { StarredView } from './components/workspace/StarredView'
+import { DraftsView } from './components/workspace/DraftsView'
 import { LAST_PROJECT_KEY } from './lib/routes'
 
 function RootRedirect() {
@@ -22,6 +26,18 @@ export default function App() {
     <>
       <Routes>
         <Route path="/" element={<RootRedirect />} />
+        <Route path="/inbox" element={<WorkspaceShell title="Inbox" />}>
+          <Route index element={<InboxView />} />
+        </Route>
+        <Route path="/my-issues" element={<WorkspaceShell title="My Issues" />}>
+          <Route index element={<MyIssuesView />} />
+        </Route>
+        <Route path="/starred" element={<WorkspaceShell title="Starred" />}>
+          <Route index element={<StarredView />} />
+        </Route>
+        <Route path="/drafts" element={<WorkspaceShell title="Drafts" />}>
+          <Route index element={<DraftsView />} />
+        </Route>
         <Route path="/p/:projectKey" element={<AppShell />}>
           <Route index element={<Navigate to="board" replace />} />
           <Route path="board" element={<Kanban />} />

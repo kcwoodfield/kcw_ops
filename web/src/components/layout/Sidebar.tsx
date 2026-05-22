@@ -1,6 +1,8 @@
 import { useState } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { ChevronRight, Inbox, Eye, Star, GitBranch, CalendarDays, Map, Zap, Sun, Moon, Pencil, Trash2, X } from 'lucide-react'
 import { useDeleteProject, useProjects } from '../../api/projects'
+import { useInboxStories, useMyIssues, useStarredStories, useDraftStories } from '../../api/stories'
 import { useUiStore } from '../../store/ui'
 import { useAppNavigate } from '../../hooks/useAppNavigate'
 import { Shield } from '../Shield'
@@ -12,8 +14,15 @@ export function Sidebar({ compact = false }: { compact?: boolean }) {
   const { data: projects = [] } = useProjects()
   const { activeProjectId, sidebarCollapsed, mobileSidebarOpen } = useUiStore()
   const { goToProject, goToView } = useAppNavigate()
+  const navigate = useNavigate()
+  const { pathname } = useLocation()
   const [projectModalOpen, setProjectModalOpen] = useState(false)
   const [editingProject, setEditingProject] = useState<ProjectDto | undefined>()
+
+  const { data: inbox = [] } = useInboxStories()
+  const { data: myIssues = [] } = useMyIssues()
+  const { data: starred = [] } = useStarredStories()
+  const { data: drafts = [] } = useDraftStories()
 
   const openCreate = () => { setEditingProject(undefined); setProjectModalOpen(true) }
   const openEdit = (p: ProjectDto) => { setEditingProject(p); setProjectModalOpen(true) }
@@ -49,10 +58,10 @@ export function Sidebar({ compact = false }: { compact?: boolean }) {
       {!collapsed && (
         <>
           <nav style={{ padding: '8px 6px 4px', display: 'flex', flexDirection: 'column', gap: 1 }}>
-            <NavRow icon={<Inbox size={14} />} label="Inbox" trail="3" onClick={() => goToView('backlog')} />
-            <NavRow icon={<Eye size={14} />} label="My issues" trail="14" />
-            <NavRow icon={<Star size={14} />} label="Starred" />
-            <NavRow icon={<GitBranch size={14} />} label="Drafts" />
+            <NavRow icon={<Inbox size={14} />} label="Inbox" trail={inbox.length > 0 ? String(inbox.length) : undefined} active={pathname === '/inbox'} onClick={() => navigate('/inbox')} />
+            <NavRow icon={<Eye size={14} />} label="My issues" trail={myIssues.length > 0 ? String(myIssues.length) : undefined} active={pathname === '/my-issues'} onClick={() => navigate('/my-issues')} />
+            <NavRow icon={<Star size={14} />} label="Starred" trail={starred.length > 0 ? String(starred.length) : undefined} active={pathname === '/starred'} onClick={() => navigate('/starred')} />
+            <NavRow icon={<GitBranch size={14} />} label="Drafts" trail={drafts.length > 0 ? String(drafts.length) : undefined} active={pathname === '/drafts'} onClick={() => navigate('/drafts')} />
           </nav>
 
           <SectionHeader label="Projects" action={<PlusIcon onClick={openCreate} />} />

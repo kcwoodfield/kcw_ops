@@ -49,6 +49,11 @@ const COLUMNS: {
 
 const COLUMN_IDS = new Set<string>(COLUMNS.map(c => c.id))
 
+function fmtDate(iso: string) {
+  const [y, m, d] = iso.split('-').map(Number)
+  return new Date(y, m - 1, d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+}
+
 type ColumnItems = Record<StoryStatus, string[]>
 
 function buildColumnItems(stories: StoryDto[]): ColumnItems {
@@ -680,7 +685,7 @@ function KanbanCard({
           </span>
         </span>
         <span style={{ flex: 1 }} />
-        {story.dueDate && <span style={{ fontSize: 10.5 }}>{story.dueDate}</span>}
+        {story.dueDate && <span style={{ fontSize: 10.5 }}>{fmtDate(story.dueDate)}</span>}
         <AssigneeAvatar assigneeId={story.assigneeId} />
       </div>
     </article>
