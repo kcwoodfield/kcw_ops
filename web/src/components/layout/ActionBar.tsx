@@ -10,9 +10,9 @@ interface ActionBarProps {
 }
 
 const VIEWS: { id: AppView; icon: React.ReactNode; label: string }[] = [
-  { id: 'board',    icon: <LayoutDashboard size={12} />, label: 'Board' },
-  { id: 'list',     icon: <List size={12} />,            label: 'List' },
   { id: 'calendar', icon: <CalendarDays size={12} />,    label: 'Calendar' },
+  { id: 'list',     icon: <List size={12} />,            label: 'List' },
+  { id: 'board',    icon: <LayoutDashboard size={12} />, label: 'Board' },
 ]
 
 export function ActionBar({ breadcrumb }: ActionBarProps) {
