@@ -470,13 +470,18 @@ function StoryDrawerBody({ storyId, onClose }: { storyId: string; onClose: () =>
   )
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({ title, trail, children }: { title: string; trail?: string; children: React.ReactNode }) {
   return (
     <section style={{ marginTop: 24 }}>
       <header style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
         <span style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--fg-3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
           {title}
         </span>
+        {trail && (
+          <span className="mono" style={{ fontSize: 12, color: 'var(--fg-3)' }}>
+            {trail}
+          </span>
+        )}
         <span style={{ flex: 1, height: 1, background: 'var(--border)' }} />
       </header>
       {children}
