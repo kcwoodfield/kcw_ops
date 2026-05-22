@@ -1,5 +1,12 @@
-import { useState } from 'react'
-import { DndContext, DragOverlay, useDroppable, useDraggable, type DragEndEvent } from '@dnd-kit/core'
+import { useEffect, useState } from 'react'
+import {
+  DndContext, DragOverlay, useDroppable,
+  PointerSensor, useSensor, useSensors,
+  type DragEndEvent, type DragOverEvent, type DragStartEvent,
+} from '@dnd-kit/core'
+import {
+  SortableContext, arrayMove, useSortable, verticalListSortingStrategy,
+} from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { ChevronRight, Play, CheckCircle, Plus, Trash2 } from 'lucide-react'
 import { useBacklog, useDeleteSprint, useSprints, useUpdateStory, useUpdateSprint } from '../../api/stories'
@@ -14,6 +21,9 @@ import type { StoryDto, SprintDto } from '../../types'
 
 const CAPACITY = 40
 
+type Container = 'backlog' | 'sprint'
+type Items = Record<Container, string[]>
+
 export function SprintPlanning() {
   const { activeProjectId, activeSprintId, setActiveSprint } = useUiStore()
   const { openStory } = useAppNavigate()
@@ -24,33 +34,111 @@ export function SprintPlanning() {
   const { data: epics = [] } = useEpics(projectId)
   const updateStory = useUpdateStory()
   const updateSprint = useUpdateSprint()
-
   const compact = useIsCompact()
+
   const [epicFilter, setEpicFilter] = useState<string>('all')
   const [sprintModalOpen, setSprintModalOpen] = useState(false)
-  const [draggingStory, setDraggingStory] = useState<StoryDto | null>(null)
+  const [activeId, setActiveId] = useState<string | null>(null)
+  const [originContainer, setOriginContainer] = useState<Container | null>(null)
+  const [items, setItems] = useState<Items>({ backlog: [], sprint: [] })
 
   const activeSprint = allSprints.find(s => s.id === activeSprintId) ?? allSprints.find(s => s.state === 'active') ?? allSprints[0]
   const { data: sprintStoriesRaw = [] } = useSprintStories(projectId, activeSprint?.id)
 
-  const filteredBacklog = epicFilter === 'all'
-    ? backlog
-    : backlog.filter(s => s.epicId === epicFilter)
+  // Sync from server when not dragging
+  useEffect(() => {
+    if (activeId !== null) return
+    setItems({
+      backlog: backlog.map(s => s.id),
+      sprint: sprintStoriesRaw.map(s => s.id),
+    })
+  }, [backlog, sprintStoriesRaw, activeId])
 
-  const sprintPoints = sprintStoriesRaw.reduce((sum, s) => sum + s.points, 0)
+  const allStories = [...backlog, ...sprintStoriesRaw]
+  const storyMap = Object.fromEntries(allStories.map(s => [s.id, s])) as Record<string, StoryDto>
+
+  const filteredBacklogIds = epicFilter === 'all'
+    ? items.backlog
+    : items.backlog.filter(id => storyMap[id]?.epicId === epicFilter)
+
+  const sprintPoints = items.sprint.reduce((sum, id) => sum + (storyMap[id]?.points ?? 0), 0)
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+  )
+
+  const findContainer = (id: string): Container | null => {
+    if (id === 'backlog' || id === 'sprint') return id as Container
+    if (items.backlog.includes(id)) return 'backlog'
+    if (items.sprint.includes(id)) return 'sprint'
+    return null
+  }
+
+  const handleDragStart = (e: DragStartEvent) => {
+    const id = e.active.id as string
+    setActiveId(id)
+    setOriginContainer(findContainer(id))
+  }
+
+  const handleDragOver = (e: DragOverEvent) => {
+    const { active, over } = e
+    if (!over) return
+
+    const activeContainer = findContainer(active.id as string)
+    const overContainer = findContainer(over.id as string)
+
+    if (!activeContainer || !overContainer || activeContainer === overContainer) return
+
+    setItems(prev => {
+      const activeItems = prev[activeContainer]
+      const overItems = prev[overContainer]
+      const activeIndex = activeItems.indexOf(active.id as string)
+      const overIndex = overItems.indexOf(over.id as string)
+      const insertAt = overIndex >= 0 ? overIndex : overItems.length
+
+      return {
+        ...prev,
+        [activeContainer]: activeItems.filter(id => id !== active.id),
+        [overContainer]: [
+          ...overItems.slice(0, insertAt),
+          active.id as string,
+          ...overItems.slice(insertAt),
+        ],
+      }
+    })
+  }
 
   const handleDragEnd = (e: DragEndEvent) => {
-    setDraggingStory(null)
-    if (!e.over || !activeSprint) return
-    const storyId = e.active.id as string
-    const target = e.over.id as string
+    const { active, over } = e
+    setActiveId(null)
 
-    if (target === 'sprint-drop' && backlog.find(s => s.id === storyId)) {
-      updateStory.mutate({ id: storyId, sprintId: activeSprint.id, clearSprint: false })
+    if (!over) { setOriginContainer(null); return }
+
+    const activeContainer = findContainer(active.id as string)
+    const overContainer = findContainer(over.id as string)
+
+    if (!activeContainer || !overContainer) { setOriginContainer(null); return }
+
+    if (activeContainer === overContainer) {
+      // Same-list reorder
+      setItems(prev => {
+        const list = prev[activeContainer]
+        const from = list.indexOf(active.id as string)
+        const to = list.indexOf(over.id as string)
+        if (from === -1 || to === -1 || from === to) return prev
+        return { ...prev, [activeContainer]: arrayMove(list, from, to) }
+      })
+    } else {
+      // Cross-container: persist to server
+      const storyId = active.id as string
+      if (activeContainer === 'backlog' && activeSprint) {
+        updateStory.mutate({ id: storyId, sprintId: activeSprint.id, clearSprint: false })
+      } else if (activeContainer === 'sprint') {
+        updateStory.mutate({ id: storyId, clearSprint: true })
+      }
     }
-    if (target === 'backlog-drop' && sprintStoriesRaw.find(s => s.id === storyId)) {
-      updateStory.mutate({ id: storyId, clearSprint: true })
-    }
+
+    setOriginContainer(null)
   }
 
   const moveToSprint = (story: StoryDto) => {
@@ -72,19 +160,22 @@ export function SprintPlanning() {
     updateSprint.mutate({ id: activeSprint.id, state: 'completed' })
   }
 
+  const draggingStory = activeId ? storyMap[activeId] : null
+
   return (
     <DndContext
-      onDragStart={e => {
-        const story = [...backlog, ...sprintStoriesRaw].find(s => s.id === e.active.id)
-        setDraggingStory(story ?? null)
-      }}
+      sensors={sensors}
+      onDragStart={handleDragStart}
+      onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
     >
       <div style={{ display: 'flex', height: '100%', overflow: compact ? 'auto' : 'hidden', flexDirection: compact ? 'column' : 'row' }}>
 
         {/* ── LEFT: Backlog ── */}
         <BacklogPanel
-          stories={filteredBacklog}
+          itemIds={filteredBacklogIds}
+          allIds={items.backlog}
+          storyMap={storyMap}
           epics={epics}
           epicFilter={epicFilter}
           onEpicFilter={setEpicFilter}
@@ -96,9 +187,10 @@ export function SprintPlanning() {
 
         {/* ── RIGHT: Sprint ── */}
         <SprintPanel
+          itemIds={items.sprint}
+          storyMap={storyMap}
           sprint={activeSprint}
           allSprints={allSprints}
-          stories={sprintStoriesRaw}
           sprintPoints={sprintPoints}
           onSelectSprint={s => setActiveSprint(s.id)}
           onMoveToBacklog={moveToBacklog}
@@ -109,8 +201,8 @@ export function SprintPlanning() {
         />
       </div>
 
-      <DragOverlay>
-        {draggingStory && <DragCard story={draggingStory} />}
+      <DragOverlay dropAnimation={{ duration: 160, easing: 'cubic-bezier(0.18, 0.67, 0.6, 1)' }}>
+        {draggingStory ? <DragCard story={draggingStory} /> : null}
       </DragOverlay>
 
       {projectId && (
@@ -123,9 +215,11 @@ export function SprintPlanning() {
 // ── Sub-components ────────────────────────────────────────────
 
 function BacklogPanel({
-  stories, epics, epicFilter, onEpicFilter, onMoveToSprint, hasSprint, compact, onStoryClick,
+  itemIds, allIds, storyMap, epics, epicFilter, onEpicFilter, onMoveToSprint, hasSprint, compact, onStoryClick,
 }: {
-  stories: StoryDto[]
+  itemIds: string[]
+  allIds: string[]
+  storyMap: Record<string, StoryDto>
   epics: { id: string; title: string; color: string }[]
   epicFilter: string
   onEpicFilter: (id: string) => void
@@ -134,7 +228,7 @@ function BacklogPanel({
   compact: boolean
   onStoryClick: (id: string) => void
 }) {
-  const { setNodeRef, isOver } = useDroppable({ id: 'backlog-drop' })
+  const { setNodeRef, isOver } = useDroppable({ id: 'backlog' })
 
   return (
     <div
@@ -150,51 +244,49 @@ function BacklogPanel({
       }}
     >
       <PanelHeader>
-        <span style={{ fontWeight: 600, fontSize: 13, color: 'var(--fg)' }}>
-          Backlog
-        </span>
+        <span style={{ fontWeight: 600, fontSize: 13, color: 'var(--fg)' }}>Backlog</span>
         <span className="mono" style={{ fontSize: 11, color: 'var(--fg-3)', marginLeft: 6 }}>
-          {stories.length} stories
+          {allIds.length} stories
         </span>
         <div style={{ flex: 1 }} />
-        <select
-          value={epicFilter}
-          onChange={e => onEpicFilter(e.target.value)}
-          style={filterSelectStyle}
-        >
+        <select value={epicFilter} onChange={e => onEpicFilter(e.target.value)} style={filterSelectStyle}>
           <option value="all">All epics</option>
-          {epics.map(ep => (
-            <option key={ep.id} value={ep.id}>{ep.title}</option>
-          ))}
+          {epics.map(ep => <option key={ep.id} value={ep.id}>{ep.title}</option>)}
         </select>
       </PanelHeader>
 
       <div style={{ flex: 1, overflowY: 'auto', padding: '4px 0' }}>
-        {stories.length === 0 ? (
-          <Empty>Backlog is clear 🎉</Empty>
-        ) : (
-          stories.map(s => (
-            <PlanningRow
-              key={s.id}
-              story={s}
-              action={hasSprint ? { icon: <ChevronRight size={13} />, label: 'Add to sprint', onClick: () => onMoveToSprint(s) } : undefined}
-              onClick={() => onStoryClick(s.id)}
-              draggable
-            />
-          ))
-        )}
+        <SortableContext items={itemIds} strategy={verticalListSortingStrategy}>
+          {itemIds.length === 0 ? (
+            <Empty>Backlog is clear 🎉</Empty>
+          ) : (
+            itemIds.map(id => {
+              const s = storyMap[id]
+              if (!s) return null
+              return (
+                <PlanningRow
+                  key={id}
+                  story={s}
+                  action={hasSprint ? { icon: <ChevronRight size={13} />, label: 'Add to sprint', onClick: () => onMoveToSprint(s) } : undefined}
+                  onClick={() => onStoryClick(s.id)}
+                />
+              )
+            })
+          )}
+        </SortableContext>
       </div>
     </div>
   )
 }
 
 function SprintPanel({
-  sprint, allSprints, stories, sprintPoints,
+  itemIds, storyMap, sprint, allSprints, sprintPoints,
   onSelectSprint, onMoveToBacklog, onStartSprint, onCompleteSprint, onNewSprint, onStoryClick,
 }: {
+  itemIds: string[]
+  storyMap: Record<string, StoryDto>
   sprint: SprintDto | undefined
   allSprints: SprintDto[]
-  stories: StoryDto[]
   sprintPoints: number
   onSelectSprint: (s: SprintDto) => void
   onMoveToBacklog: (s: StoryDto) => void
@@ -203,7 +295,7 @@ function SprintPanel({
   onNewSprint: () => void
   onStoryClick: (id: string) => void
 }) {
-  const { setNodeRef, isOver } = useDroppable({ id: 'sprint-drop' })
+  const { setNodeRef, isOver } = useDroppable({ id: 'sprint' })
   const deleteSprint = useDeleteSprint()
   const [confirmDelete, setConfirmDelete] = useState(false)
   const pct = Math.min(100, Math.round((sprintPoints / CAPACITY) * 100))
@@ -230,9 +322,7 @@ function SprintPanel({
             }}
             style={{ ...filterSelectStyle, fontWeight: 600, color: 'var(--fg)', fontSize: 13 }}
           >
-            {allSprints.map(sp => (
-              <option key={sp.id} value={sp.id}>{sp.name}</option>
-            ))}
+            {allSprints.map(sp => <option key={sp.id} value={sp.id}>{sp.name}</option>)}
           </select>
         ) : (
           <span style={{ fontSize: 13, color: 'var(--fg-3)' }}>No sprints yet</span>
@@ -249,15 +339,11 @@ function SprintPanel({
 
         <div style={{ flex: 1 }} />
 
-        {sprint && (
-          <>
-            {sprint.state === 'planned' && (
-              <ActionBtn icon={<Play size={12} />} label="Start sprint" onClick={onStartSprint} variant="accent" />
-            )}
-            {sprint.state === 'active' && (
-              <ActionBtn icon={<CheckCircle size={12} />} label="Complete sprint" onClick={onCompleteSprint} variant="secondary" />
-            )}
-          </>
+        {sprint?.state === 'planned' && (
+          <ActionBtn icon={<Play size={12} />} label="Start sprint" onClick={onStartSprint} variant="accent" />
+        )}
+        {sprint?.state === 'active' && (
+          <ActionBtn icon={<CheckCircle size={12} />} label="Complete sprint" onClick={onCompleteSprint} variant="secondary" />
         )}
       </PanelHeader>
 
@@ -271,9 +357,7 @@ function SprintPanel({
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{ flex: 1, height: 5, borderRadius: 3, background: 'var(--bg-3)', overflow: 'hidden' }}>
               <div style={{
-                height: '100%',
-                width: `${pct}%`,
-                borderRadius: 3,
+                height: '100%', width: `${pct}%`, borderRadius: 3,
                 background: over ? 'var(--blocked)' : 'var(--accent)',
                 transition: 'width 0.2s ease',
               }} />
@@ -284,30 +368,36 @@ function SprintPanel({
           </div>
           <div style={{ display: 'flex', gap: 10, marginTop: 6 }}>
             <SprintMeta label="State" value={sprint.state} />
-            <SprintMeta label="Start" value={sprint.startDate} />
-            <SprintMeta label="End" value={sprint.endDate} />
-            <SprintMeta label="Stories" value={String(stories.length)} />
+            <SprintMeta label="Start" value={sprint.startDate} isDate />
+            <SprintMeta label="End" value={sprint.endDate} isDate />
+            <SprintMeta label="Stories" value={String(itemIds.length)} />
           </div>
         </div>
       )}
 
       <div style={{ flex: 1, overflowY: 'auto', padding: '4px 0' }}>
-        {!sprint ? (
-          <Empty>Create a sprint to start planning.</Empty>
-        ) : stories.length === 0 ? (
-          <Empty>Drag stories here from the backlog.</Empty>
-        ) : (
-          stories.map(s => (
-            <PlanningRow
-              key={s.id}
-              story={s}
-              action={{ icon: <ChevronRight size={13} style={{ transform: 'rotate(180deg)' }} />, label: 'Move to backlog', onClick: () => onMoveToBacklog(s) }}
-              onClick={() => onStoryClick(s.id)}
-              draggable
-            />
-          ))
-        )}
+        <SortableContext items={itemIds} strategy={verticalListSortingStrategy}>
+          {!sprint ? (
+            <Empty>Create a sprint to start planning.</Empty>
+          ) : itemIds.length === 0 ? (
+            <Empty>Drag stories here from the backlog.</Empty>
+          ) : (
+            itemIds.map(id => {
+              const s = storyMap[id]
+              if (!s) return null
+              return (
+                <PlanningRow
+                  key={id}
+                  story={s}
+                  action={{ icon: <ChevronRight size={13} style={{ transform: 'rotate(180deg)' }} />, label: 'Move to backlog', onClick: () => onMoveToBacklog(s) }}
+                  onClick={() => onStoryClick(s.id)}
+                />
+              )
+            })
+          )}
+        </SortableContext>
       </div>
+
       {sprint && (
         <ConfirmModal
           open={confirmDelete}
@@ -321,31 +411,33 @@ function SprintPanel({
   )
 }
 
-function PlanningRow({ story, action, onClick, draggable }: {
+function PlanningRow({ story, action, onClick }: {
   story: StoryDto
   action?: { icon: React.ReactNode; label: string; onClick: () => void }
   onClick: () => void
-  draggable?: boolean
 }) {
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: story.id,
-    disabled: !draggable,
   })
 
   return (
     <div
-      ref={draggable ? setNodeRef : undefined}
-      {...(draggable ? { ...attributes, ...listeners } : {})}
+      ref={setNodeRef}
+      {...attributes}
+      {...listeners}
       style={{
         display: 'flex',
         alignItems: 'center',
         gap: 8,
         padding: '6px 14px',
         borderBottom: '1px solid var(--border)',
-        opacity: isDragging ? 0.3 : 1,
-        cursor: draggable ? 'grab' : 'default',
+        opacity: isDragging ? 0.35 : 1,
+        cursor: isDragging ? 'grabbing' : 'grab',
         background: 'var(--bg)',
-        transform: transform ? CSS.Translate.toString(transform) : undefined,
+        transform: CSS.Transform.toString(transform),
+        transition: transition ?? 'transform 200ms ease',
+        zIndex: isDragging ? 1 : 'auto',
+        position: 'relative',
       }}
     >
       <StatusDot status={story.status} size={8} />
@@ -377,13 +469,7 @@ function PlanningRow({ story, action, onClick, draggable }: {
           type="button"
           title={action.label}
           onClick={e => { e.stopPropagation(); action.onClick() }}
-          style={{
-            display: 'flex',
-            color: 'var(--fg-3)',
-            padding: 3,
-            borderRadius: 3,
-            flexShrink: 0,
-          }}
+          style={{ display: 'flex', color: 'var(--fg-3)', padding: 3, borderRadius: 3, flexShrink: 0 }}
           onMouseOver={e => (e.currentTarget.style.color = 'var(--accent)')}
           onMouseOut={e => (e.currentTarget.style.color = 'var(--fg-3)')}
         >
@@ -431,11 +517,16 @@ function PanelHeader({ children }: { children: React.ReactNode }) {
   )
 }
 
-function SprintMeta({ label, value }: { label: string; value: string }) {
+function fmtDate(s: string) {
+  const [y, m, d] = s.split('-').map(Number)
+  return new Date(y, m - 1, d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+}
+
+function SprintMeta({ label, value, isDate }: { label: string; value: string; isDate?: boolean }) {
   return (
     <span style={{ fontSize: 10.5, color: 'var(--fg-3)' }}>
       <span style={{ fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{label}</span>
-      {' '}<span className="mono" style={{ color: 'var(--fg-2)' }}>{value}</span>
+      {' '}<span className="mono" style={{ color: 'var(--fg-2)' }}>{isDate ? fmtDate(value) : value}</span>
     </span>
   )
 }
