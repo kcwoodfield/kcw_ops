@@ -110,35 +110,34 @@ export function SprintPlanning() {
 
   const handleDragEnd = (e: DragEndEvent) => {
     const { active, over } = e
+    const origin = originContainer
     setActiveId(null)
+    setOriginContainer(null)
 
-    if (!over) { setOriginContainer(null); return }
+    if (!over || !origin) return
 
-    const activeContainer = findContainer(active.id as string)
-    const overContainer = findContainer(over.id as string)
+    // After onDragOver, the item is already in its destination container.
+    // Use originContainer (captured at drag start) to detect cross-container drops.
+    const currentContainer = findContainer(active.id as string)
 
-    if (!activeContainer || !overContainer) { setOriginContainer(null); return }
-
-    if (activeContainer === overContainer) {
+    if (origin !== currentContainer && currentContainer) {
+      // Cross-container: persist to server
+      const storyId = active.id as string
+      if (origin === 'backlog' && activeSprint) {
+        updateStory.mutate({ id: storyId, sprintId: activeSprint.id, clearSprint: false })
+      } else if (origin === 'sprint') {
+        updateStory.mutate({ id: storyId, clearSprint: true })
+      }
+    } else if (currentContainer) {
       // Same-list reorder
       setItems(prev => {
-        const list = prev[activeContainer]
+        const list = prev[currentContainer]
         const from = list.indexOf(active.id as string)
         const to = list.indexOf(over.id as string)
         if (from === -1 || to === -1 || from === to) return prev
-        return { ...prev, [activeContainer]: arrayMove(list, from, to) }
+        return { ...prev, [currentContainer]: arrayMove(list, from, to) }
       })
-    } else {
-      // Cross-container: persist to server
-      const storyId = active.id as string
-      if (activeContainer === 'backlog' && activeSprint) {
-        updateStory.mutate({ id: storyId, sprintId: activeSprint.id, clearSprint: false })
-      } else if (activeContainer === 'sprint') {
-        updateStory.mutate({ id: storyId, clearSprint: true })
-      }
     }
-
-    setOriginContainer(null)
   }
 
   const moveToSprint = (story: StoryDto) => {
@@ -435,8 +434,7 @@ function PlanningRow({ story, action, onClick }: {
         cursor: isDragging ? 'grabbing' : 'grab',
         background: 'var(--bg)',
         transform: CSS.Transform.toString(transform),
-        transition: transition ?? 'transform 200ms ease',
-        zIndex: isDragging ? 1 : 'auto',
+        transition,
         position: 'relative',
       }}
     >
