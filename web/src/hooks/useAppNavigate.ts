@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import type { AppView } from '../lib/routes'
-import { LAST_PROJECT_KEY, projectPath, parseSearchParams } from '../lib/routes'
+import { LAST_PROJECT_KEY, projectPath, parseSearchParams, isAppView } from '../lib/routes'
 
 export function useProjectKey() {
   return useParams().projectKey?.toUpperCase()
@@ -10,18 +10,7 @@ export function useProjectKey() {
 export function useAppView(): AppView {
   const { pathname } = useLocation()
   const match = pathname.match(/\/p\/[^/]+\/([^/?]+)/)
-  const segment = match?.[1]
-  if (
-    segment === 'board' ||
-    segment === 'backlog' ||
-    segment === 'planning' ||
-    segment === 'list' ||
-    segment === 'calendar' ||
-    segment === 'activity'
-  ) {
-    return segment
-  }
-  return 'board'
+  return isAppView(match?.[1]) ? match![1] : 'board'
 }
 
 export function useAppNavigate() {
