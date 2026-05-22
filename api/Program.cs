@@ -1,3 +1,4 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using FluentValidation;
 using KcwOps.Api.Features.Auth;
@@ -7,6 +8,9 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Threading.RateLimiting;
+
+// Prevent .NET from remapping JWT claim names (sub → nameidentifier, etc.)
+JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
 var builder = WebApplication.CreateBuilder(args);
 
