@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { ChevronRight, Inbox, Eye, Star, GitBranch, CalendarDays, Map, Zap, Pencil, Trash2, X, Plus, UserCircle, Moon, Sun } from 'lucide-react'
+import { ChevronRight, Inbox, Eye, Star, GitBranch, CalendarDays, Map, Zap, Pencil, Trash2, X, Plus, Settings, Moon, Sun } from 'lucide-react'
 import { useDeleteProject, useProjects } from '../../api/projects'
 import { useInboxStories, useMyIssues, useStarredStories, useDraftStories, useCreateStory } from '../../api/stories'
 import { useUiStore } from '../../store/ui'
@@ -125,7 +125,7 @@ function SidebarFooter({ collapsed }: { collapsed: boolean }) {
         <button
           type="button"
           onClick={() => setOpen(v => !v)}
-          title="Profile"
+          title="Settings"
           style={{
             display: 'inline-flex', alignItems: 'center', gap: 8,
             height: 34,
@@ -151,8 +151,8 @@ function SidebarFooter({ collapsed }: { collapsed: boolean }) {
             e.currentTarget.style.color = open ? 'var(--fg)' : 'var(--fg-2)'
           }}
         >
-          <UserCircle size={16} />
-          {!collapsed && 'Profile'}
+          <Settings size={16} />
+          {!collapsed && 'Settings'}
         </button>
 
         {open && (
