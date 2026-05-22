@@ -35,17 +35,24 @@ export function LoboPanel() {
     if (loboPanelOpen) setTimeout(() => inputRef.current?.focus(), 80)
   }, [loboPanelOpen])
 
-  // ⌘L toggle
+  // ⌘L toggle · Esc collapses (closing any open sub-layer first)
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'l') {
+        e.preventDefault()
+        toggleLoboPanel()
+        return
+      }
+      if (e.key === 'Escape' && loboPanelOpen) {
+        if (offline.show) { setOffline(o => ({ ...o, show: false })); return }
+        if (modelPickerOpen) { setModelPickerOpen(false); return }
         e.preventDefault()
         toggleLoboPanel()
       }
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
-  }, [toggleLoboPanel])
+  }, [toggleLoboPanel, loboPanelOpen, offline.show, modelPickerOpen])
 
   const checkHealth = async (model: LoboModel): Promise<boolean> => {
     try {
