@@ -39,7 +39,8 @@ export function AppShell() {
     if (fallback) {
       const match = pathname.match(/\/p\/[^/]+\/([^/?]+)/)
       const segment: AppView = isAppView(match?.[1]) ? match![1] : 'board'
-      navigate(projectPath(fallback.key, segment, parseSearchParams(searchParams)), { replace: true })
+      const { sprintId, storyId } = parseSearchParams(searchParams)
+      navigate(projectPath(fallback.key, segment, { sprint: sprintId, story: storyId }), { replace: true })
     }
   }, [projects, project, projectKey, activeProjectId, setActiveProject, navigate, searchParams, pathname])
 
