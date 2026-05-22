@@ -5,6 +5,7 @@ import { useCreateStory, useInboxStories } from '../../api/stories'
 import { useAppNavigate } from '../../hooks/useAppNavigate'
 import { useUiStore } from '../../store/ui'
 import { useAuthStore } from '../../store/auth'
+import { useAuthFade } from '../../context/auth-fade'
 import { useIsCompact } from '../../hooks/useMediaQuery'
 import { CreateEpicModal } from '../CreateEpicModal'
 import { CreateSprintModal } from '../CreateSprintModal'
@@ -13,6 +14,7 @@ export function TopBar() {
   const { sprintId, openStory } = useAppNavigate()
   const { activeProjectId, setCmdPaletteOpen, setMobileSidebarOpen, theme, toggleTheme } = useUiStore()
   const { logout } = useAuthStore()
+  const { crossFade } = useAuthFade()
   const compact = useIsCompact()
   const createStory = useCreateStory()
   const navigate = useNavigate()
@@ -172,7 +174,7 @@ export function TopBar() {
               <div style={{ height: 1, background: 'var(--border)', margin: '4px 0' }} />
               <button
                 type="button"
-                onClick={() => { void logout(); setProfileOpen(false) }}
+                onClick={() => { setProfileOpen(false); void crossFade(() => void logout()) }}
                 style={{
                   display: 'flex', alignItems: 'center', gap: 8,
                   width: '100%', textAlign: 'left',
