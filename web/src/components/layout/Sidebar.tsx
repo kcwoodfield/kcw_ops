@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { ChevronRight, Inbox, Eye, Star, GitBranch, CalendarDays, Map, Zap, Pencil, Trash2, X } from 'lucide-react'
+import { ChevronRight, Inbox, Eye, Star, GitBranch, CalendarDays, Map, Zap, Pencil, Trash2, X, Plus } from 'lucide-react'
 import { useDeleteProject, useProjects } from '../../api/projects'
-import { useInboxStories, useMyIssues, useStarredStories, useDraftStories } from '../../api/stories'
+import { useInboxStories, useMyIssues, useStarredStories, useDraftStories, useCreateStory } from '../../api/stories'
 import { useUiStore } from '../../store/ui'
 import { useAppNavigate } from '../../hooks/useAppNavigate'
 import { Shield } from '../Shield'
@@ -197,6 +197,14 @@ function ProjectRow({ project, active, onClick, onEdit }: {
   const [hovered, setHovered] = useState(false)
   const [confirming, setConfirming] = useState(false)
   const deleteProject = useDeleteProject()
+  const createStory = useCreateStory()
+  const { openStory } = useAppNavigate()
+
+  const handleCreateTask = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+    const story = await createStory.mutateAsync({ projectId: project.id, title: 'New issue' })
+    openStory(story.id)
+  }
 
   return (
     <>
@@ -221,10 +229,12 @@ function ProjectRow({ project, active, onClick, onEdit }: {
         >
           <span style={{ width: 8, height: 8, borderRadius: 2, background: project.color, flexShrink: 0 }} />
           <span style={{ flex: 1, textAlign: 'left', fontSize: 12.5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{project.name}</span>
-          <span className="mono" style={{ fontSize: 10, color: 'var(--fg-3)', flexShrink: 0 }}>{project.key}</span>
         </button>
         {hovered && (
           <div style={{ display: 'flex', alignItems: 'center', paddingRight: 4, gap: 1 }}>
+            <RowIconBtn title="Create task" onClick={e => void handleCreateTask(e)}>
+              <Plus size={11} />
+            </RowIconBtn>
             <RowIconBtn title="Edit" onClick={e => { e.stopPropagation(); onEdit() }}>
               <Pencil size={11} />
             </RowIconBtn>
