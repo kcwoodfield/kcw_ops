@@ -90,13 +90,17 @@ function StoryDrawerBody({ storyId, onClose }: { storyId: string; onClose: () =>
   const [description, setDescription] = useState('')
   const [commentBody, setCommentBody] = useState('')
   const [commentAuthor, setCommentAuthor] = useState('kcw')
+  const titleRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (story) {
       setTitle(story.title)
       setDescription(story.description ?? '')
+      if (story.title === 'New issue') {
+        setTimeout(() => titleRef.current?.select(), 80)
+      }
     }
-  }, [story?.id, story?.title, story?.description])
+  }, [story?.id])
 
   const save = (patch: UpdateStoryPayload) => {
     if (!story) return
@@ -153,6 +157,7 @@ function StoryDrawerBody({ storyId, onClose }: { storyId: string; onClose: () =>
               <StatusDot status={story.status} size={12} />
             </span>
             <input
+              ref={titleRef}
               value={title}
               onChange={e => setTitle(e.target.value)}
               onBlur={() => title !== story.title && save({ title })}
