@@ -24,8 +24,8 @@ Living roadmap from prototype → production app. Design reference: [`docs/desig
 | Auth (JWT + TOTP) | ✅ |
 | AI assistant ("Lobo") with tool-use | ✅ |
 | Audit cleanup pass | ✅ ([`docs/AUDIT.md`](AUDIT.md)) |
-| Audit follow-up minors | 🟡 in progress |
-| Production quality (CI, tests, E2E) | ⬜ Phase 6 |
+| Audit follow-up minors | ✅ |
+| Production quality (CI, tests, E2E) | ⬜ Phase 6 ← next |
 
 ---
 
@@ -190,18 +190,18 @@ Findings catalogued in [`docs/AUDIT.md`](AUDIT.md). Headline fixes shipped:
 
 ---
 
-## Audit follow-ups (minors — current focus)
+## Audit follow-ups (minors — ✅ complete)
 
 Deferred items from [`docs/AUDIT.md`](AUDIT.md) §6.
 
 | Item | Direction | Status |
 |------|-----------|--------|
-| Redundant `Project` reload in `UpdateStoryHandler:107` | Delete the line | ⬜ |
-| Latent `EpicId = Guid.Empty` on epic-less project | Auto-create default epic on `CreateProject` | ⬜ |
-| Duplicated 401-refresh in `client.ts` | Unify `request()` and `get()` into one fetch core | ⬜ |
-| `Controllers/` folder vs vertical-slice endpoints | Acknowledge controllers as canonical; document the exception | ⬜ |
-| Routing state mirror in `store/ui.ts` | Drop `activeProjectId`/`activeSprintId`, read from URL/router | ⬜ |
-| No tests | Folded into Phase 6 (integration + E2E) | ⬜ |
+| Redundant `Project` reload in `UpdateStoryHandler` | Removed the spare reload | ✅ `e097ad6` |
+| Latent `EpicId = Guid.Empty` on epic-less project | Auto-create default epic on `CreateProject` + throw on missing | ✅ `ae2ac33` |
+| Duplicated 401-refresh in `client.ts` | Unified into one `coreFetch` | ✅ `c875476` |
+| `Controllers/` folder vs vertical-slice endpoints | Documented controllers as canonical HTTP dispatchers | ✅ `ae83cee` |
+| Routing state mirror in `store/ui.ts` | Replaced with URL-derived `useActiveProjectId` / `useActiveSprintId` hooks | ✅ `af8e133` |
+| No tests | Folded into Phase 6 (integration + E2E) | ⬜ Phase 6 |
 
 ---
 
@@ -227,8 +227,8 @@ Deferred items from [`docs/AUDIT.md`](AUDIT.md) §6.
 5   Auth                           ✅
 5.5 Lobo                           ✅
 5.9 Audit cleanup                  ✅
-*   Audit follow-up minors         ← current
-6   CI / E2E / docker / a11y       next
+*   Audit follow-up minors         ✅
+6   CI / E2E / docker / a11y       ← current
 ```
 
 ---
