@@ -7,6 +7,7 @@ import { useUiStore } from '../../store/ui'
 import { useIsCompact } from '../../hooks/useMediaQuery'
 import { CreateEpicModal } from '../CreateEpicModal'
 import { CreateSprintModal } from '../CreateSprintModal'
+import { CreateProjectModal } from '../CreateProjectModal'
 
 export function TopBar() {
   const { sprintId, openStory } = useAppNavigate()
@@ -19,6 +20,7 @@ export function TopBar() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [epicModalOpen, setEpicModalOpen] = useState(false)
   const [sprintModalOpen, setSprintModalOpen] = useState(false)
+  const [projectModalOpen, setProjectModalOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -119,10 +121,12 @@ export function TopBar() {
             borderRadius: 6, padding: '4px 0', minWidth: 160, zIndex: 100,
             boxShadow: '0 4px 16px rgba(0,0,0,0.35)',
             }}>
-              <MenuItem onClick={() => void handleNewIssue()}>New issue</MenuItem>
+              <MenuItem onClick={() => void handleNewIssue()}>New Issue</MenuItem>
               <div style={{ height: 1, background: 'var(--border)', margin: '4px 0' }} />
-              <MenuItem onClick={() => { setMenuOpen(false); setSprintModalOpen(true) }}>New sprint</MenuItem>
-              <MenuItem onClick={() => { setMenuOpen(false); setEpicModalOpen(true) }}>New epic</MenuItem>
+              <MenuItem onClick={() => { setMenuOpen(false); setSprintModalOpen(true) }}>New Sprint</MenuItem>
+              <MenuItem onClick={() => { setMenuOpen(false); setEpicModalOpen(true) }}>New Epic</MenuItem>
+              <div style={{ height: 1, background: 'var(--border)', margin: '4px 0' }} />
+              <MenuItem onClick={() => { setMenuOpen(false); setProjectModalOpen(true) }}>New Project</MenuItem>
             </div>
           )}
         </div>
@@ -140,6 +144,7 @@ export function TopBar() {
           <CreateSprintModal projectId={activeProjectId} open={sprintModalOpen} onClose={() => setSprintModalOpen(false)} />
         </>
       )}
+      <CreateProjectModal open={projectModalOpen} onClose={() => setProjectModalOpen(false)} />
     </header>
   )
 }

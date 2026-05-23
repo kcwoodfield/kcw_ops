@@ -1,10 +1,12 @@
 import { create } from 'zustand'
 
-type Theme = 'dark' | 'light'
+type Theme = 'dark' | 'light' | 'zinc'
 
 function getInitialTheme(): Theme {
   const stored = localStorage.getItem('kcw_theme')
-  return stored === 'light' ? 'light' : 'dark'
+  if (stored === 'light') return 'light'
+  if (stored === 'zinc') return 'zinc'
+  return 'dark'
 }
 
 function applyTheme(theme: Theme) {
@@ -50,6 +52,7 @@ interface UiState {
   loboMessages: LoboMessage[]
   setCmdPaletteOpen: (open: boolean) => void
   toggleTheme: () => void
+  setTheme: (theme: Theme) => void
   toggleSidebar: () => void
   setMobileSidebarOpen: (open: boolean) => void
   toggleLoboPanel: () => void
@@ -73,10 +76,15 @@ export const useUiStore = create<UiState>((set) => ({
   loboMessages: loadLoboMessages(),
   setCmdPaletteOpen: (open) => set({ cmdPaletteOpen: open }),
   toggleTheme: () => set(s => {
-    const next: Theme = s.theme === 'dark' ? 'light' : 'dark'
+    // zinc counts as dark; toggle always goes light ↔ warm-dark
+    const next: Theme = s.theme === 'light' ? 'dark' : 'light'
     applyTheme(next)
     return { theme: next }
   }),
+  setTheme: (theme) => {
+    applyTheme(theme)
+    set({ theme })
+  },
   toggleSidebar: () => set(s => ({ sidebarCollapsed: !s.sidebarCollapsed })),
   setMobileSidebarOpen: (open) => set({ mobileSidebarOpen: open }),
   toggleLoboPanel: () => set(s => ({ loboPanelOpen: !s.loboPanelOpen })),

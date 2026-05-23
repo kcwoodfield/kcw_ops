@@ -27,6 +27,13 @@ export function AppShell() {
 
   const project = projects.find(p => p.key === projectKey?.toUpperCase())
 
+  // Extract primitives so the effect dep array is value-stable.
+  // URLSearchParams is a new object reference every render; using its primitive
+  // extracts avoids the effect firing (and potentially calling navigate) on
+  // every render — which was the source of the infinite update loop.
+  const { sprintId: sprintIdInUrl, storyId: storyIdInUrl } = parseSearchParams(searchParams)
+  const sprintInUrl = sprintIdInUrl
+
   // Persist last project · redirect to fallback when the URL key doesn't match.
   useEffect(() => {
     if (!projects.length) return
@@ -40,12 +47,9 @@ export function AppShell() {
     if (fallback) {
       const match = pathname.match(/\/p\/[^/]+\/([^/?]+)/)
       const segment: AppView = isAppView(match?.[1]) ? match![1] : 'board'
-      const { sprintId, storyId } = parseSearchParams(searchParams)
-      navigate(projectPath(fallback.key, segment, { sprint: sprintId, story: storyId }), { replace: true })
+      navigate(projectPath(fallback.key, segment, { sprint: sprintIdInUrl, story: storyIdInUrl }), { replace: true })
     }
-  }, [projects, project, projectKey, navigate, searchParams, pathname])
-
-  const sprintInUrl = searchParams.get('sprint')
+  }, [projects, project, projectKey, navigate, sprintIdInUrl, storyIdInUrl, pathname])
 
   // Default the active sprint into the URL when missing.
   useEffect(() => {

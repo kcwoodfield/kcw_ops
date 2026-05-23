@@ -10,7 +10,7 @@ public static class DataSeeder
         if (!await db.Users.AnyAsync())
         {
             db.Users.AddRange(
-                new User { Id = "kcw", Name = "K. Woodfield", Initials = "KW", Color = "#C84A40" },
+                new User { Id = "kcw", Name = "K. Wolf",      Initials = "KW", Color = "#C84A40" },
                 new User { Id = "jt",  Name = "J. Tanaka",    Initials = "JT", Color = "#7c5cff" },
                 new User { Id = "mr",  Name = "M. Reyes",     Initials = "MR", Color = "#4cc9e7" },
                 new User { Id = "np",  Name = "N. Patel",     Initials = "NP", Color = "#f0b34a" },
