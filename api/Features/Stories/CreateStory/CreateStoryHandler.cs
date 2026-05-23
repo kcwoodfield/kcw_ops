@@ -55,7 +55,8 @@ public class CreateStoryHandler(AppDbContext db) : IRequestHandler<CreateStoryCo
         {
             Id = Guid.NewGuid(),
             ProjectId = cmd.ProjectId,
-            EpicId = resolvedEpicId ?? Guid.Empty,
+            EpicId = resolvedEpicId ?? throw new InvalidOperationException(
+                "Project has no epics — create one before adding stories."),
             SprintId = cmd.SprintId,
             Number = maxNumber + 1,
             SortOrder = maxSort + 1000,
