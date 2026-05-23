@@ -102,9 +102,10 @@ public class UpdateStoryHandler(AppDbContext db) : IRequestHandler<UpdateStoryCo
 
         await db.SaveChangesAsync(ct);
 
+        // Epic/Sprint may have changed via EpicId/SprintId — reload them.
+        // Project never changes here and was Included at the top of the method.
         await db.Entry(story).Reference(s => s.Epic).LoadAsync(ct);
         await db.Entry(story).Reference(s => s.Sprint).LoadAsync(ct);
-        await db.Entry(story).Reference(s => s.Project).LoadAsync(ct);
 
         var assignee = story.AssigneeId is null ? null : await db.Users.FindAsync([story.AssigneeId], ct);
         return StoryMapper.ToDetailDto(story, assignee);
