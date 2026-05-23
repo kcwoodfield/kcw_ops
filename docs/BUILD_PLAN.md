@@ -207,13 +207,16 @@ Deferred items from [`docs/AUDIT.md`](AUDIT.md) §6.
 
 ## Phase 6 — Production quality (next)
 
-- [ ] CI: `dotnet build`/`test`, `npm run build`, lint
 - [ ] API integration tests (`WebApplicationFactory`) — at minimum the story CRUD + validation paths
 - [ ] E2E: Playwright — `/p/HIST/board`, `?story=`, DnD, browser back, login flow
 - [ ] Docker Compose: api + web + db (only `db` is composed today)
 - [ ] Story list pagination if >200 cards
 - [ ] a11y: drawer focus trap, DnD live regions
 - [ ] Telemetry: minimal request log + error reporting
+
+> CI workflow intentionally skipped — solo project, lean. Run lint + builds
+> locally before merging. Reconsider if collaborators or scheduled deploys
+> enter the picture.
 
 ---
 
