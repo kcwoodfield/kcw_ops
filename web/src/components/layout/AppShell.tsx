@@ -46,9 +46,10 @@ export function AppShell() {
 
   const sprintInUrl = searchParams.get('sprint')
 
-  // Sync sprint search param → store
+  // Sync sprint search param → store (clear when the URL has none, so a
+  // project switch doesn't leave a previous project's sprint id in the store).
   useEffect(() => {
-    if (sprintInUrl && sprintInUrl !== activeSprintId) {
+    if (sprintInUrl !== activeSprintId) {
       setActiveSprint(sprintInUrl)
     }
   }, [sprintInUrl, activeSprintId, setActiveSprint])

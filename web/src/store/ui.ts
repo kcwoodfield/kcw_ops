@@ -49,7 +49,7 @@ interface UiState {
   loboModel: LoboModel
   loboMessages: LoboMessage[]
   setActiveProject: (projectId: string) => void
-  setActiveSprint: (sprintId: string) => void
+  setActiveSprint: (sprintId: string | null) => void
   setCmdPaletteOpen: (open: boolean) => void
   toggleTheme: () => void
   toggleSidebar: () => void

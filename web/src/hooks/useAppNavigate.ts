@@ -23,12 +23,15 @@ export function useAppNavigate() {
   const goToProject = useCallback(
     (key: string, nextView: AppView = view, opts?: { sprint?: string | null; story?: string | null }) => {
       localStorage.setItem(LAST_PROJECT_KEY, key)
+      // Sprint and story belong to a specific project — drop them when crossing
+      // a project boundary so we don't render Minerva's sprint under Histomap.
+      const samePage = key.toUpperCase() === projectKey
       navigate(projectPath(key, nextView, {
-        sprint: opts?.sprint !== undefined ? opts.sprint : sprintId,
-        story: opts?.story !== undefined ? opts.story : storyId,
+        sprint: opts?.sprint !== undefined ? opts.sprint : (samePage ? sprintId : null),
+        story:  opts?.story  !== undefined ? opts.story  : (samePage ? storyId  : null),
       }))
     },
-    [navigate, view, sprintId, storyId],
+    [navigate, view, projectKey, sprintId, storyId],
   )
 
   const goToView = useCallback(
