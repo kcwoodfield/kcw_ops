@@ -101,7 +101,7 @@ export function Sidebar({ compact = false }: { compact?: boolean }) {
 }
 
 function SidebarFooter({ collapsed }: { collapsed: boolean }) {
-  const { theme, toggleTheme } = useUiStore()
+  const { theme, toggleTheme, setTheme } = useUiStore()
   const { logout } = useAuthStore()
   const { crossFade } = useAuthFade()
   const [open, setOpen] = useState(false)
@@ -183,9 +183,44 @@ function SidebarFooter({ collapsed }: { collapsed: boolean }) {
               onMouseOver={e => (e.currentTarget.style.background = 'var(--hover)')}
               onMouseOut={e => (e.currentTarget.style.background = 'transparent')}
             >
-              {theme === 'dark' ? <Sun size={13} /> : <Moon size={13} />}
-              {theme === 'dark' ? 'Light mode' : 'Dark mode'}
+              {theme === 'light' ? <Moon size={13} /> : <Sun size={13} />}
+              {theme === 'light' ? 'Dark mode' : 'Light mode'}
             </button>
+
+            <div style={{ height: 1, background: 'var(--border)', margin: '4px 0' }} />
+
+            <div style={{
+              padding: '4px 14px 2px',
+              fontSize: 11, fontWeight: 600, letterSpacing: '0.07em',
+              textTransform: 'uppercase', color: 'var(--fg-3)',
+            }}>
+              Theme
+            </div>
+
+            <button
+              type="button"
+              onClick={() => { setTheme(theme === 'zinc' ? 'dark' : 'zinc'); setOpen(false) }}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 8,
+                width: '100%', textAlign: 'left',
+                padding: '7px 14px', fontSize: 14.5,
+                color: theme === 'zinc' ? 'var(--fg)' : 'var(--fg-1)',
+                background: 'transparent',
+              }}
+              onMouseOver={e => (e.currentTarget.style.background = 'var(--hover)')}
+              onMouseOut={e => (e.currentTarget.style.background = 'transparent')}
+            >
+              <span style={{
+                width: 14, height: 14, borderRadius: 3, flexShrink: 0,
+                background: 'linear-gradient(135deg, #fafafa 50%, #09090b 50%)',
+                border: theme === 'zinc' ? '1.5px solid var(--accent)' : '1.5px solid var(--border-2)',
+              }} />
+              Zinc
+              {theme === 'zinc' && (
+                <span style={{ marginLeft: 'auto', color: 'var(--accent)', fontSize: 12 }}>✓</span>
+              )}
+            </button>
+
             <div style={{ height: 1, background: 'var(--border)', margin: '4px 0' }} />
             <button
               type="button"
