@@ -30,7 +30,7 @@ export function StoryId({ id, dim }: { id: string; dim?: boolean }) {
       className="mono"
       style={{
         color: dim ? 'var(--fg-3)' : 'var(--fg-2)',
-        fontSize: 11,
+        fontSize: 13,
         letterSpacing: '-0.01em',
       }}
     >
@@ -85,7 +85,7 @@ export function Label({ name }: { name: string }) {
         gap: 4,
         height: 16,
         padding: '0 5px 0 4px',
-        fontSize: 10.5,
+        fontSize: 12.5,
         fontWeight: 500,
         border: '1px solid var(--border-1)',
         borderRadius: 2,

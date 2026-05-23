@@ -1,27 +1,31 @@
 import { useCallback } from 'react'
 import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { useProjects } from '../api/projects'
 import type { AppView } from '../lib/routes'
-import { LAST_PROJECT_KEY, projectPath, parseSearchParams } from '../lib/routes'
+import { LAST_PROJECT_KEY, projectPath, parseSearchParams, isAppView } from '../lib/routes'
 
 export function useProjectKey() {
   return useParams().projectKey?.toUpperCase()
 }
 
+/** Resolved project id for the current `/p/:projectKey` route, or null. */
+export function useActiveProjectId(): string | null {
+  const key = useProjectKey()
+  const { data: projects = [] } = useProjects()
+  if (!key) return null
+  return projects.find(p => p.key === key)?.id ?? null
+}
+
+/** Sprint id from the `?sprint=` query param, or null. */
+export function useActiveSprintId(): string | null {
+  const [searchParams] = useSearchParams()
+  return searchParams.get('sprint')
+}
+
 export function useAppView(): AppView {
   const { pathname } = useLocation()
   const match = pathname.match(/\/p\/[^/]+\/([^/?]+)/)
-  const segment = match?.[1]
-  if (
-    segment === 'board' ||
-    segment === 'backlog' ||
-    segment === 'planning' ||
-    segment === 'list' ||
-    segment === 'calendar' ||
-    segment === 'activity'
-  ) {
-    return segment
-  }
-  return 'board'
+  return isAppView(match?.[1]) ? match![1] : 'board'
 }
 
 export function useAppNavigate() {
@@ -34,12 +38,15 @@ export function useAppNavigate() {
   const goToProject = useCallback(
     (key: string, nextView: AppView = view, opts?: { sprint?: string | null; story?: string | null }) => {
       localStorage.setItem(LAST_PROJECT_KEY, key)
+      // Sprint and story belong to a specific project — drop them when crossing
+      // a project boundary so we don't render Minerva's sprint under Histomap.
+      const samePage = key.toUpperCase() === projectKey
       navigate(projectPath(key, nextView, {
-        sprint: opts?.sprint !== undefined ? opts.sprint : sprintId,
-        story: opts?.story !== undefined ? opts.story : storyId,
+        sprint: opts?.sprint !== undefined ? opts.sprint : (samePage ? sprintId : null),
+        story:  opts?.story  !== undefined ? opts.story  : (samePage ? storyId  : null),
       }))
     },
-    [navigate, view, sprintId, storyId],
+    [navigate, view, projectKey, sprintId, storyId],
   )
 
   const goToView = useCallback(

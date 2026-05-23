@@ -82,14 +82,14 @@ export function CrossProjectView({ stories, isLoading, emptyText, groupBy = 'pro
             background: 'var(--bg)', zIndex: 1,
           }}>
             <span style={{
-              fontSize: 11, fontWeight: 600,
+              fontSize: 13, fontWeight: 600,
               color: g.color ?? 'var(--fg)',
               textTransform: 'uppercase', letterSpacing: '0.06em',
             }}>
               {g.label}
             </span>
             <span style={{ flex: 1, height: 1, background: 'var(--border)' }} />
-            <span className="mono" style={{ fontSize: 10.5, color: 'var(--fg-3)' }}>{g.stories.length}</span>
+            <span className="mono" style={{ fontSize: 12.5, color: 'var(--fg-3)' }}>{g.stories.length}</span>
           </header>
           {g.stories.map(s => (
             <StoryRow key={s.id} story={s} onOpen={() => openStory(s.id)} />
@@ -140,7 +140,7 @@ function StoryRow({ story: s, onOpen }: { story: StoryDto; onOpen: () => void })
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
           <StoryId id={s.storyId} dim />
           <span style={{
-            fontSize: 13, color: 'var(--fg)',
+            fontSize: 15, color: 'var(--fg)',
             overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
           }}>
             {s.title}
@@ -149,13 +149,13 @@ function StoryRow({ story: s, onOpen }: { story: StoryDto; onOpen: () => void })
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 2 }}>
           <span style={{
             display: 'inline-flex', alignItems: 'center', gap: 4,
-            fontSize: 10.5, color: 'var(--fg-3)',
+            fontSize: 12.5, color: 'var(--fg-3)',
           }}>
             <span style={{ width: 7, height: 7, borderRadius: 2, background: s.epicColor, flexShrink: 0 }} />
             {s.epicTitle}
           </span>
           {s.sprintName && (
-            <span style={{ fontSize: 10.5, color: 'var(--fg-3)' }}>{s.sprintName}</span>
+            <span style={{ fontSize: 12.5, color: 'var(--fg-3)' }}>{s.sprintName}</span>
           )}
         </div>
       </div>
@@ -163,7 +163,7 @@ function StoryRow({ story: s, onOpen }: { story: StoryDto; onOpen: () => void })
       {/* Right side */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
         {s.dueDate && (
-          <span className="mono" style={{ fontSize: 11, color: dueDateColor }}>{fmtDate(s.dueDate)}</span>
+          <span className="mono" style={{ fontSize: 13, color: dueDateColor }}>{fmtDate(s.dueDate)}</span>
         )}
         <PriorityBars priority={s.priority} />
         <Pts n={s.points} />
@@ -187,7 +187,7 @@ function StoryRow({ story: s, onOpen }: { story: StoryDto; onOpen: () => void })
 
 function Centered({ children }: { children: React.ReactNode }) {
   return (
-    <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--fg-2)', fontSize: 13 }}>
+    <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--fg-2)', fontSize: 15 }}>
       {children}
     </div>
   )

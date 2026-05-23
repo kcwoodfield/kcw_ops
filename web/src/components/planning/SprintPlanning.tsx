@@ -1,11 +1,17 @@
-import { useState } from 'react'
-import { DndContext, DragOverlay, useDroppable, useDraggable, type DragEndEvent } from '@dnd-kit/core'
+import { useEffect, useRef, useState } from 'react'
+import {
+  DndContext, DragOverlay, useDroppable,
+  PointerSensor, useSensor, useSensors,
+  type DragEndEvent, type DragOverEvent, type DragStartEvent,
+} from '@dnd-kit/core'
+import {
+  SortableContext, arrayMove, useSortable, verticalListSortingStrategy,
+} from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { ChevronRight, Play, CheckCircle, Plus, Trash2 } from 'lucide-react'
 import { useBacklog, useDeleteSprint, useSprints, useUpdateStory, useUpdateSprint } from '../../api/stories'
 import { useEpics } from '../../api/epics'
-import { useUiStore } from '../../store/ui'
-import { useAppNavigate } from '../../hooks/useAppNavigate'
+import { useActiveProjectId, useActiveSprintId, useAppNavigate } from '../../hooks/useAppNavigate'
 import { useIsCompact } from '../../hooks/useMediaQuery'
 import { CreateSprintModal } from '../CreateSprintModal'
 import { ConfirmModal } from '../shared/ConfirmModal'
@@ -14,9 +20,13 @@ import type { StoryDto, SprintDto } from '../../types'
 
 const CAPACITY = 40
 
+type Container = 'backlog' | 'sprint'
+type Items = Record<Container, string[]>
+
 export function SprintPlanning() {
-  const { activeProjectId, activeSprintId, setActiveSprint } = useUiStore()
-  const { openStory } = useAppNavigate()
+  const activeProjectId = useActiveProjectId()
+  const activeSprintId = useActiveSprintId()
+  const { openStory, setSprint } = useAppNavigate()
   const projectId = activeProjectId ?? ''
 
   const { data: backlog = [] } = useBacklog(projectId)
@@ -24,31 +34,104 @@ export function SprintPlanning() {
   const { data: epics = [] } = useEpics(projectId)
   const updateStory = useUpdateStory()
   const updateSprint = useUpdateSprint()
-
   const compact = useIsCompact()
+
   const [epicFilter, setEpicFilter] = useState<string>('all')
   const [sprintModalOpen, setSprintModalOpen] = useState(false)
-  const [draggingStory, setDraggingStory] = useState<StoryDto | null>(null)
+  const [activeId, setActiveId] = useState<string | null>(null)
+  const [originContainer, setOriginContainer] = useState<Container | null>(null)
+  const [items, setItems] = useState<Items>({ backlog: [], sprint: [] })
+  const draggingRef = useRef(false)
 
   const activeSprint = allSprints.find(s => s.id === activeSprintId) ?? allSprints.find(s => s.state === 'active') ?? allSprints[0]
   const { data: sprintStoriesRaw = [] } = useSprintStories(projectId, activeSprint?.id)
 
-  const filteredBacklog = epicFilter === 'all'
-    ? backlog
-    : backlog.filter(s => s.epicId === epicFilter)
+  // Sync from server only when server data changes and we're not mid-drag.
+  // Intentionally excludes draggingRef from deps — it's a ref, changes don't
+  // trigger the effect. activeId was previously a dep, but setting it to null
+  // in handleDragEnd caused an immediate re-sync that reset optimistic state
+  // before the drop animation finished, making the card fly back to backlog.
+  useEffect(() => {
+    if (draggingRef.current) return
+    setItems({
+      backlog: backlog.map(s => s.id),
+      sprint: sprintStoriesRaw.map(s => s.id),
+    })
+  }, [backlog, sprintStoriesRaw])
 
-  const sprintPoints = sprintStoriesRaw.reduce((sum, s) => sum + s.points, 0)
+  const allStories = [...backlog, ...sprintStoriesRaw]
+  const storyMap = Object.fromEntries(allStories.map(s => [s.id, s])) as Record<string, StoryDto>
+
+  const filteredBacklogIds = epicFilter === 'all'
+    ? items.backlog
+    : items.backlog.filter(id => storyMap[id]?.epicId === epicFilter)
+
+  const sprintPoints = items.sprint.reduce((sum, id) => sum + (storyMap[id]?.points ?? 0), 0)
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+  )
+
+  const findContainer = (id: string): Container | null => {
+    if (id === 'backlog' || id === 'sprint') return id as Container
+    if (items.backlog.includes(id)) return 'backlog'
+    if (items.sprint.includes(id)) return 'sprint'
+    return null
+  }
+
+  const handleDragStart = (e: DragStartEvent) => {
+    const id = e.active.id as string
+    draggingRef.current = true
+    setActiveId(id)
+    setOriginContainer(findContainer(id))
+  }
+
+  const handleDragOver = (e: DragOverEvent) => {
+    const { active, over } = e
+    if (!over || active.id === over.id) return
+
+    const activeContainer = findContainer(active.id as string)
+    const overContainer = findContainer(over.id as string)
+    if (!activeContainer || !overContainer) return
+
+    setItems(prev => {
+      const activeList = [...prev[activeContainer]]
+      const fromIndex = activeList.indexOf(active.id as string)
+      if (fromIndex === -1) return prev
+
+      if (activeContainer === overContainer) {
+        const toIndex = activeList.indexOf(over.id as string)
+        if (toIndex === -1 || fromIndex === toIndex) return prev
+        return { ...prev, [activeContainer]: arrayMove(activeList, fromIndex, toIndex) }
+      }
+
+      // Cross-container: move item into destination list
+      const overList = [...prev[overContainer]]
+      const overIndex = overList.indexOf(over.id as string)
+      const insertAt = overIndex >= 0 ? overIndex : overList.length
+      activeList.splice(fromIndex, 1)
+      overList.splice(insertAt, 0, active.id as string)
+      return { ...prev, [activeContainer]: activeList, [overContainer]: overList }
+    })
+  }
 
   const handleDragEnd = (e: DragEndEvent) => {
-    setDraggingStory(null)
-    if (!e.over || !activeSprint) return
-    const storyId = e.active.id as string
-    const target = e.over.id as string
+    const { active } = e
+    const origin = originContainer
+    setActiveId(null)
+    setOriginContainer(null)
+    // Clear after drop animation so the useEffect can re-sync from server
+    setTimeout(() => { draggingRef.current = false }, 200)
 
-    if (target === 'sprint-drop' && backlog.find(s => s.id === storyId)) {
+    if (!origin) return
+    const currentContainer = findContainer(active.id as string)
+    if (!currentContainer || origin === currentContainer) return
+
+    // Cross-container: persist to server (same-container reorder is local-only)
+    const storyId = active.id as string
+    if (origin === 'backlog' && activeSprint) {
       updateStory.mutate({ id: storyId, sprintId: activeSprint.id, clearSprint: false })
-    }
-    if (target === 'backlog-drop' && sprintStoriesRaw.find(s => s.id === storyId)) {
+    } else if (origin === 'sprint') {
       updateStory.mutate({ id: storyId, clearSprint: true })
     }
   }
@@ -72,19 +155,22 @@ export function SprintPlanning() {
     updateSprint.mutate({ id: activeSprint.id, state: 'completed' })
   }
 
+  const draggingStory = activeId ? storyMap[activeId] : null
+
   return (
     <DndContext
-      onDragStart={e => {
-        const story = [...backlog, ...sprintStoriesRaw].find(s => s.id === e.active.id)
-        setDraggingStory(story ?? null)
-      }}
+      sensors={sensors}
+      onDragStart={handleDragStart}
+      onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
     >
       <div style={{ display: 'flex', height: '100%', overflow: compact ? 'auto' : 'hidden', flexDirection: compact ? 'column' : 'row' }}>
 
         {/* ── LEFT: Backlog ── */}
         <BacklogPanel
-          stories={filteredBacklog}
+          itemIds={filteredBacklogIds}
+          allIds={items.backlog}
+          storyMap={storyMap}
           epics={epics}
           epicFilter={epicFilter}
           onEpicFilter={setEpicFilter}
@@ -96,11 +182,12 @@ export function SprintPlanning() {
 
         {/* ── RIGHT: Sprint ── */}
         <SprintPanel
+          itemIds={items.sprint}
+          storyMap={storyMap}
           sprint={activeSprint}
           allSprints={allSprints}
-          stories={sprintStoriesRaw}
           sprintPoints={sprintPoints}
-          onSelectSprint={s => setActiveSprint(s.id)}
+          onSelectSprint={s => setSprint(s.id)}
           onMoveToBacklog={moveToBacklog}
           onStartSprint={startSprint}
           onCompleteSprint={completeSprint}
@@ -109,8 +196,8 @@ export function SprintPlanning() {
         />
       </div>
 
-      <DragOverlay>
-        {draggingStory && <DragCard story={draggingStory} />}
+      <DragOverlay dropAnimation={{ duration: 160, easing: 'cubic-bezier(0.18, 0.67, 0.6, 1)' }}>
+        {draggingStory ? <DragCard story={draggingStory} /> : null}
       </DragOverlay>
 
       {projectId && (
@@ -123,9 +210,11 @@ export function SprintPlanning() {
 // ── Sub-components ────────────────────────────────────────────
 
 function BacklogPanel({
-  stories, epics, epicFilter, onEpicFilter, onMoveToSprint, hasSprint, compact, onStoryClick,
+  itemIds, allIds, storyMap, epics, epicFilter, onEpicFilter, onMoveToSprint, hasSprint, compact, onStoryClick,
 }: {
-  stories: StoryDto[]
+  itemIds: string[]
+  allIds: string[]
+  storyMap: Record<string, StoryDto>
   epics: { id: string; title: string; color: string }[]
   epicFilter: string
   onEpicFilter: (id: string) => void
@@ -134,7 +223,7 @@ function BacklogPanel({
   compact: boolean
   onStoryClick: (id: string) => void
 }) {
-  const { setNodeRef, isOver } = useDroppable({ id: 'backlog-drop' })
+  const { setNodeRef, isOver } = useDroppable({ id: 'backlog' })
 
   return (
     <div
@@ -150,51 +239,49 @@ function BacklogPanel({
       }}
     >
       <PanelHeader>
-        <span style={{ fontWeight: 600, fontSize: 13, color: 'var(--fg)' }}>
-          Backlog
-        </span>
-        <span className="mono" style={{ fontSize: 11, color: 'var(--fg-3)', marginLeft: 6 }}>
-          {stories.length} stories
+        <span style={{ fontWeight: 600, fontSize: 15, color: 'var(--fg)' }}>Backlog</span>
+        <span className="mono" style={{ fontSize: 13, color: 'var(--fg-3)', marginLeft: 6 }}>
+          {allIds.length} stories
         </span>
         <div style={{ flex: 1 }} />
-        <select
-          value={epicFilter}
-          onChange={e => onEpicFilter(e.target.value)}
-          style={filterSelectStyle}
-        >
+        <select value={epicFilter} onChange={e => onEpicFilter(e.target.value)} style={filterSelectStyle}>
           <option value="all">All epics</option>
-          {epics.map(ep => (
-            <option key={ep.id} value={ep.id}>{ep.title}</option>
-          ))}
+          {epics.map(ep => <option key={ep.id} value={ep.id}>{ep.title}</option>)}
         </select>
       </PanelHeader>
 
       <div style={{ flex: 1, overflowY: 'auto', padding: '4px 0' }}>
-        {stories.length === 0 ? (
-          <Empty>Backlog is clear 🎉</Empty>
-        ) : (
-          stories.map(s => (
-            <PlanningRow
-              key={s.id}
-              story={s}
-              action={hasSprint ? { icon: <ChevronRight size={13} />, label: 'Add to sprint', onClick: () => onMoveToSprint(s) } : undefined}
-              onClick={() => onStoryClick(s.id)}
-              draggable
-            />
-          ))
-        )}
+        <SortableContext items={itemIds} strategy={verticalListSortingStrategy}>
+          {itemIds.length === 0 ? (
+            <Empty>Backlog is clear 🎉</Empty>
+          ) : (
+            itemIds.map(id => {
+              const s = storyMap[id]
+              if (!s) return null
+              return (
+                <PlanningRow
+                  key={id}
+                  story={s}
+                  action={hasSprint ? { icon: <ChevronRight size={13} />, label: 'Add to sprint', onClick: () => onMoveToSprint(s) } : undefined}
+                  onClick={() => onStoryClick(s.id)}
+                />
+              )
+            })
+          )}
+        </SortableContext>
       </div>
     </div>
   )
 }
 
 function SprintPanel({
-  sprint, allSprints, stories, sprintPoints,
+  itemIds, storyMap, sprint, allSprints, sprintPoints,
   onSelectSprint, onMoveToBacklog, onStartSprint, onCompleteSprint, onNewSprint, onStoryClick,
 }: {
+  itemIds: string[]
+  storyMap: Record<string, StoryDto>
   sprint: SprintDto | undefined
   allSprints: SprintDto[]
-  stories: StoryDto[]
   sprintPoints: number
   onSelectSprint: (s: SprintDto) => void
   onMoveToBacklog: (s: StoryDto) => void
@@ -203,7 +290,7 @@ function SprintPanel({
   onNewSprint: () => void
   onStoryClick: (id: string) => void
 }) {
-  const { setNodeRef, isOver } = useDroppable({ id: 'sprint-drop' })
+  const { setNodeRef, isOver } = useDroppable({ id: 'sprint' })
   const deleteSprint = useDeleteSprint()
   const [confirmDelete, setConfirmDelete] = useState(false)
   const pct = Math.min(100, Math.round((sprintPoints / CAPACITY) * 100))
@@ -228,14 +315,12 @@ function SprintPanel({
               const s = allSprints.find(sp => sp.id === e.target.value)
               if (s) onSelectSprint(s)
             }}
-            style={{ ...filterSelectStyle, fontWeight: 600, color: 'var(--fg)', fontSize: 13 }}
+            style={{ ...filterSelectStyle, fontWeight: 600, color: 'var(--fg)', fontSize: 15 }}
           >
-            {allSprints.map(sp => (
-              <option key={sp.id} value={sp.id}>{sp.name}</option>
-            ))}
+            {allSprints.map(sp => <option key={sp.id} value={sp.id}>{sp.name}</option>)}
           </select>
         ) : (
-          <span style={{ fontSize: 13, color: 'var(--fg-3)' }}>No sprints yet</span>
+          <span style={{ fontSize: 15, color: 'var(--fg-3)' }}>No sprints yet</span>
         )}
 
         <button type="button" onClick={onNewSprint} style={iconBtnStyle} title="New sprint">
@@ -249,65 +334,65 @@ function SprintPanel({
 
         <div style={{ flex: 1 }} />
 
-        {sprint && (
-          <>
-            {sprint.state === 'planned' && (
-              <ActionBtn icon={<Play size={12} />} label="Start sprint" onClick={onStartSprint} variant="accent" />
-            )}
-            {sprint.state === 'active' && (
-              <ActionBtn icon={<CheckCircle size={12} />} label="Complete sprint" onClick={onCompleteSprint} variant="secondary" />
-            )}
-          </>
+        {sprint?.state === 'planned' && (
+          <ActionBtn icon={<Play size={12} />} label="Start sprint" onClick={onStartSprint} variant="accent" />
+        )}
+        {sprint?.state === 'active' && (
+          <ActionBtn icon={<CheckCircle size={12} />} label="Complete sprint" onClick={onCompleteSprint} variant="secondary" />
         )}
       </PanelHeader>
 
       {sprint && (
         <div style={{ padding: '0 14px 10px', borderBottom: '1px solid var(--border)' }}>
           {sprint.goal && (
-            <div style={{ fontSize: 12, color: 'var(--fg-2)', marginBottom: 8, fontStyle: 'italic' }}>
+            <div style={{ fontSize: 14, color: 'var(--fg-2)', marginBottom: 8, fontStyle: 'italic' }}>
               "{sprint.goal}"
             </div>
           )}
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{ flex: 1, height: 5, borderRadius: 3, background: 'var(--bg-3)', overflow: 'hidden' }}>
               <div style={{
-                height: '100%',
-                width: `${pct}%`,
-                borderRadius: 3,
+                height: '100%', width: `${pct}%`, borderRadius: 3,
                 background: over ? 'var(--blocked)' : 'var(--accent)',
                 transition: 'width 0.2s ease',
               }} />
             </div>
-            <span className="mono" style={{ fontSize: 11, color: over ? 'var(--blocked)' : 'var(--fg-2)', flexShrink: 0 }}>
+            <span className="mono" style={{ fontSize: 13, color: over ? 'var(--blocked)' : 'var(--fg-2)', flexShrink: 0 }}>
               {sprintPoints} / {CAPACITY} pts
             </span>
           </div>
           <div style={{ display: 'flex', gap: 10, marginTop: 6 }}>
             <SprintMeta label="State" value={sprint.state} />
-            <SprintMeta label="Start" value={sprint.startDate} />
-            <SprintMeta label="End" value={sprint.endDate} />
-            <SprintMeta label="Stories" value={String(stories.length)} />
+            <SprintMeta label="Start" value={sprint.startDate} isDate />
+            <SprintMeta label="End" value={sprint.endDate} isDate />
+            <SprintMeta label="Stories" value={String(itemIds.length)} />
           </div>
         </div>
       )}
 
       <div style={{ flex: 1, overflowY: 'auto', padding: '4px 0' }}>
-        {!sprint ? (
-          <Empty>Create a sprint to start planning.</Empty>
-        ) : stories.length === 0 ? (
-          <Empty>Drag stories here from the backlog.</Empty>
-        ) : (
-          stories.map(s => (
-            <PlanningRow
-              key={s.id}
-              story={s}
-              action={{ icon: <ChevronRight size={13} style={{ transform: 'rotate(180deg)' }} />, label: 'Move to backlog', onClick: () => onMoveToBacklog(s) }}
-              onClick={() => onStoryClick(s.id)}
-              draggable
-            />
-          ))
-        )}
+        <SortableContext items={itemIds} strategy={verticalListSortingStrategy}>
+          {!sprint ? (
+            <Empty>Create a sprint to start planning.</Empty>
+          ) : itemIds.length === 0 ? (
+            <Empty>Drag stories here from the backlog.</Empty>
+          ) : (
+            itemIds.map(id => {
+              const s = storyMap[id]
+              if (!s) return null
+              return (
+                <PlanningRow
+                  key={id}
+                  story={s}
+                  action={{ icon: <ChevronRight size={13} style={{ transform: 'rotate(180deg)' }} />, label: 'Move to backlog', onClick: () => onMoveToBacklog(s) }}
+                  onClick={() => onStoryClick(s.id)}
+                />
+              )
+            })
+          )}
+        </SortableContext>
       </div>
+
       {sprint && (
         <ConfirmModal
           open={confirmDelete}
@@ -321,31 +406,32 @@ function SprintPanel({
   )
 }
 
-function PlanningRow({ story, action, onClick, draggable }: {
+function PlanningRow({ story, action, onClick }: {
   story: StoryDto
   action?: { icon: React.ReactNode; label: string; onClick: () => void }
   onClick: () => void
-  draggable?: boolean
 }) {
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: story.id,
-    disabled: !draggable,
   })
 
   return (
     <div
-      ref={draggable ? setNodeRef : undefined}
-      {...(draggable ? { ...attributes, ...listeners } : {})}
+      ref={setNodeRef}
+      {...attributes}
+      {...listeners}
       style={{
         display: 'flex',
         alignItems: 'center',
         gap: 8,
         padding: '6px 14px',
         borderBottom: '1px solid var(--border)',
-        opacity: isDragging ? 0.3 : 1,
-        cursor: draggable ? 'grab' : 'default',
+        opacity: isDragging ? 0.35 : 1,
+        cursor: isDragging ? 'grabbing' : 'grab',
         background: 'var(--bg)',
-        transform: transform ? CSS.Translate.toString(transform) : undefined,
+        transform: CSS.Transform.toString(transform),
+        transition,
+        position: 'relative',
       }}
     >
       <StatusDot status={story.status} size={8} />
@@ -355,7 +441,7 @@ function PlanningRow({ story, action, onClick, draggable }: {
         onClick={e => { e.stopPropagation(); onClick() }}
         style={{
           flex: 1,
-          fontSize: 12.5,
+          fontSize: 14.5,
           color: 'var(--fg-1)',
           overflow: 'hidden',
           textOverflow: 'ellipsis',
@@ -377,13 +463,7 @@ function PlanningRow({ story, action, onClick, draggable }: {
           type="button"
           title={action.label}
           onClick={e => { e.stopPropagation(); action.onClick() }}
-          style={{
-            display: 'flex',
-            color: 'var(--fg-3)',
-            padding: 3,
-            borderRadius: 3,
-            flexShrink: 0,
-          }}
+          style={{ display: 'flex', color: 'var(--fg-3)', padding: 3, borderRadius: 3, flexShrink: 0 }}
           onMouseOver={e => (e.currentTarget.style.color = 'var(--accent)')}
           onMouseOut={e => (e.currentTarget.style.color = 'var(--fg-3)')}
         >
@@ -403,7 +483,7 @@ function DragCard({ story }: { story: StoryDto }) {
       border: '1px solid var(--border-1)',
       borderRadius: 5,
       boxShadow: 'var(--shadow-2)',
-      fontSize: 12.5, color: 'var(--fg-1)',
+      fontSize: 14.5, color: 'var(--fg-1)',
       maxWidth: 400, cursor: 'grabbing',
     }}>
       <StatusDot status={story.status} size={8} />
@@ -431,11 +511,16 @@ function PanelHeader({ children }: { children: React.ReactNode }) {
   )
 }
 
-function SprintMeta({ label, value }: { label: string; value: string }) {
+function fmtDate(s: string) {
+  const [y, m, d] = s.split('-').map(Number)
+  return new Date(y, m - 1, d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+}
+
+function SprintMeta({ label, value, isDate }: { label: string; value: string; isDate?: boolean }) {
   return (
-    <span style={{ fontSize: 10.5, color: 'var(--fg-3)' }}>
+    <span style={{ fontSize: 12.5, color: 'var(--fg-3)' }}>
       <span style={{ fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{label}</span>
-      {' '}<span className="mono" style={{ color: 'var(--fg-2)' }}>{value}</span>
+      {' '}<span className="mono" style={{ color: 'var(--fg-2)' }}>{isDate ? fmtDate(value) : value}</span>
     </span>
   )
 }
@@ -450,7 +535,7 @@ function ActionBtn({ icon, label, onClick, variant }: {
       style={{
         display: 'inline-flex', alignItems: 'center', gap: 5,
         height: 26, padding: '0 10px', borderRadius: 4,
-        fontSize: 12, fontWeight: 600,
+        fontSize: 14, fontWeight: 600,
         background: variant === 'accent' ? 'var(--accent)' : 'var(--bg-2)',
         color: variant === 'accent' ? 'var(--accent-ink)' : 'var(--fg-1)',
         border: variant === 'accent' ? 'none' : '1px solid var(--border-1)',
@@ -463,14 +548,14 @@ function ActionBtn({ icon, label, onClick, variant }: {
 
 function Empty({ children }: { children: React.ReactNode }) {
   return (
-    <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--fg-3)', fontSize: 12.5 }}>
+    <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--fg-3)', fontSize: 14.5 }}>
       {children}
     </div>
   )
 }
 
 const filterSelectStyle: React.CSSProperties = {
-  fontSize: 12, padding: '4px 8px',
+  fontSize: 14, padding: '4px 8px',
   background: 'var(--bg-1)', border: '1px solid var(--border)',
   borderRadius: 4, color: 'var(--fg-2)',
 }

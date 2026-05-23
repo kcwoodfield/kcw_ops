@@ -130,7 +130,7 @@ html, body, #root {
 
 body {
   font-family: var(--font-sans);
-  font-size: 13px;
+  font-size: 15px;
   line-height: 1.4;
   letter-spacing: -0.005em;
   color: var(--fg);
@@ -154,7 +154,7 @@ input, textarea, select { font: inherit; color: inherit; }
 
 .kbd {
   font-family: var(--font-mono);
-  font-size: 10.5px;
+  font-size: 12.5px;
   line-height: 1;
   padding: 2px 5px;
   border-radius: var(--r-xs);
@@ -165,7 +165,7 @@ input, textarea, select { font: inherit; color: inherit; }
 
 .pts {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 500;
   min-width: 22px;
   height: 18px;
@@ -187,7 +187,7 @@ input, textarea, select { font: inherit; color: inherit; }
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 9.5px;
+  font-size: 11.5px;
   font-weight: 600;
   border: 1px solid var(--border-1);
   text-transform: uppercase;
@@ -224,7 +224,7 @@ input, textarea, select { font: inherit; color: inherit; }
   position: absolute;
   inset: 0;
   color: #0a0a0d;
-  font-size: 7px;
+  font-size: 9px;
   font-weight: 900;
   display: flex;
   align-items: center;

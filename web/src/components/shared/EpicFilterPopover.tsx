@@ -42,7 +42,7 @@ export function EpicFilterPopover({ projectId, value, onChange }: Props) {
             background: value ? 'var(--bg-2)' : 'transparent',
             boxShadow: open || value ? '0 0 0 1px var(--border-1)' : 'none',
             color: value ? 'var(--fg)' : 'var(--fg-2)',
-            fontSize: 12, fontWeight: value ? 500 : 400,
+            fontSize: 14, fontWeight: value ? 500 : 400,
           }}
         >
           {activeEpic && (
@@ -50,7 +50,7 @@ export function EpicFilterPopover({ projectId, value, onChange }: Props) {
           )}
           <span style={{ color: 'var(--fg-3)', fontWeight: 400 }}>Epic</span>
           <span style={{ color: 'var(--fg-2)' }}>{label}</span>
-          <span className="mono" style={{ fontSize: 10.5, color: 'var(--fg-3)' }}>{epics.length}</span>
+          <span className="mono" style={{ fontSize: 12.5, color: 'var(--fg-3)' }}>{epics.length}</span>
         </button>
 
         {open && (
@@ -123,14 +123,14 @@ function EpicRow({ label, color, selected, onSelect, onEdit, onDelete }: {
         onClick={onSelect}
         style={{
           flex: 1, display: 'flex', alignItems: 'center', gap: 8,
-          padding: '7px 14px', fontSize: 12.5, textAlign: 'left',
+          padding: '7px 14px', fontSize: 14.5, textAlign: 'left',
           color: selected ? 'var(--fg)' : 'var(--fg-1)',
           fontWeight: selected ? 500 : 400,
         }}
       >
         {color && <span style={{ width: 8, height: 8, borderRadius: 2, background: color, flexShrink: 0 }} />}
         <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{label}</span>
-        {selected && <span style={{ color: 'var(--accent)', fontSize: 11 }}>✓</span>}
+        {selected && <span style={{ color: 'var(--accent)', fontSize: 13 }}>✓</span>}
       </button>
       {hovered && onEdit && (
         <>

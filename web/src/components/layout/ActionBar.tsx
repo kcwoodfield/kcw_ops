@@ -1,8 +1,7 @@
-import { CalendarDays, LayoutDashboard, List } from 'lucide-react'
+import { LayoutDashboard, List, Layers } from 'lucide-react'
 import { useSprints } from '../../api/stories'
-import { useAppNavigate } from '../../hooks/useAppNavigate'
+import { useActiveProjectId, useAppNavigate } from '../../hooks/useAppNavigate'
 import { useIsCompact } from '../../hooks/useMediaQuery'
-import { useUiStore } from '../../store/ui'
 import type { AppView } from '../../lib/routes'
 
 interface ActionBarProps {
@@ -10,14 +9,14 @@ interface ActionBarProps {
 }
 
 const VIEWS: { id: AppView; icon: React.ReactNode; label: string }[] = [
-  { id: 'board',    icon: <LayoutDashboard size={12} />, label: 'Board' },
   { id: 'list',     icon: <List size={12} />,            label: 'List' },
-  { id: 'calendar', icon: <CalendarDays size={12} />,    label: 'Calendar' },
+  { id: 'board',    icon: <LayoutDashboard size={12} />, label: 'Board' },
+  { id: 'backlog',  icon: <Layers size={12} />,          label: 'Backlog' },
 ]
 
 export function ActionBar({ breadcrumb }: ActionBarProps) {
   const { view, sprintId, goToView, setSprint } = useAppNavigate()
-  const { activeProjectId } = useUiStore()
+  const activeProjectId = useActiveProjectId()
   const { data: sprints = [] } = useSprints(activeProjectId ?? '')
   const activeSprint = sprints.find(s => s.id === sprintId) ?? sprints.find(s => s.state === 'active')
   const compact = useIsCompact()
@@ -36,7 +35,7 @@ export function ActionBar({ breadcrumb }: ActionBarProps) {
         {breadcrumb.map((crumb, i) => (
           <span key={i} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <span style={{
-              fontSize: 12.5,
+              fontSize: 14.5,
               color: i === breadcrumb.length - 1 ? 'var(--fg)' : 'var(--fg-2)',
               fontWeight: i === breadcrumb.length - 1 ? 500 : 400,
             }}>
@@ -60,7 +59,7 @@ export function ActionBar({ breadcrumb }: ActionBarProps) {
           style={{
             padding: '3px 8px 3px 6px',
             background: 'var(--accent-bg)', border: '1px solid var(--accent-line)',
-            borderRadius: 4, fontSize: 11.5, fontWeight: 500,
+            borderRadius: 4, fontSize: 13.5, fontWeight: 500,
             color: 'var(--accent-fg)', flexShrink: 0, maxWidth: 200,
           }}
         >
@@ -86,7 +85,7 @@ function ViewSwitcher({ view, onChange, compact }: { view: AppView; onChange: (v
         style={{
           padding: '3px 8px', flexShrink: 0,
           background: 'var(--bg-1)', border: '1px solid var(--border)',
-          borderRadius: 4, fontSize: 12, fontWeight: 500, color: 'var(--fg)',
+          borderRadius: 4, fontSize: 14, fontWeight: 500, color: 'var(--fg)',
         }}
       >
         {VIEWS.map(v => <option key={v.id} value={v.id}>{v.label}</option>)}
@@ -108,7 +107,7 @@ function ViewSwitcher({ view, onChange, compact }: { view: AppView; onChange: (v
           style={{
             display: 'inline-flex', alignItems: 'center', gap: 5,
             height: 22, padding: '0 10px',
-            fontSize: 12, fontWeight: 500,
+            fontSize: 14, fontWeight: 500,
             borderRadius: 'var(--r-xs)',
             color: view === v.id ? 'var(--fg)' : 'var(--fg-2)',
             background: view === v.id ? 'var(--bg-3)' : 'transparent',
@@ -126,7 +125,7 @@ function DaysLeft({ endDate }: { endDate: string }) {
   const days = Math.ceil((new Date(endDate).getTime() - Date.now()) / 86400000)
   if (days < 0) return null
   return (
-    <span style={{ color: 'var(--fg-3)', fontSize: 10.5, flexShrink: 0 }}>
+    <span style={{ color: 'var(--fg-3)', fontSize: 12.5, flexShrink: 0 }}>
       · {days}d left
     </span>
   )

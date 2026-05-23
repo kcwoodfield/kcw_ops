@@ -2,12 +2,13 @@ import { useEffect, useRef, useState } from 'react'
 import { Command } from 'cmdk'
 import * as Dialog from '@radix-ui/react-dialog'
 import {
-  LayoutDashboard, List, CalendarDays, Inbox,
+  LayoutDashboard, List, Inbox,
   Zap, ArrowRight, Search, Plus,
 } from 'lucide-react'
 import { useProjects } from '../api/projects'
 import { useStories, useCreateStory } from '../api/stories'
 import { useEpics } from '../api/epics'
+import { useActiveProjectId, useActiveSprintId } from '../hooks/useAppNavigate'
 import { useUiStore } from '../store/ui'
 import { useAppNavigate } from '../hooks/useAppNavigate'
 import type { AppView } from '../lib/routes'
@@ -18,7 +19,6 @@ const VIEWS: { id: AppView; label: string; icon: React.ReactNode }[] = [
   { id: 'backlog',  label: 'Backlog',         icon: <Inbox size={13} /> },
   { id: 'planning', label: 'Sprint planning', icon: <Zap size={13} /> },
   { id: 'list',     label: 'List view',       icon: <List size={13} /> },
-  { id: 'calendar', label: 'Calendar',        icon: <CalendarDays size={13} /> },
 ]
 
 // Always show the create item regardless of search text
@@ -35,7 +35,9 @@ const isEditable = (el: Element | null) => {
 }
 
 export function CommandPalette() {
-  const { activeProjectId, activeSprintId, cmdPaletteOpen, setCmdPaletteOpen } = useUiStore()
+  const activeProjectId = useActiveProjectId()
+  const activeSprintId = useActiveSprintId()
+  const { cmdPaletteOpen, setCmdPaletteOpen } = useUiStore()
   const { data: projects = [] } = useProjects()
   const { data: stories = [] } = useStories(activeProjectId ?? '', activeSprintId ?? undefined)
   const { data: epics = [] } = useEpics(activeProjectId ?? '')
@@ -137,7 +139,7 @@ export function CommandPalette() {
                 onValueChange={setQuery}
                 placeholder="Search issues, go to view, create…"
                 style={{
-                  flex: 1, fontSize: 14,
+                  flex: 1, fontSize: 16,
                   color: 'var(--fg)', background: 'transparent',
                   border: 'none', outline: 'none',
                   fontFamily: 'inherit',
@@ -149,7 +151,7 @@ export function CommandPalette() {
             <Command.List style={{ overflowY: 'auto', padding: '6px 6px 8px' }}>
               <Command.Empty style={{
                 padding: '20px', textAlign: 'center',
-                color: 'var(--fg-3)', fontSize: 12.5,
+                color: 'var(--fg-3)', fontSize: 14.5,
               }}>
                 No results
               </Command.Empty>
@@ -204,7 +206,7 @@ export function CommandPalette() {
                     >
                       <span style={{ width: 8, height: 8, borderRadius: 2, background: p.color, flexShrink: 0 }} />
                       <span style={{ flex: 1, color: 'var(--fg-1)' }}>{p.name}</span>
-                      <span className="mono" style={{ fontSize: 10.5, color: 'var(--fg-3)' }}>{p.key}</span>
+                      <span className="mono" style={{ fontSize: 12.5, color: 'var(--fg-3)' }}>{p.key}</span>
                     </Command.Item>
                   ))}
                 </Command.Group>
@@ -246,14 +248,14 @@ export function CommandPalette() {
 const item: React.CSSProperties = {
   display: 'flex', alignItems: 'center', gap: 8,
   padding: '6px 8px', borderRadius: 5,
-  fontSize: 13, minHeight: 32,
+  fontSize: 15, minHeight: 32,
 }
 
 function GH({ children }: { children: React.ReactNode }) {
   return (
     <div style={{
       padding: '6px 8px 3px',
-      fontSize: 10.5, fontWeight: 600,
+      fontSize: 12.5, fontWeight: 600,
       color: 'var(--fg-3)',
       textTransform: 'uppercase', letterSpacing: '0.06em',
     }}>
@@ -269,7 +271,7 @@ function Kbd({ children, style }: { children: React.ReactNode; style?: React.CSS
       padding: '2px 5px', borderRadius: 3,
       border: '1px solid var(--border-2)',
       background: 'var(--bg-2)',
-      fontSize: 10.5, color: 'var(--fg-3)',
+      fontSize: 12.5, color: 'var(--fg-3)',
       fontFamily: 'var(--font-mono)',
       ...style,
     }}>

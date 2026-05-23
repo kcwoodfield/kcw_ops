@@ -1,7 +1,11 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using FluentValidation;
+using KcwOps.Api.Features.Ai;
+using KcwOps.Api.Features.Ai.Chat;
 using KcwOps.Api.Features.Auth;
+using KcwOps.Api.Infrastructure;
+using KcwOps.Api.Infrastructure.Behaviors;
 using KcwOps.Api.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.RateLimiting;
@@ -59,20 +63,34 @@ builder.Services.AddCors(opts =>
         .AllowAnyMethod()
         .AllowCredentials()));
 
+// ── Lobo AI ───────────────────────────────────────────────────────────────────
+builder.Services.Configure<AiSettings>(builder.Configuration.GetSection("Lobo"));
+builder.Services.AddHttpClient();
+builder.Services.AddScoped<ToolExecutor>();
+builder.Services.AddScoped<IChatService, ClaudeChatService>();
+
 // ── App services ──────────────────────────────────────────────────────────────
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
+
+builder.Services.AddExceptionHandler<ValidationExceptionHandler>();
+builder.Services.AddProblemDetails();
 
 builder.Services.AddDbContext<AppDbContext>(opts =>
     opts.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
 
 builder.Services.AddMediatR(cfg =>
-    cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
+{
+    cfg.RegisterServicesFromAssembly(typeof(Program).Assembly);
+    cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
+});
 
 builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
 
 // ── Pipeline ──────────────────────────────────────────────────────────────────
 var app = builder.Build();
+
+app.UseExceptionHandler();
 
 if (app.Environment.IsDevelopment())
     app.MapOpenApi();

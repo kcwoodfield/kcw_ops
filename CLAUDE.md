@@ -8,10 +8,11 @@ Personal project-management tool. Think Linear × Jira, built for a PM/engineer 
 
 ### Backend — .NET / C#
 - **MediatR** for CQRS dispatch
-- **Vertical slice architecture** — features are self-contained folders, not horizontal layers
-  - Each slice owns its Command or Query, Handler, validator, and endpoint
-  - `Features/Stories/CreateStory/` not `Controllers/ + Services/ + Repositories/`
+- **Vertical slice architecture** — each slice under `api/Features/{Entity}/{UseCase}/` owns its Command or Query, Handler, and Validator (one folder per use case, not horizontal `Services/ + Repositories/` layers)
+- **HTTP layer:** thin entity-level controllers in `api/Controllers/` dispatch to MediatR. They hold no business logic — routing only. `AuthController` lives inside its slice (`Features/Auth/`) because it co-orchestrates Login → Verify with cookie/temp-token state that's HTTP-shaped, not entity-shaped.
 - **CQRS** — Commands mutate; Queries read; never mix in a single handler
+- **Validation** — FluentValidation validators in each slice run via a MediatR `ValidationBehavior` pipeline; `ValidationException` → 400 ProblemDetails
+- **AI writes** — `ToolExecutor` sends MediatR commands so REST and AI paths share one implementation
 
 ### Database
 - **PostgreSQL** in a local Docker container named `kcw_ops`
@@ -42,20 +43,26 @@ Project → Epic → Sprint → Story
 ## Project structure
 
 ```
-ops/
+kcw_ops/
 ├── api/              .NET backend
-│   ├── Controllers/
+│   ├── Controllers/  thin per-entity HTTP dispatchers → MediatR
 │   ├── Domain/
-│   ├── Features/     vertical slices — one folder per use case
-│   └── Infrastructure/Persistence/
+│   ├── Features/     vertical slices — one folder per use case (+ Auth's controller co-located)
+│   └── Infrastructure/
+│       ├── Behaviors/      MediatR pipeline behaviors (ValidationBehavior)
+│       ├── Persistence/    AppDbContext + EF migrations + DataSeeder
+│       └── ValidationExceptionHandler.cs
 ├── web/              React frontend
 │   └── src/
 │       ├── api/      TanStack Query hooks (client.ts + per-domain files)
 │       ├── components/layout/   AppShell, Sidebar, TopBar
-│       ├── store/    Zustand (ui.ts — activeProject, view, sprint)
+│       ├── store/    Zustand (ui.ts — ephemeral UI; URL mirror for project/sprint)
 │       └── types/    shared TS interfaces mirroring API DTOs
 └── docs/
+    ├── AUDIT.md       findings from the 2026-05-22 cleanup pass
+    ├── AUTH_PLAN.md   JWT + TOTP design
     ├── BUILD_PLAN.md  phased roadmap (what to build next)
+    ├── LOBO_PRD.md    AI assistant design
     └── design/        HTML prototype (open with python3 -m http.server)
 ```
 
@@ -86,10 +93,12 @@ Design surfaces:
 | 02 | Sprint planning | `SprintPlanning` |
 | 03 | Backlog table | `Backlog` |
 | 04 | List (grouped by Epic) | `ListView` |
-| 05 | Calendar / Gantt | `CalendarView` |
-| 06 | Story detail drawer | `StoryDetail` |
+| —  | Roadmap (epic timeline) | `RoadmapView` |
+| 06 | Story detail drawer | `StoryDrawer` |
 | 07 | Activity log | `ActivityLog` |
 | 08 | Sign in | `LoginPage` |
+
+Surface 05 (Calendar / Gantt) was removed as redundant with Roadmap — see `docs/AUDIT.md`.
 
 ---
 

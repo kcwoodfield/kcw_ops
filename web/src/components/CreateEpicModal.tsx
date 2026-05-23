@@ -62,7 +62,7 @@ export function CreateEpicModal({ projectId, open, onClose, epic }: Props) {
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', marginBottom: 16 }}>
-            <Dialog.Title style={{ fontSize: 14, fontWeight: 600, color: 'var(--fg)', flex: 1 }}>
+            <Dialog.Title style={{ fontSize: 16, fontWeight: 600, color: 'var(--fg)', flex: 1 }}>
               {isEditing ? 'Edit epic' : 'New epic'}
             </Dialog.Title>
             <button type="button" onClick={onClose} style={{ color: 'var(--fg-3)', display: 'flex' }}>
@@ -77,14 +77,14 @@ export function CreateEpicModal({ projectId, open, onClose, epic }: Props) {
             onKeyDown={e => e.key === 'Enter' && submit()}
             placeholder="Epic title…"
             style={{
-              width: '100%', fontSize: 13, padding: '8px 10px',
+              width: '100%', fontSize: 15, padding: '8px 10px',
               background: 'var(--bg-1)', border: '1px solid var(--border)',
               borderRadius: 5, color: 'var(--fg)', marginBottom: 14,
             }}
           />
 
           <div style={{ marginBottom: 16 }}>
-            <div style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--fg-3)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>
+            <div style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--fg-3)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>
               Color
             </div>
             <div style={{ display: 'flex', gap: 6 }}>
@@ -97,7 +97,7 @@ export function CreateEpicModal({ projectId, open, onClose, epic }: Props) {
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
-            <button type="button" onClick={onClose} style={{ fontSize: 12.5, padding: '6px 12px', borderRadius: 4, color: 'var(--fg-2)', border: '1px solid var(--border-1)' }}>
+            <button type="button" onClick={onClose} style={{ fontSize: 14.5, padding: '6px 12px', borderRadius: 4, color: 'var(--fg-2)', border: '1px solid var(--border-1)' }}>
               Cancel
             </button>
             <button
@@ -105,7 +105,7 @@ export function CreateEpicModal({ projectId, open, onClose, epic }: Props) {
               onClick={submit}
               disabled={!title.trim() || isPending}
               style={{
-                fontSize: 12.5, padding: '6px 14px', borderRadius: 4,
+                fontSize: 14.5, padding: '6px 14px', borderRadius: 4,
                 background: 'var(--accent)', color: 'var(--accent-ink)', fontWeight: 600,
                 opacity: !title.trim() ? 0.5 : 1,
               }}

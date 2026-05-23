@@ -24,17 +24,17 @@ export function ConfirmModal({ open, title, message, confirmLabel = 'Delete', on
             borderRadius: 8, boxShadow: 'var(--shadow-pop)', padding: 20,
           }}
         >
-          <Dialog.Title style={{ fontSize: 14, fontWeight: 600, color: 'var(--fg)', marginBottom: 8 }}>
+          <Dialog.Title style={{ fontSize: 16, fontWeight: 600, color: 'var(--fg)', marginBottom: 8 }}>
             {title}
           </Dialog.Title>
-          <p style={{ fontSize: 13, color: 'var(--fg-2)', lineHeight: 1.5, marginBottom: 20 }}>
+          <p style={{ fontSize: 15, color: 'var(--fg-2)', lineHeight: 1.5, marginBottom: 20 }}>
             {message}
           </p>
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
             <button
               type="button"
               onClick={onClose}
-              style={{ fontSize: 12.5, padding: '6px 14px', borderRadius: 4, color: 'var(--fg-2)', border: '1px solid var(--border-1)' }}
+              style={{ fontSize: 14.5, padding: '6px 14px', borderRadius: 4, color: 'var(--fg-2)', border: '1px solid var(--border-1)' }}
             >
               Cancel
             </button>
@@ -42,7 +42,7 @@ export function ConfirmModal({ open, title, message, confirmLabel = 'Delete', on
               type="button"
               onClick={() => { onConfirm(); onClose() }}
               style={{
-                fontSize: 12.5, padding: '6px 14px', borderRadius: 4, fontWeight: 600,
+                fontSize: 14.5, padding: '6px 14px', borderRadius: 4, fontWeight: 600,
                 background: danger ? 'var(--blocked)' : 'var(--accent)',
                 color: 'var(--accent-ink)',
               }}

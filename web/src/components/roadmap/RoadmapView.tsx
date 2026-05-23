@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useEpics, useUpdateEpic } from '../../api/epics'
-import { useUiStore } from '../../store/ui'
+import { useActiveProjectId } from '../../hooks/useAppNavigate'
 import type { EpicDto } from '../../types'
 
 const ROW_H = 48
@@ -34,7 +34,7 @@ function monthsBetween(from: { year: number; month: number }, to: Date) {
 }
 
 export function RoadmapView() {
-  const { activeProjectId } = useUiStore()
+  const activeProjectId = useActiveProjectId()
   const projectId = activeProjectId ?? ''
   const { data: epics = [], isLoading } = useEpics(projectId)
   const updateEpic = useUpdateEpic(projectId)
@@ -81,7 +81,7 @@ export function RoadmapView() {
         display: 'flex', alignItems: 'center', gap: 8,
         padding: '0 16px', height: 40, borderBottom: '1px solid var(--border)', flexShrink: 0,
       }}>
-        <span style={{ fontSize: 13, fontWeight: 600 }}>Roadmap</span>
+        <span style={{ fontSize: 15, fontWeight: 600 }}>Roadmap</span>
         <span style={{ flex: 1 }} />
         <button type="button" onClick={jumpToToday} style={ghostBtnStyle}>Today</button>
         <button type="button" onClick={() => pan(-3)} style={iconBtnStyle}><ChevronLeft size={13} /></button>
@@ -103,14 +103,14 @@ export function RoadmapView() {
               height: ROW_H, display: 'flex', alignItems: 'center',
               padding: '0 14px', gap: 8,
               borderBottom: '1px solid var(--border)',
-              fontSize: 12.5,
+              fontSize: 14.5,
             }}>
               <span style={{ width: 8, height: 8, borderRadius: 2, background: epic.color, flexShrink: 0 }} />
               <span style={{
                 flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                 color: 'var(--fg)',
               }}>{epic.title}</span>
-              <span className="mono" style={{ fontSize: 10, color: 'var(--fg-3)', flexShrink: 0 }}>
+              <span className="mono" style={{ fontSize: 12, color: 'var(--fg-3)', flexShrink: 0 }}>
                 {epic.donePoints}/{epic.totalPoints}
               </span>
             </div>
@@ -131,7 +131,7 @@ export function RoadmapView() {
                   display: 'flex', alignItems: 'center',
                   padding: '0 10px',
                   borderRight: '1px solid var(--border)',
-                  fontSize: 11, fontWeight: 600,
+                  fontSize: 13, fontWeight: 600,
                   color: 'var(--fg-3)',
                   textTransform: 'uppercase', letterSpacing: '0.05em',
                 }}>
@@ -213,9 +213,6 @@ function EpicBar({ epic, rowIndex, gridStart, gridEnd, editing, onStartEdit, onS
   const [editStart, setEditStart] = useState('')
   const [editEnd, setEditEnd] = useState('')
 
-  const hasStart = !!epic.startDate
-  const hasEnd = !!epic.endDate
-
   const startD = epic.startDate ? clampDate(toDateOnly(epic.startDate), gridStart, gridEnd) : null
   const endD = epic.endDate ? clampDate(toDateOnly(epic.endDate), gridStart, gridEnd) : null
 
@@ -276,14 +273,14 @@ function EpicBar({ epic, rowIndex, gridStart, gridEnd, editing, onStartEdit, onS
       >
         {barLeft !== null ? (
           <span style={{
-            fontSize: 11.5, fontWeight: 600,
+            fontSize: 13.5, fontWeight: 600,
             color: 'rgba(255,255,255,0.9)',
             overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
           }}>
             {epic.title}
           </span>
         ) : (
-          <span style={{ fontSize: 11, color: 'var(--fg-3)' }}>Set dates…</span>
+          <span style={{ fontSize: 13, color: 'var(--fg-3)' }}>Set dates…</span>
         )}
       </div>
 
@@ -337,11 +334,11 @@ function DatePopover({ startDate, endDate, onStartChange, onEndChange, onSave, o
         display: 'flex', flexDirection: 'column', gap: 10,
         minWidth: 240,
       }}>
-        <span style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--fg-2)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+        <span style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--fg-2)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
           Set dates
         </span>
         <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-          <span style={{ fontSize: 11, color: 'var(--fg-3)' }}>Start</span>
+          <span style={{ fontSize: 13, color: 'var(--fg-3)' }}>Start</span>
           <input
             type="date"
             value={startDate}
@@ -351,7 +348,7 @@ function DatePopover({ startDate, endDate, onStartChange, onEndChange, onSave, o
           />
         </label>
         <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-          <span style={{ fontSize: 11, color: 'var(--fg-3)' }}>End</span>
+          <span style={{ fontSize: 13, color: 'var(--fg-3)' }}>End</span>
           <input
             type="date"
             value={endDate}
@@ -372,7 +369,7 @@ function DatePopover({ startDate, endDate, onStartChange, onEndChange, onSave, o
 
 function Shell({ children }: { children: React.ReactNode }) {
   return (
-    <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--fg-2)', fontSize: 13 }}>
+    <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--fg-2)', fontSize: 15 }}>
       {children}
     </div>
   )
@@ -381,7 +378,7 @@ function Shell({ children }: { children: React.ReactNode }) {
 const ghostBtnStyle: React.CSSProperties = {
   height: 24, padding: '0 10px', borderRadius: 4,
   border: '1px solid var(--border-1)',
-  fontSize: 11.5, color: 'var(--fg-2)',
+  fontSize: 13.5, color: 'var(--fg-2)',
   background: 'transparent',
 }
 
@@ -396,19 +393,19 @@ const dateInputStyle: React.CSSProperties = {
   height: 28, padding: '0 8px', borderRadius: 4,
   border: '1px solid var(--border-1)',
   background: 'var(--bg-1)', color: 'var(--fg)',
-  fontSize: 12,
+  fontSize: 14,
   colorScheme: 'dark',
 }
 
 const cancelBtnStyle: React.CSSProperties = {
   height: 26, padding: '0 10px', borderRadius: 4,
-  fontSize: 12, color: 'var(--fg-2)',
+  fontSize: 14, color: 'var(--fg-2)',
   background: 'var(--bg-2)', border: '1px solid var(--border-1)',
 }
 
 const saveBtnStyle: React.CSSProperties = {
   height: 26, padding: '0 10px', borderRadius: 4,
-  fontSize: 12, fontWeight: 600,
+  fontSize: 14, fontWeight: 600,
   background: 'var(--accent)', color: 'var(--accent-ink)',
   border: 'none',
 }

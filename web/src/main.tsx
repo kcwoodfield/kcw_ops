@@ -5,6 +5,7 @@ import { BrowserRouter } from 'react-router-dom'
 import './index.css'
 import App from './App.tsx'
 import { useAuthStore } from './store/auth.ts'
+import { injectFadeStyles } from './lib/fade-transitions'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -20,7 +21,7 @@ const queryClient = new QueryClient({
 
 function Root() {
   const bootstrap = useAuthStore(s => s.bootstrap)
-  useEffect(() => { void bootstrap() }, [bootstrap])
+  useEffect(() => { injectFadeStyles(); void bootstrap() }, [bootstrap])
   return <App />
 }
 

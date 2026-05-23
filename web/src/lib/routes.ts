@@ -4,7 +4,6 @@ export type AppView =
   | 'backlog'
   | 'planning'
   | 'list'
-  | 'calendar'
   | 'roadmap'
   | 'activity'
 
@@ -13,7 +12,6 @@ export const APP_VIEWS: AppView[] = [
   'backlog',
   'planning',
   'list',
-  'calendar',
   'roadmap',
   'activity',
 ]
