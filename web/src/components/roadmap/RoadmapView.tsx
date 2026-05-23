@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useEpics, useUpdateEpic } from '../../api/epics'
-import { useUiStore } from '../../store/ui'
+import { useActiveProjectId } from '../../hooks/useAppNavigate'
 import type { EpicDto } from '../../types'
 
 const ROW_H = 48
@@ -34,7 +34,7 @@ function monthsBetween(from: { year: number; month: number }, to: Date) {
 }
 
 export function RoadmapView() {
-  const { activeProjectId } = useUiStore()
+  const activeProjectId = useActiveProjectId()
   const projectId = activeProjectId ?? ''
   const { data: epics = [], isLoading } = useEpics(projectId)
   const updateEpic = useUpdateEpic(projectId)

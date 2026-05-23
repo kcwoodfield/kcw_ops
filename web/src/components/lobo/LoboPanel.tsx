@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { X, Send, ChevronDown, AlertCircle, RefreshCw, Trash2 } from 'lucide-react'
 import { useUiStore, type LoboModel, type LoboMessage } from '../../store/ui'
+import { useActiveProjectId } from '../../hooks/useAppNavigate'
 import { getAccessToken } from '../../api/client'
 
 const API = import.meta.env.VITE_API_URL ?? 'http://localhost:5050'
@@ -19,7 +20,8 @@ const MODEL_LABELS: Record<LoboModel, string> = {
 }
 
 export function LoboPanel() {
-  const { loboPanelOpen, loboModel, activeProjectId, toggleLoboPanel, setLoboModel, loboMessages: messages, setLoboMessages: setMessages, clearLoboMessages } = useUiStore()
+  const { loboPanelOpen, loboModel, toggleLoboPanel, setLoboModel, loboMessages: messages, setLoboMessages: setMessages, clearLoboMessages } = useUiStore()
+  const activeProjectId = useActiveProjectId()
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [modelPickerOpen, setModelPickerOpen] = useState(false)

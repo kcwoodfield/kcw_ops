@@ -1,5 +1,5 @@
 import { useActivity } from '../../api/activity'
-import { useUiStore } from '../../store/ui'
+import { useActiveProjectId } from '../../hooks/useAppNavigate'
 import { useIsCompact } from '../../hooks/useMediaQuery'
 import type { ActivityEventDto } from '../../types'
 
@@ -71,7 +71,7 @@ function Sparkline({ events }: { events: ActivityEventDto[] }) {
 }
 
 export function ActivityLog() {
-  const { activeProjectId } = useUiStore()
+  const activeProjectId = useActiveProjectId()
   const { data: events = [], isLoading } = useActivity(activeProjectId ?? '')
   const compact = useIsCompact()
 

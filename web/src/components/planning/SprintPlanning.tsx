@@ -11,8 +11,7 @@ import { CSS } from '@dnd-kit/utilities'
 import { ChevronRight, Play, CheckCircle, Plus, Trash2 } from 'lucide-react'
 import { useBacklog, useDeleteSprint, useSprints, useUpdateStory, useUpdateSprint } from '../../api/stories'
 import { useEpics } from '../../api/epics'
-import { useUiStore } from '../../store/ui'
-import { useAppNavigate } from '../../hooks/useAppNavigate'
+import { useActiveProjectId, useActiveSprintId, useAppNavigate } from '../../hooks/useAppNavigate'
 import { useIsCompact } from '../../hooks/useMediaQuery'
 import { CreateSprintModal } from '../CreateSprintModal'
 import { ConfirmModal } from '../shared/ConfirmModal'
@@ -25,8 +24,9 @@ type Container = 'backlog' | 'sprint'
 type Items = Record<Container, string[]>
 
 export function SprintPlanning() {
-  const { activeProjectId, activeSprintId, setActiveSprint } = useUiStore()
-  const { openStory } = useAppNavigate()
+  const activeProjectId = useActiveProjectId()
+  const activeSprintId = useActiveSprintId()
+  const { openStory, setSprint } = useAppNavigate()
   const projectId = activeProjectId ?? ''
 
   const { data: backlog = [] } = useBacklog(projectId)
@@ -188,7 +188,7 @@ export function SprintPlanning() {
           sprint={activeSprint}
           allSprints={allSprints}
           sprintPoints={sprintPoints}
-          onSelectSprint={s => setActiveSprint(s.id)}
+          onSelectSprint={s => setSprint(s.id)}
           onMoveToBacklog={moveToBacklog}
           onStartSprint={startSprint}
           onCompleteSprint={completeSprint}

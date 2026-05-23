@@ -1,10 +1,25 @@
 import { useCallback } from 'react'
 import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { useProjects } from '../api/projects'
 import type { AppView } from '../lib/routes'
 import { LAST_PROJECT_KEY, projectPath, parseSearchParams, isAppView } from '../lib/routes'
 
 export function useProjectKey() {
   return useParams().projectKey?.toUpperCase()
+}
+
+/** Resolved project id for the current `/p/:projectKey` route, or null. */
+export function useActiveProjectId(): string | null {
+  const key = useProjectKey()
+  const { data: projects = [] } = useProjects()
+  if (!key) return null
+  return projects.find(p => p.key === key)?.id ?? null
+}
+
+/** Sprint id from the `?sprint=` query param, or null. */
+export function useActiveSprintId(): string | null {
+  const [searchParams] = useSearchParams()
+  return searchParams.get('sprint')
 }
 
 export function useAppView(): AppView {

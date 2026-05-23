@@ -1,8 +1,7 @@
 import { LayoutDashboard, List, Layers } from 'lucide-react'
 import { useSprints } from '../../api/stories'
-import { useAppNavigate } from '../../hooks/useAppNavigate'
+import { useActiveProjectId, useAppNavigate } from '../../hooks/useAppNavigate'
 import { useIsCompact } from '../../hooks/useMediaQuery'
-import { useUiStore } from '../../store/ui'
 import type { AppView } from '../../lib/routes'
 
 interface ActionBarProps {
@@ -17,7 +16,7 @@ const VIEWS: { id: AppView; icon: React.ReactNode; label: string }[] = [
 
 export function ActionBar({ breadcrumb }: ActionBarProps) {
   const { view, sprintId, goToView, setSprint } = useAppNavigate()
-  const { activeProjectId } = useUiStore()
+  const activeProjectId = useActiveProjectId()
   const { data: sprints = [] } = useSprints(activeProjectId ?? '')
   const activeSprint = sprints.find(s => s.id === sprintId) ?? sprints.find(s => s.state === 'active')
   const compact = useIsCompact()

@@ -10,6 +10,7 @@ import type { AppView } from '../../lib/routes'
 import { isAppView, LAST_PROJECT_KEY, parseSearchParams, projectPath } from '../../lib/routes'
 import { useUiStore } from '../../store/ui'
 import { useIsCompact } from '../../hooks/useMediaQuery'
+import { useActiveProjectId } from '../../hooks/useAppNavigate'
 import { LoboPanel } from '../lobo/LoboPanel'
 import { Footer } from './Footer'
 
@@ -19,18 +20,18 @@ export function AppShell() {
   const [searchParams, setSearchParams] = useSearchParams()
   const navigate = useNavigate()
   const { data: projects = [] } = useProjects()
-  const { activeProjectId, activeSprintId, setActiveProject, setActiveSprint, sidebarCollapsed, mobileSidebarOpen, setMobileSidebarOpen } = useUiStore()
+  const { sidebarCollapsed, mobileSidebarOpen, setMobileSidebarOpen } = useUiStore()
+  const activeProjectId = useActiveProjectId()
   const { data: sprints = [] } = useSprints(activeProjectId ?? '')
   const compact = useIsCompact()
 
   const project = projects.find(p => p.key === projectKey?.toUpperCase())
 
-  // Resolve projectKey → activeProjectId
+  // Persist last project · redirect to fallback when the URL key doesn't match.
   useEffect(() => {
     if (!projects.length) return
 
     if (project) {
-      if (activeProjectId !== project.id) setActiveProject(project.id)
       localStorage.setItem(LAST_PROJECT_KEY, project.key)
       return
     }
@@ -42,19 +43,11 @@ export function AppShell() {
       const { sprintId, storyId } = parseSearchParams(searchParams)
       navigate(projectPath(fallback.key, segment, { sprint: sprintId, story: storyId }), { replace: true })
     }
-  }, [projects, project, projectKey, activeProjectId, setActiveProject, navigate, searchParams, pathname])
+  }, [projects, project, projectKey, navigate, searchParams, pathname])
 
   const sprintInUrl = searchParams.get('sprint')
 
-  // Sync sprint search param → store (clear when the URL has none, so a
-  // project switch doesn't leave a previous project's sprint id in the store).
-  useEffect(() => {
-    if (sprintInUrl !== activeSprintId) {
-      setActiveSprint(sprintInUrl)
-    }
-  }, [sprintInUrl, activeSprintId, setActiveSprint])
-
-  // Default sprint into URL when missing
+  // Default the active sprint into the URL when missing.
   useEffect(() => {
     if (!activeProjectId || sprints.length === 0) return
     if (sprintInUrl) return
@@ -62,13 +55,12 @@ export function AppShell() {
     const next = sprints.find(s => s.state === 'active') ?? sprints[sprints.length - 1]
     if (!next) return
 
-    setActiveSprint(next.id)
     setSearchParams(prev => {
       const p = new URLSearchParams(prev)
       p.set('sprint', next.id)
       return p
     }, { replace: true })
-  }, [activeProjectId, sprints, sprintInUrl, setActiveSprint, setSearchParams])
+  }, [activeProjectId, sprints, sprintInUrl, setSearchParams])
 
   const breadcrumb = project ? [project.name] : ['kcw / ops']
 

@@ -1,8 +1,7 @@
 import { useState } from 'react'
 import { Plus, ArrowRight } from 'lucide-react'
 import { useBacklog, useCreateStory, useSprints, useUpdateStory } from '../../api/stories'
-import { useUiStore } from '../../store/ui'
-import { useAppNavigate } from '../../hooks/useAppNavigate'
+import { useActiveProjectId, useAppNavigate } from '../../hooks/useAppNavigate'
 import { Label, PriorityBars, Pts, StatusDot, StoryId } from '../story/StoryPrimitives'
 import { EpicFilterPopover } from '../shared/EpicFilterPopover'
 import type { StoryDto } from '../../types'
@@ -12,7 +11,7 @@ type Tab = 'all' | 'urgent_high'
 const PRIORITY_ORDER: Record<string, number> = { urgent: 0, high: 1, med: 2, low: 3 }
 
 export function Backlog() {
-  const { activeProjectId } = useUiStore()
+  const activeProjectId = useActiveProjectId()
   const { data: stories = [], isLoading } = useBacklog(activeProjectId ?? '')
   const { data: sprints = [] } = useSprints(activeProjectId ?? '')
   const { openStory } = useAppNavigate()

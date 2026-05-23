@@ -6,7 +6,7 @@ import { useInboxStories, useMyIssues, useStarredStories, useDraftStories, useCr
 import { useUiStore } from '../../store/ui'
 import { useAuthStore } from '../../store/auth'
 import { useAuthFade } from '../../context/auth-fade'
-import { useAppNavigate } from '../../hooks/useAppNavigate'
+import { useActiveProjectId, useAppNavigate } from '../../hooks/useAppNavigate'
 import { projectPath } from '../../lib/routes'
 import type { AppView } from '../../lib/routes'
 import { Shield } from '../Shield'
@@ -16,7 +16,8 @@ import type { ProjectDto } from '../../types'
 
 export function Sidebar({ compact = false }: { compact?: boolean }) {
   const { data: projects = [] } = useProjects()
-  const { activeProjectId, sidebarCollapsed, mobileSidebarOpen } = useUiStore()
+  const activeProjectId = useActiveProjectId()
+  const { sidebarCollapsed, mobileSidebarOpen } = useUiStore()
   const { goToProject } = useAppNavigate()
   const navigate = useNavigate()
   const { pathname } = useLocation()

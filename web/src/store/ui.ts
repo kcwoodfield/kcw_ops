@@ -38,9 +38,9 @@ function saveLoboMessages(msgs: LoboMessage[]) {
   localStorage.setItem(LOBO_MESSAGES_KEY, JSON.stringify(trimmed))
 }
 
+// activeProjectId / activeSprintId are NOT mirrored here — they're derived from
+// the URL via useActiveProjectId / useActiveSprintId in hooks/useAppNavigate.
 interface UiState {
-  activeProjectId: string | null
-  activeSprintId: string | null
   cmdPaletteOpen: boolean
   theme: Theme
   sidebarCollapsed: boolean
@@ -48,8 +48,6 @@ interface UiState {
   loboPanelOpen: boolean
   loboModel: LoboModel
   loboMessages: LoboMessage[]
-  setActiveProject: (projectId: string) => void
-  setActiveSprint: (sprintId: string | null) => void
   setCmdPaletteOpen: (open: boolean) => void
   toggleTheme: () => void
   toggleSidebar: () => void
@@ -66,8 +64,6 @@ applyTheme(initialTheme)
 const storedLoboModel = (localStorage.getItem('kcw_lobo_model') ?? 'claude-sonnet') as LoboModel
 
 export const useUiStore = create<UiState>((set) => ({
-  activeProjectId: null,
-  activeSprintId: null,
   cmdPaletteOpen: false,
   theme: initialTheme,
   sidebarCollapsed: false,
@@ -75,8 +71,6 @@ export const useUiStore = create<UiState>((set) => ({
   loboPanelOpen: false,
   loboModel: storedLoboModel,
   loboMessages: loadLoboMessages(),
-  setActiveProject: (projectId) => set({ activeProjectId: projectId }),
-  setActiveSprint: (sprintId) => set({ activeSprintId: sprintId }),
   setCmdPaletteOpen: (open) => set({ cmdPaletteOpen: open }),
   toggleTheme: () => set(s => {
     const next: Theme = s.theme === 'dark' ? 'light' : 'dark'

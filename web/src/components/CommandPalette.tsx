@@ -8,6 +8,7 @@ import {
 import { useProjects } from '../api/projects'
 import { useStories, useCreateStory } from '../api/stories'
 import { useEpics } from '../api/epics'
+import { useActiveProjectId, useActiveSprintId } from '../hooks/useAppNavigate'
 import { useUiStore } from '../store/ui'
 import { useAppNavigate } from '../hooks/useAppNavigate'
 import type { AppView } from '../lib/routes'
@@ -34,7 +35,9 @@ const isEditable = (el: Element | null) => {
 }
 
 export function CommandPalette() {
-  const { activeProjectId, activeSprintId, cmdPaletteOpen, setCmdPaletteOpen } = useUiStore()
+  const activeProjectId = useActiveProjectId()
+  const activeSprintId = useActiveSprintId()
+  const { cmdPaletteOpen, setCmdPaletteOpen } = useUiStore()
   const { data: projects = [] } = useProjects()
   const { data: stories = [] } = useStories(activeProjectId ?? '', activeSprintId ?? undefined)
   const { data: epics = [] } = useEpics(activeProjectId ?? '')

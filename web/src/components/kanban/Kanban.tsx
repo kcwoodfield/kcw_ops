@@ -21,9 +21,8 @@ import {
 import { CSS } from '@dnd-kit/utilities'
 import { Settings, Plus } from 'lucide-react'
 import { useCreateStory, useReorderStories, useSprints, useStories, useUpdateStory } from '../../api/stories'
-import { useAppNavigate } from '../../hooks/useAppNavigate'
+import { useActiveProjectId, useActiveSprintId, useAppNavigate } from '../../hooks/useAppNavigate'
 import { useIsCompact } from '../../hooks/useMediaQuery'
-import { useUiStore } from '../../store/ui'
 import { EpicFilterPopover } from '../shared/EpicFilterPopover'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../ui/tabs'
 import type { StoryDto, StoryStatus } from '../../types'
@@ -75,7 +74,8 @@ function findColumn(id: string, items: ColumnItems): StoryStatus | null {
 }
 
 export function Kanban() {
-  const { activeProjectId, activeSprintId } = useUiStore()
+  const activeProjectId = useActiveProjectId()
+  const activeSprintId = useActiveSprintId()
   const { openStory } = useAppNavigate()
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),

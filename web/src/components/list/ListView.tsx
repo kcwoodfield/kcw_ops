@@ -3,8 +3,7 @@ import { ChevronRight, Pencil, Trash2 } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { get } from '../../api/client'
 import { useDeleteEpic, useEpics } from '../../api/epics'
-import { useUiStore } from '../../store/ui'
-import { useAppNavigate } from '../../hooks/useAppNavigate'
+import { useActiveProjectId, useAppNavigate } from '../../hooks/useAppNavigate'
 import { CreateEpicModal } from '../CreateEpicModal'
 import { ConfirmModal } from '../shared/ConfirmModal'
 import { StatusDot, StoryId, PriorityBars, Pts } from '../story/StoryPrimitives'
@@ -16,7 +15,7 @@ function fmtDate(iso: string) {
 }
 
 export function ListView() {
-  const { activeProjectId } = useUiStore()
+  const activeProjectId = useActiveProjectId()
   const { openStory } = useAppNavigate()
   const projectId = activeProjectId ?? ''
   const [editingEpic, setEditingEpic] = useState<EpicDto | undefined>()

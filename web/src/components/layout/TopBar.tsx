@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Bell, Menu, Plus, Search } from 'lucide-react'
 import { useCreateStory, useInboxStories } from '../../api/stories'
-import { useAppNavigate } from '../../hooks/useAppNavigate'
+import { useActiveProjectId, useAppNavigate } from '../../hooks/useAppNavigate'
 import { useUiStore } from '../../store/ui'
 import { useIsCompact } from '../../hooks/useMediaQuery'
 import { CreateEpicModal } from '../CreateEpicModal'
@@ -10,7 +10,8 @@ import { CreateSprintModal } from '../CreateSprintModal'
 
 export function TopBar() {
   const { sprintId, openStory } = useAppNavigate()
-  const { activeProjectId, setCmdPaletteOpen, setMobileSidebarOpen } = useUiStore()
+  const activeProjectId = useActiveProjectId()
+  const { setCmdPaletteOpen, setMobileSidebarOpen } = useUiStore()
   const compact = useIsCompact()
   const createStory = useCreateStory()
   const navigate = useNavigate()
