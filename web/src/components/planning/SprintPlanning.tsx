@@ -57,7 +57,6 @@ export function SprintPlanning() {
       backlog: backlog.map(s => s.id),
       sprint: sprintStoriesRaw.map(s => s.id),
     })
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [backlog, sprintStoriesRaw])
 
   const allStories = [...backlog, ...sprintStoriesRaw]

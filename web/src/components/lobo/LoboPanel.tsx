@@ -137,7 +137,7 @@ export function LoboPanel() {
           }
         }
       }
-    } catch (err) {
+    } catch {
       setMessages(prev => {
         const next = [...prev]
         next[next.length - 1] = { role: 'assistant', content: 'Connection error. Is the API running?', error: true }
