@@ -6,7 +6,6 @@ let accessToken: string | null = null
 export function setAccessToken(token: string | null) { accessToken = token }
 export function getAccessToken() { return accessToken }
 
-// ── Auth header helper ────────────────────────────────────────────────────────
 function authHeaders(): Record<string, string> {
   return accessToken ? { Authorization: `Bearer ${accessToken}` } : {}
 }
@@ -36,12 +35,12 @@ async function tryRefresh(): Promise<boolean> {
   return refreshPromise
 }
 
-// ── Core fetch wrapper ────────────────────────────────────────────────────────
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const doFetch = () => fetch(`${BASE}${path}`, {
+// ── Core fetch — handles auth, silent refresh on 401, and error normalization
+async function coreFetch<T>(url: string, init?: RequestInit): Promise<T> {
+  const doFetch = () => fetch(url, {
     credentials: 'include',
-    headers: { 'Content-Type': 'application/json', ...authHeaders(), ...init?.headers },
     ...init,
+    headers: { ...authHeaders(), ...init?.headers },
   })
 
   let res = await doFetch()
@@ -49,7 +48,6 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   if (res.status === 401) {
     const refreshed = await tryRefresh()
     if (!refreshed) {
-      // Signal auth store to redirect to /login
       window.dispatchEvent(new CustomEvent('auth:logout'))
       throw new Error('401')
     }
@@ -61,45 +59,36 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     throw new Error(err.error ?? `${res.status} ${res.statusText}`)
   }
   if (res.status === 204) return undefined as T
-  return res.json()
+  return res.json() as Promise<T>
 }
 
-export async function get<T>(path: string, params?: Record<string, string | boolean | undefined>): Promise<T> {
+// ── Public verbs ─────────────────────────────────────────────────────────────
+export function get<T>(path: string, params?: Record<string, string | boolean | undefined>): Promise<T> {
   const url = new URL(`${BASE}${path}`)
   if (params) {
     Object.entries(params).forEach(([k, v]) => {
       if (v !== undefined) url.searchParams.set(k, String(v))
     })
   }
-
-  const doFetch = () => fetch(url.toString(), {
-    credentials: 'include',
-    headers: { ...authHeaders() },
-  })
-
-  let res = await doFetch()
-
-  if (res.status === 401) {
-    const refreshed = await tryRefresh()
-    if (!refreshed) {
-      window.dispatchEvent(new CustomEvent('auth:logout'))
-      throw new Error('401')
-    }
-    res = await doFetch()
-  }
-
-  if (!res.ok) throw new Error(`${res.status} ${res.statusText}`)
-  return res.json()
+  return coreFetch<T>(url.toString())
 }
 
 export function post<T>(path: string, body: unknown): Promise<T> {
-  return request<T>(path, { method: 'POST', body: JSON.stringify(body) })
+  return coreFetch<T>(`${BASE}${path}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  })
 }
 
 export function patch<T>(path: string, body: unknown): Promise<T> {
-  return request<T>(path, { method: 'PATCH', body: JSON.stringify(body) })
+  return coreFetch<T>(`${BASE}${path}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  })
 }
 
 export function del(path: string): Promise<void> {
-  return request<void>(path, { method: 'DELETE' })
+  return coreFetch<void>(`${BASE}${path}`, { method: 'DELETE' })
 }
