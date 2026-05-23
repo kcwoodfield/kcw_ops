@@ -56,7 +56,9 @@ export function Sidebar({ compact = false }: { compact?: boolean }) {
       display: 'flex',
       flexDirection: 'column',
       minWidth: 0,
-      overflow: 'hidden',
+      // overflow stays visible so the Settings popover can paint past the
+      // sidebar's right edge — the project list has its own overflowY:auto.
+      overflow: 'visible',
     }}>
       <WorkspaceHeader collapsed={collapsed} compact={compact} />
 
